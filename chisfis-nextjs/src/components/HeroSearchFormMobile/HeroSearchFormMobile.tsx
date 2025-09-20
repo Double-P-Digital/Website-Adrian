@@ -7,31 +7,23 @@ import { ListingType } from '@/type'
 import T from '@/utils/getT'
 import { CloseButton, Dialog, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import {
-  Airplane02Icon,
-  Car05Icon,
-  FilterVerticalIcon,
-  HotAirBalloonFreeIcons,
-  House03Icon,
-  RealEstate02Icon,
-  Search01Icon,
-} from '@hugeicons/core-free-icons'
+import { FilterVerticalIcon, House03Icon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { useTimeoutFn } from 'react-use'
-import CarSearchFormMobile from './car-search-form/CarSearchFormMobile'
-import ExperienceSearchFormMobile from './experience-search-form/ExperienceSearchFormMobile'
-import FlightSearchFormMobile from './flight-search-form/FlightSearchFormMobile'
-import RealestateSearchFormMobile from './real-estate-search-form/RealestateSearchFormMobile'
+//import CarSearchFormMobile from './car-search-form/CarSearchFormMobile'
+//import ExperienceSearchFormMobile from './experience-search-form/ExperienceSearchFormMobile'
+//import FlightSearchFormMobile from './flight-search-form/FlightSearchFormMobile'
+//import RealestateSearchFormMobile from './real-estate-search-form/RealestateSearchFormMobile'
 import StaySearchFormMobile from './stay-search-form/StaySearchFormMobile'
 
 const formTabs: { name: ListingType; icon: IconSvgElement; formComponent: React.ComponentType<{}> }[] = [
   { name: 'Stays', icon: House03Icon, formComponent: StaySearchFormMobile },
-  { name: 'Cars', icon: Car05Icon, formComponent: CarSearchFormMobile },
-  { name: 'Experiences', icon: HotAirBalloonFreeIcons, formComponent: ExperienceSearchFormMobile },
-  { name: 'RealEstates', icon: RealEstate02Icon, formComponent: RealestateSearchFormMobile },
-  { name: 'Flights', icon: Airplane02Icon, formComponent: FlightSearchFormMobile },
+  //{ name: 'Cars', icon: Car05Icon, formComponent: CarSearchFormMobile },
+  //{ name: 'Experiences', icon: HotAirBalloonFreeIcons, formComponent: ExperienceSearchFormMobile },
+  //{ name: 'RealEstates', icon: RealEstate02Icon, formComponent: RealestateSearchFormMobile },
+  //{ name: 'Flights', icon: Airplane02Icon, formComponent: FlightSearchFormMobile },
 ]
 
 const HeroSearchFormMobile = ({ className }: { className?: string }) => {
