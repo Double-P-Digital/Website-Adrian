@@ -58,33 +58,15 @@ async function Page() {
           </HeadingWithSub>
           <SectionSliderNewCategories categoryCardType="card3" categories={categories.slice(0, 7)} />
         </div>
-
-        <SectionOurFeatures className="py-14" />
         <SectionGridFeaturePlaces stayListings={stayListings} cardType="card2" />
         <Divider />
         <SectionHowItWork />
-        <div className="relative py-20">
-          <BackgroundSection />
-          <HeadingWithSub isCenter subheading="Keep calm & travel on">
-            Become a host
-          </HeadingWithSub>
-          <SectionGridAuthorBox authors={authors} />
-        </div>
-        <SectionSubscribe2 />
-        <Divider />
-
         <div>
           <HeadingWithSub isCenter subheading={'Great places near where you live'}>
             Explore nearby
           </HeadingWithSub>
           <SectionGridCategoryBox categories={categories.slice(0, 8)} />
         </div>
-
-        <div className="relative py-16">
-          <BackgroundSection />
-          <SectionBecomeAnAuthor />
-        </div>
-
         <div>
           <HeadingWithSub subheading="Explore houses based on 10 types of stays">
             Explore by types of stays.
