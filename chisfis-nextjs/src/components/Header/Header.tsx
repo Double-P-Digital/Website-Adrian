@@ -34,7 +34,6 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true, className }) =>
               <HamburgerBtnMenu />
             </div>
             <CurrLangDropdown currencies={currencies} languages={languages} className="hidden md:block" />
-            <AvatarDropdown />
           </div>
         </div>
       </div>
