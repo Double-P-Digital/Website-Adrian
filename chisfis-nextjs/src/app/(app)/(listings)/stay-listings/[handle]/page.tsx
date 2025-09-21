@@ -77,7 +77,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     price,
     reviewCount,
     reviewStart,
-    saleOff,
     title,
     host,
     beds,
