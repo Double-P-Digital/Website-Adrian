@@ -2,7 +2,6 @@ import '@/styles/tailwind.css'
 import { Metadata } from 'next'
 import { Poppins } from 'next/font/google'
 import 'rc-slider/assets/index.css'
-import CustomizeControl from './customize-control'
 import ThemeProvider from './theme-provider'
 
 const poppins = Poppins({
@@ -27,9 +26,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <div>
             {children}
-
-            {/* For Chisfis's demo  -- you can remove it  */}
-            <CustomizeControl />
           </div>
         </ThemeProvider>
       </body>
