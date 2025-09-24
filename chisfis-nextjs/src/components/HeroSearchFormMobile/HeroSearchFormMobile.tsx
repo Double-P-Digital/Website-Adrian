@@ -7,15 +7,7 @@ import { ListingType } from '@/type'
 import T from '@/utils/getT'
 import { CloseButton, Dialog, DialogPanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import {
-  Airplane02Icon,
-  Car05Icon,
-  FilterVerticalIcon,
-  HotAirBalloonFreeIcons,
-  House03Icon,
-  RealEstate02Icon,
-  Search01Icon,
-} from '@hugeicons/core-free-icons'
+import { FilterVerticalIcon, House03Icon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react'
 import clsx from 'clsx'
 import { useState } from 'react'
