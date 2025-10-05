@@ -13,6 +13,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import { useTimeoutFn } from 'react-use'
 import StaySearchFormMobile from './stay-search-form/StaySearchFormMobile'
+import { useT } from "@/hooks/useT";
 
 const formTabs: { name: ListingType; icon: IconSvgElement; formComponent: React.ComponentType<{}> }[] = [
   { name: 'Stays', icon: House03Icon, formComponent: StaySearchFormMobile },
@@ -20,6 +21,8 @@ const formTabs: { name: ListingType; icon: IconSvgElement; formComponent: React.
 
 const HeroSearchFormMobile = ({ className }: { className?: string }) => {
   const [showModal, setShowModal] = useState(false)
+
+  const T = useT();
 
   // FOR RESET ALL DATA WHEN CLICK CLEAR BUTTON
   const [showDialog, setShowDialog] = useState(false)
@@ -42,6 +45,7 @@ const HeroSearchFormMobile = ({ className }: { className?: string }) => {
         <HugeiconsIcon icon={Search01Icon} size={20} color="currentColor" strokeWidth={1.5} />
 
         <div className="ms-3 flex-1 overflow-hidden text-start">
+          {/*<span className="block text-sm font-medium">{T['HeroSearchForm']['Where to?']}</span>*/}
           <span className="block text-sm font-medium">{T['HeroSearchForm']['Where to?']}</span>
           <span className="mt-0.5 block text-xs font-light text-neutral-500 dark:text-neutral-400">
             <span className="line-clamp-1">{T['HeroSearchForm']['Anywhere • Any week • Add guests']}</span>

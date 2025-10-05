@@ -147,7 +147,7 @@ export const getLanguages = async () => {
       active: true,
     },
     {
-      id: 'English',
+      id: 'en',
       name: 'English',
       description: 'United State',
       href: '#',
