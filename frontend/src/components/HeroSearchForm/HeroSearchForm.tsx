@@ -1,13 +1,10 @@
+'use client'
+
+import { useT } from '@/hooks/useT'
 import { Link } from '@/shared/link'
 import { ListingType } from '@/type'
 import * as Headless from '@headlessui/react'
-import {
-  Airplane02Icon,
-  Car05Icon,
-  HotAirBalloonFreeIcons,
-  House03Icon,
-  RealEstate02Icon,
-} from '@hugeicons/core-free-icons'
+import { House03Icon } from '@hugeicons/core-free-icons'
 import { IconSvgElement } from '@hugeicons/react'
 import clsx from 'clsx'
 import { Fragment } from 'react'
@@ -18,11 +15,11 @@ export const formTabs: {
   icon: IconSvgElement
   href: string
   formComponent: React.ComponentType<{ formStyle: 'default' | 'small' }>
-}[] = [
-  { name: 'Stays', icon: House03Icon, href: '/', formComponent: StaySearchForm }
-]
+}[] = [{ name: 'Stays', icon: House03Icon, href: '/', formComponent: StaySearchForm }]
 
 const HeroSearchForm = ({ className, initTab = 'Stays' }: { className?: string; initTab: ListingType }) => {
+  const T = useT()
+
   return (
     <div className={clsx('hero-search-form', className)}>
       <Headless.TabGroup defaultIndex={formTabs.findIndex((tab) => tab.name === initTab)}>

@@ -8,7 +8,7 @@ import { Button } from '@/shared/Button'
 import { Divider } from '@/shared/divider'
 import Pagination from '@/shared/Pagination'
 import convertNumbThousand from '@/utils/convertNumbThousand'
-import { House04Icon, MapPinpoint02Icon, MapsLocation01Icon } from '@hugeicons/core-free-icons'
+import { MapsLocation01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
@@ -46,15 +46,15 @@ const Page = async ({ params }: { params: Promise<{ handle?: string[] }> }) => {
           image={category.coverImage}
           imageAlt={category.name}
           searchForm={<StaySearchForm formStyle="default" />}
-          description={
-            <div className="flex items-center sm:text-lg">
-              <HugeiconsIcon icon={MapPinpoint02Icon} size={20} color="currentColor" strokeWidth={1.5} />
-              <span className="ms-2.5">{category.region} </span>
-              <span className="mx-5"></span>
-              <HugeiconsIcon icon={House04Icon} size={20} color="currentColor" strokeWidth={1.5} />
-              <span className="ms-2.5">{convertNumbThousand(category.count)} stays</span>
-            </div>
-          }
+          // description={
+          //   <div className="flex items-center sm:text-lg">
+          //     <HugeiconsIcon icon={MapPinpoint02Icon} size={20} color="currentColor" strokeWidth={1.5} />
+          //     <span className="ms-2.5">{category.region} </span>
+          //     <span className="mx-5"></span>
+          //     <HugeiconsIcon icon={House04Icon} size={20} color="currentColor" strokeWidth={1.5} />
+          //     <span className="ms-2.5">{convertNumbThousand(category.count)} stays</span>
+          //   </div>
+          // }
         />
       </div>
 

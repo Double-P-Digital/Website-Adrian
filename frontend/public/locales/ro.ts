@@ -65,6 +65,15 @@ export const ro = {
             'Flight description': 'Găsește zborul perfect',
         },
     },
+    "ListingFilterTabs": {
+    "Price range": "Interval preț",
+    "All filters": "Toate filtrele",
+    "Filters": "Filtre",
+    "Clear All": "Șterge tot",
+    "Apply filters": "Aplică filtrele",
+    "Clear": "Șterge",
+    "Apply": "Aplică"
+  },
     HeroSearchForm: {
         'Flying dates': 'Date zbor',
         'Flying date': 'Data zborului',
@@ -146,6 +155,9 @@ export const ro = {
             'Go back': 'Înapoi',
             'Publish listing': 'Publică listarea',
             Continue: 'Continuă',
+        },
+        sectionGridCategoryBox:{
+            title: 'Alege un oras',
         },
         page1: {
             pageTitle: 'Alegerea categoriilor de listare',
@@ -243,6 +255,7 @@ export const ro = {
                 'Alături de noi, ai o călătorie plină de experiențe. Cu Chisfis, rezervi cazare, vile de resort, hoteluri',
             'Start your search': 'Începe căutarea',
             button: 'Începe căutarea',
+            slogan: 'Cu noi, experienta bookingului e mai usoara'
         },
     },
     accountPage: {

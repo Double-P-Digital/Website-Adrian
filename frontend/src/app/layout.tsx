@@ -1,9 +1,9 @@
+import { LanguageProvider } from '@/context/LanguageContext'
 import '@/styles/tailwind.css'
 import { Metadata } from 'next'
 import { Poppins } from 'next/font/google'
 import 'rc-slider/assets/index.css'
 import ThemeProvider from './theme-provider'
-import {LanguageProvider} from "@/context/LanguageContext";
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -24,13 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={poppins.className}>
       <body className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
-      <LanguageProvider>
-        <ThemeProvider>
-          <div>
-            {children}
-          </div>
-        </ThemeProvider>
-      </LanguageProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <div>{children}</div>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   )

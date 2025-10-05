@@ -1,6 +1,6 @@
 'use client'
 
-import T from '@/utils/getT'
+import { useT } from '@/hooks/useT'
 import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import Form from 'next/form'
@@ -17,6 +17,8 @@ export const RentalCarSearchForm: FC<Props> = ({ className, formStyle = 'default
   const [dropOffLocationType, setDropOffLocationType] = useState<'same' | 'different'>('different')
 
   const router = useRouter()
+
+  const T = useT()
 
   // Prefetch the stay categories page to improve performance
   useEffect(() => {

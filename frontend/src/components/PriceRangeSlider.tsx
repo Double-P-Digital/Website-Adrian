@@ -1,5 +1,6 @@
 'use client'
 
+import { useT } from '@/hooks/useT'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import clsx from 'clsx'
 import Slider from 'rc-slider'
@@ -8,7 +9,7 @@ import { useState } from 'react'
 export const PriceRangeSlider = ({
   min,
   max,
-  name = 'Price Range',
+  name,
   className,
   onChange,
   defaultValue,
@@ -27,11 +28,13 @@ export const PriceRangeSlider = ({
   showTitle?: boolean
 }) => {
   const [rangePrices, setRangePrices] = useState<number[]>([defaultValue?.[0] ?? min, defaultValue?.[1] ?? max])
+  const T = useT()
 
   return (
     <div className={clsx('relative flex flex-col gap-y-6', className)}>
       <div className="flex flex-col gap-y-5">
-        {showTitle && <p className="font-medium">{name}</p>}
+        {/* {showTitle && <p className="font-medium">{T.ListingFilterTabs['Price range']}</p>} */}
+        {showTitle && <p className="font-medium">{name || T.ListingFilterTabs['Price range']}</p>}
         <div className="px-2">
           <Slider
             range

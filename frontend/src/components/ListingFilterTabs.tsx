@@ -1,13 +1,13 @@
 'use client'
 
 import NcInputNumber from '@/components/NcInputNumber'
+import { useT } from '@/hooks/useT'
 import { Button } from '@/shared/Button'
 import ButtonClose from '@/shared/ButtonClose'
 import ButtonPrimary from '@/shared/ButtonPrimary'
 import ButtonThird from '@/shared/ButtonThird'
 import { Checkbox, CheckboxField, CheckboxGroup } from '@/shared/Checkbox'
 import { Description, Fieldset, Label } from '@/shared/fieldset'
-import T from '@/utils/getT'
 import {
   CloseButton,
   Dialog,
@@ -281,6 +281,7 @@ const ListingFilterTabs = ({
 }: {
   filterOptions?: Partial<typeof demo_filters_options>
 }) => {
+  const T = useT()
   const [showAllFilter, setShowAllFilter] = useState(false)
 
   const handleFormSubmit = async (formData: FormData) => {

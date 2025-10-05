@@ -1,17 +1,18 @@
+'use client'
+
+import { useT } from '@/hooks/useT'
 import clsx from 'clsx'
 import Image from 'next/image'
 
 const HeroSectionWithSearchForm1 = ({
   className,
   searchForm,
-  description,
   heading,
   imageAlt,
   image,
 }: {
   className?: string
   heading: string | React.ReactNode
-  description: string | React.ReactNode
   image: {
     src: string
     width: number
@@ -20,15 +21,21 @@ const HeroSectionWithSearchForm1 = ({
   imageAlt: string
   searchForm: React.ReactNode
 }) => {
+  const T = useT()
+
   return (
     <div className={clsx('relative flex flex-col-reverse pt-10 lg:flex-col lg:pt-12', className)}>
       <div className="flex flex-col lg:flex-row">
         <div className="relative flex w-full flex-col items-start gap-y-8 pb-16 lg:pe-10 lg:pt-12 lg:pb-60 xl:gap-y-10 xl:pe-14">
           <h2
             className="text-5xl/[1.15] font-medium tracking-tight text-pretty xl:text-7xl/[1.1]"
-            dangerouslySetInnerHTML={{ __html: heading || '' }}
+            dangerouslySetInnerHTML={{ __html: T.homePage.sectionHero.title || '' }}
           />
-          {description}
+          <>
+            <p className="max-w-xl text-base text-neutral-500 sm:text-xl dark:text-neutral-400">
+              {T.homePage.sectionHero.slogan}
+            </p>
+          </>
           <div className="absolute start-0 bottom-4 hidden w-screen max-w-4xl lg:block xl:max-w-6xl">{searchForm}</div>
         </div>
 

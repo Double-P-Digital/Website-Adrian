@@ -1,3 +1,5 @@
+import ListingFilterTabs from "@/components/ListingFilterTabs";
+
 export const en = {
   common: {
     submit: 'Submit',
@@ -64,6 +66,15 @@ export const en = {
       Flights: 'Flights',
       'Flight description': 'Find the perfect flight',
     },
+  },
+  "ListingFilterTabs": {
+    "Price range": "Price range",
+    "All filters": "All filters",
+    "Filters": "Filters",
+    "Clear All": "Clear All",
+    "Apply filters": "Apply filters",
+    "Clear": "Clear",
+    "Apply": "Apply"
   },
   HeroSearchForm: {
     'Flying dates': 'Flying dates',
@@ -146,6 +157,9 @@ export const en = {
       'Go back': 'Go back',
       'Publish listing': 'Publish listing',
       Continue: 'Continue',
+    },
+    sectionGridCategoryBox:{
+      title: 'Choose a city',
     },
     page1: {
       pageTitle: 'Choosing listing categories',
@@ -243,6 +257,7 @@ export const en = {
         'Accompanying us, you have a trip full of experiences. With Chisfis, booking accommodation, resort villas, hotels',
       'Start your search': 'Start your search',
       button: 'Start your search',
+      slogan: 'With us, your trip is filled with amazing experiences.'
     },
   },
   accountPage: {
