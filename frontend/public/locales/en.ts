@@ -1,3 +1,4 @@
+import { Aside } from "@/components/aside/aside";
 import ListingFilterTabs from "@/components/ListingFilterTabs";
 
 export const en = {
@@ -67,14 +68,27 @@ export const en = {
       'Flight description': 'Find the perfect flight',
     },
   },
-  "ListingFilterTabs": {
+  ListingFilterTabs: {
     "Price range": "Price range",
+    "Beds": "Beds",
+    "Bedrooms": "Bedrooms",
+    "Bathrooms": "Bathrooms",
+    "Rooms & Beds": "Rooms & Beds",
     "All filters": "All filters",
     "Filters": "Filters",
     "Clear All": "Clear All",
     "Apply filters": "Apply filters",
     "Clear": "Clear",
     "Apply": "Apply"
+  },
+  Aside: {
+    'Where to?': 'Where to?',
+    'When': 'When',
+    'Who': 'Who',
+    'Add guests': 'Add guests',
+    'Add dates': 'Add dates',
+    Search: 'Search',
+    
   },
   HeroSearchForm: {
     'Flying dates': 'Flying dates',

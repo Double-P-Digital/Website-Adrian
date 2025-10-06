@@ -1,3 +1,5 @@
+import { Aside } from "@/components/aside/aside";
+
 export const ro = {
     common: {
         submit: 'Trimite',
@@ -65,14 +67,28 @@ export const ro = {
             'Flight description': 'Găsește zborul perfect',
         },
     },
-    "ListingFilterTabs": {
+    ListingFilterTabs: {
     "Price range": "Interval preț",
+    "Beds": "Paturi",
+    "Bedrooms": "Dormitoare",
+    "Bathrooms": "Băi",
+    "Rooms & Beds" : "Camere si paturi",
     "All filters": "Toate filtrele",
     "Filters": "Filtre",
     "Clear All": "Șterge tot",
     "Apply filters": "Aplică filtrele",
     "Clear": "Șterge",
     "Apply": "Aplică"
+  },
+  Aside: {
+    'Where to?': 'Unde?',
+    'When': 'Când',
+    'Who': 'Cine',
+    'Add guests': 'Adaugă oaspeți',
+    'Add dates': 'Adaugă date',
+    Search: 'Caută',
+
+
   },
     HeroSearchForm: {
         'Flying dates': 'Date zbor',
