@@ -401,7 +401,7 @@ const ListingFilterTabs = ({
                     'border-black! ring-1 ring-black ring-inset dark:border-neutral-200! dark:ring-neutral-200'
                 )}
               >
-                <span>{T.ListingFilterTabs[filterOption.label] || "ceva"}</span>
+                <span>{T.ListingFilterTabs[filterOption.label as keyof typeof T.ListingFilterTabs] || "ceva"}</span>
                 <ChevronDownIcon className="size-4" />
                 {checkedNumber ? (
                   <span className="absolute top-0 -right-0.5 flex size-5 items-center justify-center rounded-full bg-black text-[0.65rem] font-semibold text-white ring-2 ring-white dark:bg-neutral-200 dark:text-neutral-900 dark:ring-neutral-900">
