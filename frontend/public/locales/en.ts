@@ -37,6 +37,8 @@ export const en = {
     'Select Date': 'Select Date',
     Date: 'Date',
     Reviews: 'Reviews',
+    "Previous": 'Previous',
+    Next: 'Next'
   },
   Header: {
     'List your property': 'List your property',
@@ -80,6 +82,12 @@ export const en = {
     "Apply filters": "Apply filters",
     "Clear": "Clear",
     "Apply": "Apply"
+  },
+  ListingHeaderClient:{
+    "over": "Over",
+    "places": "places",
+    "in": "in",
+    "show_map": "Show map"
   },
   Aside: {
     'Where to?': 'Where to?',

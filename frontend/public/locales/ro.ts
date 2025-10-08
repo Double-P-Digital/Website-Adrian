@@ -36,6 +36,8 @@ export const ro = {
         'Select Date': 'Selectează data',
         Date: 'Data',
         Reviews: 'Recenzii',
+        'Previous': 'Inapoi',
+        Next: 'Inainte',
     },
     Header: {
         'List your property': 'Listează proprietatea ta',
@@ -80,7 +82,13 @@ export const ro = {
     "Clear": "Șterge",
     "Apply": "Aplică"
   },
-  Aside: {
+    ListingHeaderClient: {
+        "over": "Peste",
+        "places": "locuri",
+        "in": "în",
+        "show_map": "Vezi harta"
+    },
+    Aside: {
     'Where to?': 'Unde?',
     'When': 'Când',
     'Who': 'Cine',

@@ -2,7 +2,7 @@
 
 import NcInputNumber from '@/components/NcInputNumber'
 import { GuestsObject } from '@/type'
-import T from '@/utils/getT'
+import { useT } from '@/hooks/useT'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { UserPlusIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
@@ -41,6 +41,7 @@ export const GuestNumberField: FC<Props> = ({
   const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(2)
   const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(1)
   const [guestInfantsInputValue, setGuestInfantsInputValue] = useState(1)
+  const T = useT()
 
   const handleChangeData = (value: number, type: keyof GuestsObject) => {
     let newValue = {
@@ -76,7 +77,7 @@ export const GuestNumberField: FC<Props> = ({
 
             <div className="grow">
               <span className={clsx('block font-semibold', styles.mainText[fieldStyle])}>
-                {totalGuests || ''} {T['HeroSearchForm']['Guests']}
+                {T.HeroSearchForm.Guests}
               </span>
               <span className="mt-1 block text-sm leading-none font-light text-neutral-400">
                 {totalGuests ? T['HeroSearchForm']['Guests'] : T['HeroSearchForm']['Add guests']}

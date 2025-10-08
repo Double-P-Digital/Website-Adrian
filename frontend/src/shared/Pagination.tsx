@@ -1,8 +1,13 @@
+'use client'
+
 import { ArrowLeft02Icon, ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import type React from 'react'
 import { Button } from './Button'
+import { useT } from '@/hooks/useT'
+import {builders} from "prettier/doc";
+import label = builders.label;
 
 export function Pagination({
   'aria-label': ariaLabel = 'Page navigation',
@@ -15,19 +20,21 @@ export function Pagination({
 export function PaginationPrevious({
   href = null,
   className,
-  children = 'Previous',
+  children ,
 }: React.PropsWithChildren<{ href?: string | null; className?: string }>) {
+  const T = useT()
+  const label = T.common["Previous"]
   return (
     <span className={clsx(className, 'grow basis-0')}>
       <Button
         {...(href === null ? { disabled: true } : { href })}
         className="rounded-lg"
         plain
-        aria-label="Previous page"
+        aria-label={label}
       >
         <HugeiconsIcon icon={ArrowLeft02Icon} size={16} color="currentColor" strokeWidth={1.5} />
 
-        {children}
+        {children || label}
       </Button>
     </span>
   )
@@ -36,12 +43,14 @@ export function PaginationPrevious({
 export function PaginationNext({
   href = null,
   className,
-  children = 'Next',
+  children ,
 }: React.PropsWithChildren<{ href?: string | null; className?: string }>) {
+  const T = useT()
+  const label = T.common["Next"]
   return (
     <span className={clsx(className, 'flex grow basis-0 justify-end')}>
-      <Button {...(href === null ? { disabled: true } : { href })} className="rounded-lg" plain aria-label="Next page">
-        {children}
+      <Button {...(href === null ? { disabled: true } : { href })} className="rounded-lg" plain aria-label={T.common.Next }>
+        {children || label}
         <HugeiconsIcon icon={ArrowRight02Icon} size={16} color="currentColor" strokeWidth={1.5} />
       </Button>
     </span>

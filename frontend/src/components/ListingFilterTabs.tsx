@@ -267,6 +267,21 @@ const PriceRagePanel = ({ filterOption: { min, max, name } }: { filterOption: Pr
 
   return <PriceRangeSlider defaultValue={rangePrices} onChange={setRangePrices} min={min} max={max} />
 }
+
+// const PriceRagePanel = ({ filterOption: { min, max, name, label } }: { filterOption: PriceRangeFilter }) => {
+//   const [rangePrices, setRangePrices] = useState([min, max])
+//   const T = useT()
+//
+//   return (
+//       <div>
+//       <span className="mb-2 block font-medium">
+//         {T.ListingFilterTabs[label as keyof typeof T.ListingFilterTabs] || label}
+//       </span>
+//         <PriceRangeSlider defaultValue={rangePrices} onChange={setRangePrices} min={min} max={max} />
+//       </div>
+//   )
+// }
+
 const NumberSelectPanel = ({ filterOption: { name, options } }: { filterOption: SelectNumberFilter }) => {
   const T = useT()
   // @ts-ignore
@@ -337,7 +352,8 @@ const ListingFilterTabs = ({
                   {filterOptions.map((filterOption, index) =>
                     filterOption ? (
                       <div key={index} className="py-7">
-                        <h3 className="text-xl font-medium">{filterOption.label}</h3>
+                        <h3 className="text-xl font-medium">
+                          {T.ListingFilterTabs[filterOption.label as keyof typeof T.ListingFilterTabs] || filterOption.label}</h3>
                         <div className="relative mt-6">
                           {filterOption.tabUIType === 'checkbox' && (
                             <CheckboxPanel filterOption={filterOption as CheckboxFilter} />
@@ -389,6 +405,7 @@ const ListingFilterTabs = ({
           const checkedNumber =
             (filterOption as CheckboxFilter).options?.filter((option) => !!option.defaultChecked)?.length || 0
 
+          // @ts-ignore
           // @ts-ignore
           return (
             <Popover className="relative" key={index}>

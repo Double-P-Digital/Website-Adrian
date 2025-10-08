@@ -34,7 +34,7 @@ export const PriceRangeSlider = ({
     <div className={clsx('relative flex flex-col gap-y-6', className)}>
       <div className="flex flex-col gap-y-5">
         {/* {showTitle && <p className="font-medium">{T.ListingFilterTabs['Price range']}</p>} */}
-        {showTitle && <p className="font-medium">{name || T.ListingFilterTabs['Price range']}</p>}
+        {showTitle && <p className="font-medium">{ T.ListingFilterTabs['Price range']}</p>}
         <div className="px-2">
           <Slider
             range
