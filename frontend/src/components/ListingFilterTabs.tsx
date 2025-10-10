@@ -1,13 +1,13 @@
 'use client'
 
 import NcInputNumber from '@/components/NcInputNumber'
+import { useT } from '@/hooks/useT'
 import { Button } from '@/shared/Button'
 import ButtonClose from '@/shared/ButtonClose'
 import ButtonPrimary from '@/shared/ButtonPrimary'
 import ButtonThird from '@/shared/ButtonThird'
 import { Checkbox, CheckboxField, CheckboxGroup } from '@/shared/Checkbox'
 import { Description, Fieldset, Label } from '@/shared/fieldset'
-import T from '@/utils/getT'
 import {
   CloseButton,
   Dialog,
@@ -24,7 +24,7 @@ import { FilterVerticalIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import Form from 'next/form'
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 import { PriceRangeSlider } from './PriceRangeSlider'
 
 type CheckboxFilter = {
@@ -53,6 +53,7 @@ type SelectNumberFilter = {
     max: number
   }[]
 }
+
 
 const demo_filters_options = [
   {
@@ -266,11 +267,28 @@ const PriceRagePanel = ({ filterOption: { min, max, name } }: { filterOption: Pr
 
   return <PriceRangeSlider defaultValue={rangePrices} onChange={setRangePrices} min={min} max={max} />
 }
+
+// const PriceRagePanel = ({ filterOption: { min, max, name, label } }: { filterOption: PriceRangeFilter }) => {
+//   const [rangePrices, setRangePrices] = useState([min, max])
+//   const T = useT()
+//
+//   return (
+//       <div>
+//       <span className="mb-2 block font-medium">
+//         {T.ListingFilterTabs[label as keyof typeof T.ListingFilterTabs] || label}
+//       </span>
+//         <PriceRangeSlider defaultValue={rangePrices} onChange={setRangePrices} min={min} max={max} />
+//       </div>
+//   )
+// }
+
 const NumberSelectPanel = ({ filterOption: { name, options } }: { filterOption: SelectNumberFilter }) => {
+  const T = useT()
+  // @ts-ignore
   return (
     <div className="relative flex flex-col gap-y-5">
       {options.map((option) => (
-        <NcInputNumber key={option.name} inputName={option.name} label={option.name} max={option.max} />
+        <NcInputNumber key={option.name} inputName={option.name} label={T.ListingFilterTabs[option.name as keyof typeof T.ListingFilterTabs]} max={option.max} />
       ))}
     </div>
   )
@@ -281,6 +299,7 @@ const ListingFilterTabs = ({
 }: {
   filterOptions?: Partial<typeof demo_filters_options>
 }) => {
+  const T = useT()
   const [showAllFilter, setShowAllFilter] = useState(false)
 
   const handleFormSubmit = async (formData: FormData) => {
@@ -333,7 +352,8 @@ const ListingFilterTabs = ({
                   {filterOptions.map((filterOption, index) =>
                     filterOption ? (
                       <div key={index} className="py-7">
-                        <h3 className="text-xl font-medium">{filterOption.label}</h3>
+                        <h3 className="text-xl font-medium">
+                          {T.ListingFilterTabs[filterOption.label as keyof typeof T.ListingFilterTabs] || filterOption.label}</h3>
                         <div className="relative mt-6">
                           {filterOption.tabUIType === 'checkbox' && (
                             <CheckboxPanel filterOption={filterOption as CheckboxFilter} />
@@ -377,13 +397,16 @@ const ListingFilterTabs = ({
         <div className="h-auto w-px bg-neutral-200 dark:bg-neutral-700"></div>
         {filterOptions.map((filterOption, index) => {
           // only show 3 filters in the tab. Other filters will be shown in the All-filters-popover
-          if (index > 2 || !filterOption) {
+          console.log(filterOption)
+          if (index > 1 || !filterOption) {
             return null
           }
 
           const checkedNumber =
             (filterOption as CheckboxFilter).options?.filter((option) => !!option.defaultChecked)?.length || 0
 
+          // @ts-ignore
+          // @ts-ignore
           return (
             <Popover className="relative" key={index}>
               <PopoverButton
@@ -395,7 +418,7 @@ const ListingFilterTabs = ({
                     'border-black! ring-1 ring-black ring-inset dark:border-neutral-200! dark:ring-neutral-200'
                 )}
               >
-                <span>{filterOption.label}</span>
+                <span>{T.ListingFilterTabs[filterOption.label as keyof typeof T.ListingFilterTabs] || "ceva"}</span>
                 <ChevronDownIcon className="size-4" />
                 {checkedNumber ? (
                   <span className="absolute top-0 -right-0.5 flex size-5 items-center justify-center rounded-full bg-black text-[0.65rem] font-semibold text-white ring-2 ring-white dark:bg-neutral-200 dark:text-neutral-900 dark:ring-neutral-900">

@@ -1,7 +1,7 @@
 'use client'
 
+import { useLanguage } from '@/context/LanguageContext' // ✅ Adjust path if needed
 import { getCurrencies, getLanguages } from '@/data/navigation'
-import { Link } from '@/shared/link'
 import {
   CloseButton,
   Popover,
@@ -24,9 +24,7 @@ const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getC
     <div className="grid gap-6 lg:grid-cols-2">
       {currencies.map((item, index) => (
         <CloseButton
-          as={Link}
           key={index}
-          href={item.href}
           className={clsx(
             '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden dark:hover:bg-neutral-700',
             item.active ? 'bg-neutral-100 dark:bg-neutral-700' : 'opacity-80'
@@ -41,23 +39,24 @@ const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getC
 }
 
 const Languages = ({ languages }: { languages: Awaited<ReturnType<typeof getLanguages>> }) => {
+  const { language, setLanguage } = useLanguage()
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {languages.map((item, index) => (
-        <CloseButton
-          as={Link}
-          href={item.href}
+        <button
           key={index}
+          onClick={() => setLanguage(item.id as 'en' | 'ro')} // ✅ Assuming code is 'en' or 'ro'
           className={clsx(
-            '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden dark:hover:bg-neutral-700',
-            item.active ? 'bg-neutral-100 dark:bg-neutral-700' : 'opacity-80'
+            '-m-2.5 flex w-full items-center rounded-lg p-2.5 text-left transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden dark:hover:bg-neutral-700',
+            item.id === language ? 'bg-neutral-100 dark:bg-neutral-700' : 'opacity-80'
           )}
         >
           <div>
             <p className="text-sm font-medium">{item.name}</p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">{item.description}</p>
           </div>
-        </CloseButton>
+        </button>
       ))}
     </div>
   )
@@ -66,7 +65,6 @@ const Languages = ({ languages }: { languages: Awaited<ReturnType<typeof getLang
 interface Props {
   panelAnchor?: PopoverPanelProps['anchor']
   panelClassName?: PopoverPanelProps['className']
-
   className?: string
   currencies: Awaited<ReturnType<typeof getCurrencies>>
   languages: Awaited<ReturnType<typeof getLanguages>>
@@ -130,4 +128,5 @@ const CurrLangDropdown: FC<Props> = ({
     </Popover>
   )
 }
+
 export default CurrLangDropdown

@@ -1,8 +1,8 @@
 'use client'
 
 import NcInputNumber from '@/components/NcInputNumber'
+import { useT } from '@/hooks/useT'
 import { GuestsObject } from '@/type'
-import T from '@/utils/getT'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { UserPlusIcon } from '@heroicons/react/24/outline'
 import { FC, useState } from 'react'
@@ -15,6 +15,8 @@ const GuestsInputPopover: FC<Props> = ({ className = 'flex-1' }) => {
   const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(2)
   const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(1)
   const [guestInfantsInputValue, setGuestInfantsInputValue] = useState(1)
+
+  const T = useT()
 
   const handleChangeData = (value: number, type: keyof GuestsObject) => {
     let newValue = {

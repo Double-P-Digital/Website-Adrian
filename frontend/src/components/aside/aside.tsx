@@ -1,12 +1,12 @@
 'use client'
 
+import { useT } from '@/hooks/useT'
 import Logo from '@/shared/Logo'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import { createContext, useContext, useState, type ReactNode } from 'react'
-
 /**
  * Drawer component that opens on user click.
  * @param heading - string. Shown at the top of the drawer.
@@ -34,7 +34,7 @@ export function Aside({
 }) {
   const { type: activeType, close } = useAside()
   const open = type === activeType
-
+  const T = useT()
   const onClose = close
 
   const hasHeading = !!heading || logoOnHeading
@@ -69,7 +69,7 @@ export function Aside({
                       <>
                         {!!heading && !logoOnHeading && (
                           <DialogTitle>
-                            <span className="text-2xl font-medium">{heading}</span>
+                            <span className="text-2xl font-medium">{T.Aside['Where to?']}</span>
                           </DialogTitle>
                         )}
                         {logoOnHeading && <Logo />}

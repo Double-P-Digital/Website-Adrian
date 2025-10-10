@@ -1,5 +1,6 @@
 'use client'
 
+import { useT } from '@/hooks/useT'
 import clsx from 'clsx'
 import Form from 'next/form'
 import { useRouter } from 'next/navigation'
@@ -13,6 +14,7 @@ interface Props {
 
 export const StaySearchForm = ({ className, formStyle = 'default' }: Props) => {
   const router = useRouter()
+  const T = useT()
 
   // Prefetch the stay categories page to improve performance
   useEffect(() => {
@@ -33,6 +35,7 @@ export const StaySearchForm = ({ className, formStyle = 'default' }: Props) => {
     router.push(url)
   }
 
+  // @ts-ignore
   return (
     <Form
       className={clsx(
@@ -43,20 +46,42 @@ export const StaySearchForm = ({ className, formStyle = 'default' }: Props) => {
       )}
       action={handleFormSubmit}
     >
-      <LocationInputField className="hero-search-form__field-after flex-5/12" fieldStyle={formStyle} />
+
+      <LocationInputField
+          className="hero-search-form__field-after flex-5/12"
+          fieldStyle={formStyle}
+          // label={T['HeroSearchForm']['Where to?']}
+      />
       <VerticalDividerLine />
       <DateRangeField
-        className="hero-search-form__field-before hero-search-form__field-after flex-4/12"
-        fieldStyle={formStyle}
+          className="hero-search-form__field-before hero-search-form__field-after flex-4/12"
+          fieldStyle={formStyle}
+          // label={T['HeroSearchForm']['When?']}
       />
       <VerticalDividerLine />
       <GuestNumberField
-        className="hero-search-form__field-before flex-4/12"
-        clearDataButtonClassName={clsx(formStyle === 'small' && 'sm:end-18', formStyle === 'default' && 'sm:end-22')}
-        fieldStyle={formStyle}
+          className="hero-search-form__field-before flex-4/12"
+          clearDataButtonClassName={clsx(formStyle === 'small' && 'sm:end-18', formStyle === 'default' && 'sm:end-22')}
+          fieldStyle={formStyle}
+          // label={T['HeroSearchForm']['Guests']}
       />
+      <ButtonSubmit fieldStyle={formStyle} className="z-10">
 
-      <ButtonSubmit fieldStyle={formStyle} className="z-10" />
+      </ButtonSubmit>
+      {/*<LocationInputField className="hero-search-form__field-after flex-5/12" fieldStyle={formStyle} />*/}
+      {/*<VerticalDividerLine />*/}
+      {/*<DateRangeField*/}
+      {/*  className="hero-search-form__field-before hero-search-form__field-after flex-4/12"*/}
+      {/*  fieldStyle={formStyle}*/}
+      {/*/>*/}
+      {/*<VerticalDividerLine />*/}
+      {/*<GuestNumberField*/}
+      {/*  className="hero-search-form__field-before flex-4/12"*/}
+      {/*  clearDataButtonClassName={clsx(formStyle === 'small' && 'sm:end-18', formStyle === 'default' && 'sm:end-22')}*/}
+      {/*  fieldStyle={formStyle}*/}
+      {/*/>*/}
+
+      {/*<ButtonSubmit fieldStyle={formStyle} className="z-10" />*/}
     </Form>
   )
 }

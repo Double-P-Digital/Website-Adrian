@@ -307,35 +307,35 @@ export type TStayListing = Awaited<ReturnType<typeof getStayListings>>[number]
 // get Filter Options
 export async function getStayListingFilterOptions() {
   return [
-    {
-      label: 'Property type',
-      name: 'propertyType',
-      tabUIType: 'checkbox',
-      options: [
-        {
-          name: 'Entire place',
-          value: 'entire_place',
-          description: 'Have a place to yourself',
-          defaultChecked: true,
-        },
-        {
-          name: 'Private room',
-          value: 'private_room',
-          description: 'Have your own room and share some common spaces',
-          defaultChecked: true,
-        },
-        {
-          name: 'Hotel room',
-          value: 'hotel_room',
-          description: 'Have a private or shared room in a boutique hotel, hostel, and more',
-        },
-        {
-          name: 'Shared room',
-          value: 'shared_room',
-          description: 'Stay in a shared space, like a common room',
-        },
-      ],
-    },
+    // {
+    //   label: 'Property type',
+    //   name: 'propertyType',
+    //   tabUIType: 'checkbox',
+    //   options: [
+    //     {
+    //       name: 'Entire place',
+    //       value: 'entire_place',
+    //       description: 'Have a place to yourself',
+    //       defaultChecked: true,
+    //     },
+    //     {
+    //       name: 'Private room',
+    //       value: 'private_room',
+    //       description: 'Have your own room and share some common spaces',
+    //       defaultChecked: true,
+    //     },
+    //     {
+    //       name: 'Hotel room',
+    //       value: 'hotel_room',
+    //       description: 'Have a private or shared room in a boutique hotel, hostel, and more',
+    //     },
+    //     {
+    //       name: 'Shared room',
+    //       value: 'shared_room',
+    //       description: 'Stay in a shared space, like a common room',
+    //     },
+    //   ],
+    // },
     {
       label: 'Price range',
       name: 'priceRange',

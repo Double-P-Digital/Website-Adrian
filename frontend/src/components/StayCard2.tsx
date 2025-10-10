@@ -1,10 +1,11 @@
+'use client'
 import BtnLikeIcon from '@/components/BtnLikeIcon'
 import GallerySlider from '@/components/GallerySlider'
 import SaleOffBadge from '@/components/SaleOffBadge'
 import StartRating from '@/components/StartRating'
 import { TStayListing } from '@/data/listings'
+import { useT } from '@/hooks/useT'
 import { Badge } from '@/shared/Badge'
-import T from '@/utils/getT'
 import { Location06Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
@@ -18,6 +19,8 @@ interface StayCard2Props {
 }
 
 const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data }) => {
+  const T = useT()
+
   const {
     galleryImgs,
     listingCategory,

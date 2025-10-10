@@ -16,11 +16,12 @@ import {
 } from '@/components/Icons'
 import { getListingReviews } from '@/data/data'
 import { getStayListingByHandle } from '@/data/listings'
+import ReserveButton from "./ReserveButton";
+
 import ButtonPrimary from '@/shared/ButtonPrimary'
 import ButtonSecondary from '@/shared/ButtonSecondary'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Divider } from '@/shared/divider'
-import T from '@/utils/getT'
 import { UsersIcon } from '@heroicons/react/24/outline'
 import { Metadata } from 'next'
 import Form from 'next/form'
@@ -54,6 +55,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 }
 
 const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
+
   const { handle } = await params
 
   const listing = await getStayListingByHandle(handle)
@@ -260,10 +262,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           <DescriptionDetails className="font-semibold sm:text-right">$57.00</DescriptionDetails>
         </DescriptionList>
 
-        {/* SUBMIT */}
-        <ButtonPrimary form="booking-form" type="submit" className="w-full">
-          {T['common']['Reserve']}
-        </ButtonPrimary>
+        <ReserveButton/>
       </div>
     )
   }

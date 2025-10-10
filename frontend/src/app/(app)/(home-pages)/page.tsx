@@ -27,19 +27,9 @@ async function Page() {
           image={heroImage}
           imageAlt="hero"
           searchForm={<HeroSearchForm initTab="Stays" />}
-          description={
-            <>
-              <p className="max-w-xl text-base text-neutral-500 sm:text-xl dark:text-neutral-400">
-                With us, your trip is filled with amazing experiences.
-              </p>
-            </>
-          }
         />
 
         <div className="text-center">
-          <h2 className="text-2xl font-semibold sm:text-3xl lg:text-4xl">
-            Let&apos;s go on an adventure
-          </h2>
           <div className="mt-12">
             <SectionGridCategoryBox categories={categories.slice(0, 3)} />
           </div>

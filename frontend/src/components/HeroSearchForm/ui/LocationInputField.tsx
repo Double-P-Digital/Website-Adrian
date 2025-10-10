@@ -2,7 +2,7 @@
 
 import { useInteractOutside } from '@/hooks/useInteractOutside'
 import { Divider } from '@/shared/divider'
-import T from '@/utils/getT'
+import { useT } from '@/hooks/useT'
 import * as Headless from '@headlessui/react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import {
@@ -106,14 +106,15 @@ interface Props {
 }
 
 export const LocationInputField: FC<Props> = ({
-  placeholder = T['HeroSearchForm']['Location'],
-  description = T['HeroSearchForm']['Where are you going?'],
+  placeholder = "Where to?",
+  description = "Where are you going?",
   className = 'flex-1',
   inputName = 'location',
   initSuggests = demoInitSuggests,
   searchingSuggests = demoSearchingSuggests,
   fieldStyle = 'default',
 }) => {
+  const T = useT();
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [showPopover, setShowPopover] = useState(false)
@@ -194,14 +195,14 @@ export const LocationInputField: FC<Props> = ({
               ref={inputRef}
               aria-label="Search for a location"
               className={clsx(styles.input.base, styles.input[fieldStyle])}
-              name={inputName}
-              placeholder={placeholder}
+              name={T.Aside["Where to?"]}
+              placeholder={T.Aside["Where to?"]}
               autoComplete="off"
               displayValue={(item?: Suggest) => item?.name || ''}
               onChange={handleInputChange}
             />
             <div className="mt-0.5 text-start text-sm font-light text-neutral-400">
-              <span className="line-clamp-1">{description}</span>
+              <span className="line-clamp-1">{T.Aside["Where to?"]}</span>
             </div>
 
             <ClearDataButton

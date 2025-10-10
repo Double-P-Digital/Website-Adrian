@@ -1,3 +1,4 @@
+import { LanguageProvider } from '@/context/LanguageContext'
 import '@/styles/tailwind.css'
 import { Metadata } from 'next'
 import { Poppins } from 'next/font/google'
@@ -23,11 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={poppins.className}>
       <body className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
-        <ThemeProvider>
-          <div>
-            {children}
-          </div>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <div>{children}</div>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   )

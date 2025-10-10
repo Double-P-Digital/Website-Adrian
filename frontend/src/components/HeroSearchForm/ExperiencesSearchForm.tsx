@@ -1,6 +1,6 @@
 'use client'
 
-import T from '@/utils/getT'
+import { useT } from '@/hooks/useT'
 import clsx from 'clsx'
 import Form from 'next/form'
 import { useRouter } from 'next/navigation'
@@ -14,6 +14,7 @@ interface Props {
 
 export const ExperiencesSearchForm = ({ className, formStyle = 'default' }: Props) => {
   const router = useRouter()
+  const T = useT()
 
   // Prefetch the stay categories page to improve performance
   useEffect(() => {

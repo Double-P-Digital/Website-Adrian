@@ -2,7 +2,7 @@
 
 import DatePickerCustomDay from '@/components/DatePickerCustomDay'
 import DatePickerCustomHeaderTwoMonth from '@/components/DatePickerCustomHeaderTwoMonth'
-import T from '@/utils/getT'
+import { useT } from '@/hooks/useT'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { CalendarIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
@@ -41,12 +41,13 @@ export const DateRangeField: FC<Props> = ({
   className = 'flex-1',
   fieldStyle = 'default',
   clearDataButtonClassName,
-  description = `${T['HeroSearchForm']['CheckIn']} - ${T['HeroSearchForm']['CheckOut']}`,
+  description = `check-in - check-out`,
   panelClassName,
   isOnlySingleDate = false,
 }) => {
   const [startDate, setStartDate] = useState<Date | null>(new Date('2025/09/08'))
   const [endDate, setEndDate] = useState<Date | null>(new Date('2025/09/19'))
+  const T = useT();
 
   return (
     <>
@@ -75,7 +76,7 @@ export const DateRangeField: FC<Props> = ({
                     : ''}
                 </span>
                 <span className="mt-1 block text-sm leading-none font-light text-neutral-400">
-                  {description || T['HeroSearchForm']['Add dates']}
+                  {T.HeroSearchForm.CheckIn +" - "+  T.HeroSearchForm.CheckOut|| T['HeroSearchForm']['Add dates']}
                 </span>
               </div>
             </PopoverButton>
