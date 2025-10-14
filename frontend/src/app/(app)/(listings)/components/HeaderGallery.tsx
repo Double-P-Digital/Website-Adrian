@@ -58,9 +58,11 @@ const EmblaCarousel = ({ images, option }: { images: string[]; option: EmblaOpti
               <Image
                 alt="Slide image"
                 src={image}
-                width={1280}
-                height={853}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
+                width={2560}
+                height={1707}
+                quality={90}
+                priority={index === 0}
+                sizes="100vw"
               />
             </div>
           ))}

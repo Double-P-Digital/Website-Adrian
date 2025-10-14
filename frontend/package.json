@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.14.3",
+    "@cloudinary/url-gen": "^1.22.0",
     "@headlessui/react": "^2.2.2",
     "@heroicons/react": "^2.2.0",
     "@hugeicons/core-free-icons": "^1.0.14",
@@ -31,6 +33,7 @@
     "framer-motion": "^12.10.4",
     "lodash": "^4.17.21",
     "next": "15.3.2",
+    "next-cloudinary": "^6.16.0",
     "rc-slider": "^11.1.8",
     "react": "19.1.0",
     "react-datepicker": "^8.4.0",

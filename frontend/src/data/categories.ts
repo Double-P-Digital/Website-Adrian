@@ -1,7 +1,29 @@
 import stayCategoryCoverImage from '@/images/hero-right-2.png'
-import clujnapocaImg from '@/images/cities/Cluj-Napoca.jpg'
-import baiamareImg from '@/images/cities/Baia-Mare.webp'
-import oradeaImg from '@/images/cities/Oradea.jpg'
+import { Cloudinary } from '@cloudinary/url-gen';
+import { fill } from '@cloudinary/url-gen/actions/resize';
+import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
+
+// Cloudinary configuration
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUD_NAME || 'dcbzjspdt'
+
+// Initialize Cloudinary instance
+const cld = new Cloudinary({ 
+  cloud: { 
+    cloudName: CLOUDINARY_CLOUD_NAME 
+  } 
+});
+
+// Helper function to generate Cloudinary URL strings
+function getCloudinaryUrl(publicId: string, width = 500, height = 500): string {
+  const img = cld
+    .image(publicId)
+    .format('auto')
+    .quality('auto')
+    .resize(fill().width(width).height(height).gravity(autoGravity()));
+  
+  // Return URL as string
+  return img.toURL();
+}
 
 export async function getStayCategories() {
   return [
@@ -11,8 +33,8 @@ export async function getStayCategories() {
       region: 'Romania',
       handle: 'cluj-napoca',
       href: '/stay-categories/cluj-napoca',
-      count: 3,
-      thumbnail: clujnapocaImg.src,
+      count: 9,
+      thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Cluj-Napoca.jpg',
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
@@ -26,8 +48,8 @@ export async function getStayCategories() {
       region: 'Romania',
       handle: 'baia-mare',
       href: '/stay-categories/baia-mare',
-      count: 3,
-      thumbnail: baiamareImg.src,
+      count: 13,
+      thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/baia-mare.webp',
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
@@ -42,7 +64,7 @@ export async function getStayCategories() {
       handle: 'oradea',
       href: '/stay-categories/oradea',
       count: 2,
-      thumbnail: oradeaImg.src,
+      thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Oradea.jpg',
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
@@ -52,8 +74,8 @@ export async function getStayCategories() {
     }
   ]
 }
+
 export async function getStayCategoryByHandle(handle?: string) {
-  // lower case handle
   handle = handle?.toLowerCase()
 
   if (!handle || handle === 'all') {
@@ -65,8 +87,7 @@ export async function getStayCategoryByHandle(handle?: string) {
       region: 'Worldwide',
       count: 144000,
       description: 'Explore all stays around the world',
-      thumbnail:
-        'https://images.pexels.com/photos/64271/queen-of-liberty-statue-of-liberty-new-york-liberty-statue-64271.jpeg',
+      thumbnail: getCloudinaryUrl('cld-sample-5', 800, 600),
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
@@ -75,7 +96,6 @@ export async function getStayCategoryByHandle(handle?: string) {
     }
   }
 
-  // get all categories
   const categories = await getStayCategories()
   return categories.find((category) => category.handle === handle)
 }
