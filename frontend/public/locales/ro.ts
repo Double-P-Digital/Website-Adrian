@@ -39,7 +39,21 @@ export const ro = {
         Reviews: 'Recenzii',
         'Previous': 'Inapoi',
         Next: 'Inainte',
-        "properties": "proprietăți"
+        "properties": "proprietăți",
+        "guests": "oaspeți",
+        "guest": "oaspeți",
+        "rooms": "camere",
+    },
+    Booking:{
+        '/night': '/noapte',
+        'Total': 'Total',
+        'Your booking': 'Rezervarea ta',
+        'Reserve and pay': 'Rezervă și plătește',
+        'Service charge': 'Taxă de serviciu',
+        'Fee': 'Taxă',
+        'Tax': 'Impozit',
+        'Your trip': 'Călătoria ta',
+        'Click on the pencil icon to change your trip details.': 'Faceți clic pe creion pentru a schimba detaliile călătoriei.',
     },
     Header: {
         'List your property': 'Listează proprietatea ta',

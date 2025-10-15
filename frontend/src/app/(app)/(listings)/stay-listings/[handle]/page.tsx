@@ -181,7 +181,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           {roomRates.map((item) => (
             <Fragment key={item.name}>
               <DescriptionTerm>{item.title}</DescriptionTerm>
-              <DescriptionDetails>{item.price}</DescriptionDetails>
+              <DescriptionDetails></DescriptionDetails>
             </Fragment>
           ))}
         </DescriptionList>
@@ -238,9 +238,9 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
         <div className="flex items-end text-2xl font-semibold sm:text-3xl">
           {/* <span className="text-neutral-300 line-through">$350</span> */}
           <SidebarPriceAndFormWrapper price={price} />
-          <div className="pb-1">
+          {/* <div className="pb-1">
             <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">/night</span>
-          </div>
+          </div> */}
         </div>
 
         {/* FORM */}

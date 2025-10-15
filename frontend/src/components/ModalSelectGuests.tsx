@@ -1,9 +1,9 @@
 'use client'
 
+import { useT } from '@/hooks/useT'
 import { Button } from '@/shared/Button'
 import ButtonClose from '@/shared/ButtonClose'
 import ButtonPrimary from '@/shared/ButtonPrimary'
-import T from '@/utils/getT'
 import { CloseButton, Dialog, DialogPanel } from '@headlessui/react'
 import React, { FC, useState } from 'react'
 import GuestsInput from './HeroSearchFormMobile/GuestsInput'
@@ -20,6 +20,7 @@ const ModalSelectGuests: FC<Props> = ({ triggerButton, onChangeGuests }) => {
     guestChildren: 1,
     guestInfants: 1,
   })
+  const T = useT()
 
   function closeModal() {
     setShowModal(false)
