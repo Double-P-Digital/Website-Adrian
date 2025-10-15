@@ -54,6 +54,7 @@ export const ro = {
         'Tax': 'Impozit',
         'Your trip': 'Călătoria ta',
         'Click on the pencil icon to change your trip details.': 'Faceți clic pe creion pentru a schimba detaliile călătoriei.',
+        'per_night_x_nights': '{price} {currency} x {nights} nopți',
     },
     PayWith:{
         'Credit card': 'Card de credit',

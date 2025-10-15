@@ -54,6 +54,7 @@ export const en = {
       'Tax': 'Tax',
       'Your trip': 'Your trip',
       'Click on the pencil icon to change your trip details.': 'Click on the pencil icon to change your trip details.',
+       'per_night_x_nights': '{price} {currency} x {nights} night(s)'
   },
   PayWith: {
     'Pay with': 'Pay with',

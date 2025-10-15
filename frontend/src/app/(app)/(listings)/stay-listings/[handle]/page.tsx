@@ -83,7 +83,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     beds,
   } = listing
   const reviews = (await getListingReviews(handle)).slice(0, 3) // Fetching only the first 3 reviews for display
-
+  const numericPrice = Number(listing.price.replace(/[^0-9.-]+/g, ''))
   // Server action to handle form submission
   const handleSubmitForm = async (formData: FormData) => {
     'use server'
@@ -91,7 +91,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     // Handle form submission logic here
     console.log('Form submitted with data:', Object.fromEntries(formData.entries()))
     // For example, you can redirect to a checkout page or process the booking
-    redirect('/checkout')
+    //redirect('/checkout')
   }
   //
 
@@ -265,7 +265,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           </DescriptionDetails>
         </DescriptionList>
 
-        <ReserveButton />
+        <ReserveButton price={Number(numericPrice)} />
       </div>
     )
   }
