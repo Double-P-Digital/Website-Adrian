@@ -1,9 +1,9 @@
 'use client'
 
-import { useLanguage } from '@/context/LanguageContext' // ✅ Adjust path if needed
+import { useCurrency } from '@/context/CurrencyContext'
+import { useLanguage } from '@/context/LanguageContext'
 import { getCurrencies, getLanguages } from '@/data/navigation'
 import {
-  CloseButton,
   Popover,
   PopoverButton,
   PopoverPanel,
@@ -19,20 +19,45 @@ import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { FC } from 'react'
 
-const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getCurrencies>> }) => {
+// const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getCurrencies>> }) => {
+//   return (
+//     <div className="grid gap-6 lg:grid-cols-2">
+//       {currencies.map((item, index) => (
+//         <CloseButton
+//           key={index}
+//           className={clsx(
+//             '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden dark:hover:bg-neutral-700',
+//             item.active ? 'bg-neutral-100 dark:bg-neutral-700' : 'opacity-80'
+//           )}
+//         >
+//           <div dangerouslySetInnerHTML={{ __html: item.icon }} />
+//           <p className="ms-2 text-sm font-medium">{item.name}</p>
+//         </CloseButton>
+//       ))}
+//     </div>
+//   )
+// }
+const Currencies = () => {
+  const { currency, setCurrency } = useCurrency()
+  const currencies = [
+    { id: 'RON', name: 'RON (Lei)' },
+    { id: 'EUR', name: 'EUR (Euro)' },
+  ]
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {currencies.map((item, index) => (
-        <CloseButton
+        <button
           key={index}
+          onClick={() => setCurrency(item.id as 'RON' | 'EUR')}
           className={clsx(
-            '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden dark:hover:bg-neutral-700',
-            item.active ? 'bg-neutral-100 dark:bg-neutral-700' : 'opacity-80'
+            '-m-2.5 flex w-full items-center rounded-lg p-2.5 text-left transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden dark:hover:bg-neutral-700',
+            item.id === currency ? 'bg-neutral-100 dark:bg-neutral-700' : 'opacity-80'
           )}
         >
-          <div dangerouslySetInnerHTML={{ __html: item.icon }} />
-          <p className="ms-2 text-sm font-medium">{item.name}</p>
-        </CloseButton>
+          <div>
+            <p className="text-sm font-medium">{item.name}</p>
+          </div>
+        </button>
       ))}
     </div>
   )
@@ -46,7 +71,7 @@ const Languages = ({ languages }: { languages: Awaited<ReturnType<typeof getLang
       {languages.map((item, index) => (
         <button
           key={index}
-          onClick={() => setLanguage(item.id as 'en' | 'ro')} // ✅ Assuming code is 'en' or 'ro'
+          onClick={() => setLanguage(item.id as 'en' | 'ro')}
           className={clsx(
             '-m-2.5 flex w-full items-center rounded-lg p-2.5 text-left transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden dark:hover:bg-neutral-700',
             item.id === language ? 'bg-neutral-100 dark:bg-neutral-700' : 'opacity-80'
@@ -120,7 +145,7 @@ const CurrLangDropdown: FC<Props> = ({
               <Languages languages={languages} />
             </TabPanel>
             <TabPanel className="rounded-xl p-3 focus:ring-0 focus:outline-hidden">
-              <Currencies currencies={currencies} />
+              <Currencies />
             </TabPanel>
           </TabPanels>
         </TabGroup>

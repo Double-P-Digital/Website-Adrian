@@ -33,6 +33,7 @@ import SectionDateRange from '../../components/SectionDateRange'
 import SectionHeader from '../../components/SectionHeader'
 import { SectionHeading, SectionSubheading } from '../../components/SectionHeading'
 import SectionHost from '../../components/SectionHost'
+import SidebarPriceAndFormWrapper from './SidebarPriceAndFormWrapper'
 
 import SectionMap from '../../components/SectionMap'
 
@@ -235,8 +236,8 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
       <div className="listingSection__wrap sm:shadow-xl">
         {/* PRICE */}
         <div className="flex items-end text-2xl font-semibold sm:text-3xl">
-          <span className="text-neutral-300 line-through">$350</span>
-          <span className="mx-2">{price}</span>
+          {/* <span className="text-neutral-300 line-through">$350</span> */}
+          <SidebarPriceAndFormWrapper price={price} />
           <div className="pb-1">
             <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">/night</span>
           </div>
@@ -255,9 +256,13 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
 
         <DescriptionList>
           <DescriptionTerm>$19.00 x 3 day</DescriptionTerm>
-          <DescriptionDetails className="sm:text-right">$57.00</DescriptionDetails>
+          <DescriptionDetails className="sm:text-right">
+            <SidebarPriceAndFormWrapper price={price} />
+          </DescriptionDetails>
           <DescriptionTerm className="font-semibold text-neutral-900">Total</DescriptionTerm>
-          <DescriptionDetails className="font-semibold sm:text-right">$57.00</DescriptionDetails>
+          <DescriptionDetails className="font-semibold sm:text-right">
+            <SidebarPriceAndFormWrapper price={price} />
+          </DescriptionDetails>
         </DescriptionList>
 
         <ReserveButton />

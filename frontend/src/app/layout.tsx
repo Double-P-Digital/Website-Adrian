@@ -1,3 +1,4 @@
+import { CurrencyProvider } from '@/context/CurrencyContext'
 import { LanguageProvider } from '@/context/LanguageContext'
 import '@/styles/tailwind.css'
 import { Metadata } from 'next'
@@ -25,9 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={poppins.className}>
       <body className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
         <LanguageProvider>
-          <ThemeProvider>
-            <div>{children}</div>
-          </ThemeProvider>
+          <CurrencyProvider>
+            <ThemeProvider>
+              <div>{children}</div>
+            </ThemeProvider>
+          </CurrencyProvider>
         </LanguageProvider>
       </body>
     </html>
