@@ -1,19 +1,21 @@
 'use client'
 
+import { useT } from '@/hooks/useT'
 import { Description, Field, Label } from '@/shared/fieldset'
 import Input from '@/shared/Input'
 import Textarea from '@/shared/Textarea'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
-import { MasterCardIcon, PaypalIcon } from '@hugeicons/core-free-icons'
+import { MasterCardIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import React from 'react'
 
 const PayWith = () => {
-  const [paymentMethod, setPaymentMethod] = React.useState('paypal')
+  const T = useT()
+  const [paymentMethod, setPaymentMethod] = React.useState('creditCard')
 
   return (
     <div className="pt-5">
-      <h3 className="text-2xl font-semibold">Pay with</h3>
+      <h3 className="text-2xl font-semibold">{T['PayWith']['Pay with']}</h3>
       <div className="my-5 w-14 border-b border-neutral-200 dark:border-neutral-700"></div>
 
       <TabGroup
@@ -23,13 +25,13 @@ const PayWith = () => {
         }}
       >
         <TabList className="my-5 flex gap-1 text-sm">
-          <Tab className="flex items-center gap-x-2 rounded-full px-4 py-2.5 leading-none font-medium data-hover:bg-black/5 data-selected:bg-neutral-900 data-selected:text-white sm:px-6 dark:data-selected:bg-neutral-100 dark:data-selected:text-neutral-900">
+          {/* <Tab className="flex items-center gap-x-2 rounded-full px-4 py-2.5 leading-none font-medium data-hover:bg-black/5 data-selected:bg-neutral-900 data-selected:text-white sm:px-6 dark:data-selected:bg-neutral-100 dark:data-selected:text-neutral-900">
             Paypal
             <HugeiconsIcon icon={PaypalIcon} size={20} strokeWidth={1.5} />
-          </Tab>
+          </Tab> */}
           <Tab className="flex items-center gap-x-2 rounded-full px-4 py-2.5 leading-none font-medium data-hover:bg-black/5 data-selected:bg-neutral-900 data-selected:text-white sm:px-6 dark:data-selected:bg-neutral-100 dark:data-selected:text-neutral-900">
             <div className="flex items-center gap-x-2">
-              Credit card
+              {T['PayWith']['Credit card']}
               <HugeiconsIcon icon={MasterCardIcon} size={20} strokeWidth={1.5} />
             </div>
           </Tab>

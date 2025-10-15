@@ -1,3 +1,4 @@
+import PayWith from "@/app/(app)/(other-pages)/checkout/PayWith";
 import { Aside } from "@/components/aside/aside";
 import ListingFilterTabs from "@/components/ListingFilterTabs";
 import SectionHowItWork from "@/components/SectionHowItWork";
@@ -53,6 +54,10 @@ export const en = {
       'Tax': 'Tax',
       'Your trip': 'Your trip',
       'Click on the pencil icon to change your trip details.': 'Click on the pencil icon to change your trip details.',
+  },
+  PayWith: {
+    'Pay with': 'Pay with',
+    'Credit card': 'Credit card',
   },
   Header: {
     'List your property': 'List your property',

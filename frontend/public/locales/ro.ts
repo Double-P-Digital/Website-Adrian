@@ -55,6 +55,10 @@ export const ro = {
         'Your trip': 'Călătoria ta',
         'Click on the pencil icon to change your trip details.': 'Faceți clic pe creion pentru a schimba detaliile călătoriei.',
     },
+    PayWith:{
+        'Credit card': 'Card de credit',
+        'Pay with': 'Plătește cu',
+    },
     Header: {
         'List your property': 'Listează proprietatea ta',
         'Sign up': 'Înregistrează-te',
