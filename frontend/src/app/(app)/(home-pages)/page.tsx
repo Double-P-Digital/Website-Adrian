@@ -1,14 +1,13 @@
 import BgGlassmorphism from '@/components/BgGlassmorphism'
 import HeroSectionWithSearchForm1 from '@/components/hero-sections/HeroSectionWithSearchForm1'
 import HeroSearchForm from '@/components/HeroSearchForm/HeroSearchForm'
-import SectionClientSay from '@/components/SectionClientSay'
-import SectionHowItWork from '@/components/SectionHowItWork'
+
 import SectionGridCategoryBox from '@/components/SectionGridCategoryBox'
+import SectionHowItWork from '@/components/SectionHowItWork'
 import SectionVideos from '@/components/SectionVideos'
 import { getStayCategories } from '@/data/categories'
 import heroImage from '@/images/hero-right.png'
 import { Divider } from '@/shared/divider'
-import HeadingWithSub from '@/shared/Heading'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -38,9 +37,6 @@ async function Page() {
         <SectionHowItWork />
         <Divider />
         <SectionVideos />
-        <div className="relative py-16">
-          <SectionClientSay />
-        </div>
       </div>
     </main>
   )

@@ -16,9 +16,8 @@ import {
 } from '@/components/Icons'
 import { getListingReviews } from '@/data/data'
 import { getStayListingByHandle } from '@/data/listings'
-import ReserveButton from "./ReserveButton";
+import ReserveButton from './ReserveButton'
 
-import ButtonPrimary from '@/shared/ButtonPrimary'
 import ButtonSecondary from '@/shared/ButtonSecondary'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Divider } from '@/shared/divider'
@@ -34,7 +33,7 @@ import SectionDateRange from '../../components/SectionDateRange'
 import SectionHeader from '../../components/SectionHeader'
 import { SectionHeading, SectionSubheading } from '../../components/SectionHeading'
 import SectionHost from '../../components/SectionHost'
-import SectionListingReviews from '../../components/SectionListingReviews'
+
 import SectionMap from '../../components/SectionMap'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
@@ -55,7 +54,6 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 }
 
 const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
-
   const { handle } = await params
 
   const listing = await getStayListingByHandle(handle)
@@ -262,7 +260,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           <DescriptionDetails className="font-semibold sm:text-right">$57.00</DescriptionDetails>
         </DescriptionList>
 
-        <ReserveButton/>
+        <ReserveButton />
       </div>
     )
   }
@@ -294,9 +292,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
           <div className="w-full lg:w-4/9 xl:w-1/3">
             <SectionHost {...host} />
-          </div>
-          <div className="w-full lg:w-2/3">
-            <SectionListingReviews reviewCount={reviewCount} reviewStart={reviewStart} reviews={reviews} />
           </div>
         </div>
 
