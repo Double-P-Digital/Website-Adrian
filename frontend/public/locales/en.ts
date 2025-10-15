@@ -39,7 +39,8 @@ export const en = {
     Date: 'Date',
     Reviews: 'Reviews',
     "Previous": 'Previous',
-    Next: 'Next'
+    Next: 'Next',
+    "properties": "properties"
   },
   Header: {
     'List your property': 'List your property',
@@ -285,7 +286,7 @@ export const en = {
   },
   homePage: {
     sectionHero: {
-      title: 'Hotel, car & experiences',
+      title: 'Welcome to DailyGuest!',
       description:
         'Accompanying us, you have a trip full of experiences. With Chisfis, booking accommodation, resort villas, hotels',
       'Start your search': 'Start your search',

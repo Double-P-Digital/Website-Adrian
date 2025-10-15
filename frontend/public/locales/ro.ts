@@ -39,6 +39,7 @@ export const ro = {
         Reviews: 'Recenzii',
         'Previous': 'Inapoi',
         Next: 'Inainte',
+        "properties": "proprietăți"
     },
     Header: {
         'List your property': 'Listează proprietatea ta',
@@ -285,7 +286,7 @@ export const ro = {
     },
     homePage: {
         sectionHero: {
-            title: 'Hoteluri, mașini & experiențe',
+            title: 'Bine ati venit la DailyGuest!',
             description:
                 'Alături de noi, ai o călătorie plină de experiențe. Cu Chisfis, rezervi cazare, vile de resort, hoteluri',
             'Start your search': 'Începe căutarea',
