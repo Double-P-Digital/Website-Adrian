@@ -1,5 +1,6 @@
 import { Aside } from "@/components/aside/aside";
 import ListingFilterTabs from "@/components/ListingFilterTabs";
+import SectionHowItWork from "@/components/SectionHowItWork";
 
 export const en = {
   common: {
@@ -97,6 +98,16 @@ export const en = {
     'Add dates': 'Add dates',
     Search: 'Search',
     
+  },
+  SectionHowItWork: {
+    'How it works': 'How it works',
+    'Book & relax': 'Book & relax',
+    'Smart planning': 'Smart planning',
+    'Save more': 'Save more',
+    'Choose from our cozy apartments in selected cities — booking is fast and easy.': 'Choose from our cozy apartments in selected cities — booking is fast and easy.',
+    'Get all the details you need in one place and check in stress-free.': 'Get all the details you need in one place and check in stress-free.',
+    'Enjoy comfortable stays at great prices — no hidden fees, just good deals.': 'Enjoy comfortable stays at great prices — no hidden fees, just good deals.',
+
   },
   HeroSearchForm: {
     'Flying dates': 'Flying dates',
