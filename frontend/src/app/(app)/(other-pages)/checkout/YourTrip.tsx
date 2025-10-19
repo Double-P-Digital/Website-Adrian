@@ -2,13 +2,16 @@
 
 import ModalSelectDate from '@/components/ModalSelectDate'
 import ModalSelectGuests from '@/components/ModalSelectGuests'
+import { useLanguage } from '@/context/LanguageContext'
+import { useT } from '@/hooks/useT'
 import { GuestsObject } from '@/type'
 import converSelectedDateToString from '@/utils/converSelectedDateToString'
-import T from '@/utils/getT'
 import { PencilSquareIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
 const YourTrip = () => {
+  const T = useT()
+  const { language } = useLanguage()
   const [startDate, setStartDate] = useState<Date | null>(new Date('2025/02/06'))
   const [endDate, setEndDate] = useState<Date | null>(new Date('2025/02/23'))
   const [guests, setGuests] = useState<GuestsObject>({
@@ -17,9 +20,25 @@ const YourTrip = () => {
     guestInfants: 1,
   })
 
+  // ✅ Helpers for plural forms (works in English and Romanian)
+  const formatGuests = (count: number) => {
+    if (language === 'ro') {
+      return count === 1 ? `${count} oaspete` : `${count} oaspeți`
+    }
+    return count === 1 ? `${count} guest` : `${count} guests`
+  }
+
+  const formatInfants = (count: number) => {
+    if (language === 'ro') {
+      return count === 1 ? `${count} sugar` : `${count} sugari`
+    }
+    return count === 1 ? `${count} infant` : `${count} infants`
+  }
+
   return (
     <div>
-      <h3 className="text-2xl font-semibold">Your trip</h3>
+      <h3 className="text-2xl font-semibold">{T.Booking['Your trip']}</h3>
+
       <div className="z-10 mt-6 flex flex-col divide-y divide-neutral-200 overflow-hidden rounded-3xl border border-neutral-200 sm:flex-row sm:divide-x sm:divide-y-0 sm:rtl:divide-x-reverse dark:divide-neutral-700 dark:border-neutral-700">
         <ModalSelectDate
           onChange={(dates) => {
@@ -36,7 +55,7 @@ const YourTrip = () => {
               <div className="flex flex-col">
                 <span className="text-sm text-neutral-400">{T['HeroSearchForm']['Date range']}</span>
                 <span className="mt-1.5 text-lg font-semibold">
-                  {startDate ? converSelectedDateToString([startDate, endDate]) : 'Add dates'}
+                  {startDate ? converSelectedDateToString([startDate, endDate]) : T['HeroSearchForm']['Add dates']}
                 </span>
               </div>
               <PencilSquareIcon className="h-6 w-6 text-neutral-600 dark:text-neutral-400" />
@@ -56,9 +75,9 @@ const YourTrip = () => {
                 <span className="text-sm text-neutral-400">{T['HeroSearchForm']['Guests']}</span>
                 <span className="mt-1.5 text-lg font-semibold">
                   <span className="line-clamp-1">
-                    {`${
-                      (guests.guestAdults || 0) + (guests.guestChildren || 0)
-                    } Guests, ${guests.guestInfants || 0} Infants`}
+                    {`${formatGuests((guests.guestAdults || 0) + (guests.guestChildren || 0))}, ${formatInfants(
+                      guests.guestInfants || 0
+                    )}`}
                   </span>
                 </span>
               </div>
@@ -69,13 +88,12 @@ const YourTrip = () => {
       </div>
 
       <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-        Click on the pencil icon to change your trip details.
+        {T.Booking['Click on the pencil icon to change your trip details.']}
       </p>
 
       <input type="hidden" name="guestAdults" value={guests.guestAdults} />
       <input type="hidden" name="guestChildren" value={guests.guestChildren} />
       <input type="hidden" name="guestInfants" value={guests.guestInfants} />
-      {/*  */}
       <input type="hidden" name="startDate" value={startDate ? startDate.toISOString() : ''} />
       <input type="hidden" name="endDate" value={endDate ? endDate.toISOString() : ''} />
     </div>

@@ -1,8 +1,11 @@
+'use client'
+
 import { TCategory } from '@/data/categories'
+import { useT } from '@/hooks/useT'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { FC } from 'react'
+import { FC } from 'react'
 
 export interface CardCategoryBox1Props {
   className?: string
@@ -10,6 +13,7 @@ export interface CardCategoryBox1Props {
 }
 
 const CardCategoryBox1: FC<CardCategoryBox1Props> = ({ className = '', category }) => {
+  const T = useT()
   const { name, thumbnail, href, count } = category
   return (
     <div className={`group relative flex flex-col ${className}`}>
@@ -29,7 +33,7 @@ const CardCategoryBox1: FC<CardCategoryBox1Props> = ({ className = '', category 
           <span className="line-clamp-1">{name}</span>
         </h2>
         <span className={`mt-1.5 block text-sm text-neutral-600 dark:text-neutral-400`}>
-          {convertNumbThousand(count)} properties
+          {convertNumbThousand(count)} {T.common['properties']}
         </span>
       </div>
     </div>

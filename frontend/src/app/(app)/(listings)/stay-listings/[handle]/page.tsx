@@ -16,9 +16,8 @@ import {
 } from '@/components/Icons'
 import { getListingReviews } from '@/data/data'
 import { getStayListingByHandle } from '@/data/listings'
-import ReserveButton from "./ReserveButton";
+import ReserveButton from './ReserveButton'
 
-import ButtonPrimary from '@/shared/ButtonPrimary'
 import ButtonSecondary from '@/shared/ButtonSecondary'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Divider } from '@/shared/divider'
@@ -34,7 +33,8 @@ import SectionDateRange from '../../components/SectionDateRange'
 import SectionHeader from '../../components/SectionHeader'
 import { SectionHeading, SectionSubheading } from '../../components/SectionHeading'
 import SectionHost from '../../components/SectionHost'
-import SectionListingReviews from '../../components/SectionListingReviews'
+import SidebarPriceAndFormWrapper from './SidebarPriceAndFormWrapper'
+
 import SectionMap from '../../components/SectionMap'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
@@ -55,7 +55,6 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 }
 
 const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
-
   const { handle } = await params
 
   const listing = await getStayListingByHandle(handle)
@@ -84,7 +83,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     beds,
   } = listing
   const reviews = (await getListingReviews(handle)).slice(0, 3) // Fetching only the first 3 reviews for display
-
+  const numericPrice = Number(listing.price.replace(/[^0-9.-]+/g, ''))
   // Server action to handle form submission
   const handleSubmitForm = async (formData: FormData) => {
     'use server'
@@ -92,7 +91,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     // Handle form submission logic here
     console.log('Form submitted with data:', Object.fromEntries(formData.entries()))
     // For example, you can redirect to a checkout page or process the booking
-    redirect('/checkout')
+    //redirect('/checkout')
   }
   //
 
@@ -182,7 +181,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           {roomRates.map((item) => (
             <Fragment key={item.name}>
               <DescriptionTerm>{item.title}</DescriptionTerm>
-              <DescriptionDetails>{item.price}</DescriptionDetails>
+              <DescriptionDetails></DescriptionDetails>
             </Fragment>
           ))}
         </DescriptionList>
@@ -237,11 +236,11 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
       <div className="listingSection__wrap sm:shadow-xl">
         {/* PRICE */}
         <div className="flex items-end text-2xl font-semibold sm:text-3xl">
-          <span className="text-neutral-300 line-through">$350</span>
-          <span className="mx-2">{price}</span>
-          <div className="pb-1">
+          {/* <span className="text-neutral-300 line-through">$350</span> */}
+          <SidebarPriceAndFormWrapper price={price} />
+          {/* <div className="pb-1">
             <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">/night</span>
-          </div>
+          </div> */}
         </div>
 
         {/* FORM */}
@@ -257,12 +256,16 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
 
         <DescriptionList>
           <DescriptionTerm>$19.00 x 3 day</DescriptionTerm>
-          <DescriptionDetails className="sm:text-right">$57.00</DescriptionDetails>
+          <DescriptionDetails className="sm:text-right">
+            <SidebarPriceAndFormWrapper price={price} />
+          </DescriptionDetails>
           <DescriptionTerm className="font-semibold text-neutral-900">Total</DescriptionTerm>
-          <DescriptionDetails className="font-semibold sm:text-right">$57.00</DescriptionDetails>
+          <DescriptionDetails className="font-semibold sm:text-right">
+            <SidebarPriceAndFormWrapper price={price} />
+          </DescriptionDetails>
         </DescriptionList>
 
-        <ReserveButton/>
+        <ReserveButton price={Number(numericPrice)} />
       </div>
     )
   }
@@ -294,9 +297,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
           <div className="w-full lg:w-4/9 xl:w-1/3">
             <SectionHost {...host} />
-          </div>
-          <div className="w-full lg:w-2/3">
-            <SectionListingReviews reviewCount={reviewCount} reviewStart={reviewStart} reviews={reviews} />
           </div>
         </div>
 

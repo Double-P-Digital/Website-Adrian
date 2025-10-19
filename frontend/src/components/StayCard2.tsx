@@ -3,6 +3,7 @@ import BtnLikeIcon from '@/components/BtnLikeIcon'
 import GallerySlider from '@/components/GallerySlider'
 import SaleOffBadge from '@/components/SaleOffBadge'
 import StartRating from '@/components/StartRating'
+import { useCurrency } from '@/context/CurrencyContext'
 import { TStayListing } from '@/data/listings'
 import { useT } from '@/hooks/useT'
 import { Badge } from '@/shared/Badge'
@@ -20,6 +21,7 @@ interface StayCard2Props {
 
 const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data }) => {
   const T = useT()
+  const { currency, convert } = useCurrency()
 
   const {
     galleryImgs,
@@ -38,6 +40,8 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
   } = data
 
   const listingHref = `/stay-listings/${listingHandle}`
+  const numericPrice = Number(String(price).replace(/[^0-9.]/g, ''))
+  const convertedPrice = convert(numericPrice, 'RON', currency)
 
   const renderSliderGallery = () => {
     return (
@@ -78,7 +82,9 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
         <div className="w-14 border-b border-neutral-100 dark:border-neutral-800"></div>
         <div className="flex items-center justify-between gap-2">
           <div>
-            <span className="text-base font-semibold"> {price}</span>
+            <span className="text-base font-semibold">
+              {convertedPrice.toFixed(2)} {currency}
+            </span>
             {size === 'default' && (
               <>
                 <span className="mx-1 text-sm font-light text-neutral-400 dark:text-neutral-500">/</span>

@@ -1,5 +1,7 @@
+import PayWith from "@/app/(app)/(other-pages)/checkout/PayWith";
 import { Aside } from "@/components/aside/aside";
 import ListingFilterTabs from "@/components/ListingFilterTabs";
+import SectionHowItWork from "@/components/SectionHowItWork";
 
 export const en = {
   common: {
@@ -38,7 +40,25 @@ export const en = {
     Date: 'Date',
     Reviews: 'Reviews',
     "Previous": 'Previous',
-    Next: 'Next'
+    Next: 'Next',
+    "properties": "properties",
+    "guests": "guests",
+  },
+  Booking:{
+      '/night': '/night',
+      'Total': 'Total',
+      'Your booking': 'Your booking',
+      'Reserve and pay': 'Reserve and pay',
+      'Service charge': 'Service charge',
+      'Fee': 'Fee',
+      'Tax': 'Tax',
+      'Your trip': 'Your trip',
+      'Click on the pencil icon to change your trip details.': 'Click on the pencil icon to change your trip details.',
+       'per_night_x_nights': '{price} {currency} x {nights} night(s)'
+  },
+  PayWith: {
+    'Pay with': 'Pay with',
+    'Credit card': 'Credit card',
   },
   Header: {
     'List your property': 'List your property',
@@ -98,6 +118,16 @@ export const en = {
     Search: 'Search',
     
   },
+  SectionHowItWork: {
+    'How it works': 'How it works',
+    'Book & relax': 'Book & relax',
+    'Smart planning': 'Smart planning',
+    'Save more': 'Save more',
+    'Choose from our cozy apartments in selected cities — booking is fast and easy.': 'Choose from our cozy apartments in selected cities — booking is fast and easy.',
+    'Get all the details you need in one place and check in stress-free.': 'Get all the details you need in one place and check in stress-free.',
+    'Enjoy comfortable stays at great prices — no hidden fees, just good deals.': 'Enjoy comfortable stays at great prices — no hidden fees, just good deals.',
+
+  },
   HeroSearchForm: {
     'Flying dates': 'Flying dates',
     'Flying date': 'Flying date',
@@ -110,6 +140,8 @@ export const en = {
     CheckOut: 'Check out',
     'Add guests': 'Add guests',
     'Ages 13 or above': 'Ages 13 or above',
+    "Date range": "Perioada",
+    "Add dates": "Adaugă date",
     Adults: 'Adults',
     Children: 'Children',
     Infants: 'Infants',
@@ -134,9 +166,7 @@ export const en = {
     'Recent searches': 'Recent searches',
     'Suggested locations': 'Suggested locations',
     'Where are you going?': 'Where are you going?',
-    'Add dates': 'Add dates',
     Date: 'Date',
-    'Date range': 'Date range',
     search: 'Search',
     'Property type': 'Property type',
     Type: 'Type',
@@ -274,7 +304,7 @@ export const en = {
   },
   homePage: {
     sectionHero: {
-      title: 'Hotel, car & experiences',
+      title: 'Welcome to DailyGuest!',
       description:
         'Accompanying us, you have a trip full of experiences. With Chisfis, booking accommodation, resort villas, hotels',
       'Start your search': 'Start your search',

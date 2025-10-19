@@ -1,4 +1,5 @@
 import { Aside } from "@/components/aside/aside";
+import SectionHowItWork from "@/components/SectionHowItWork";
 
 export const ro = {
     common: {
@@ -38,6 +39,26 @@ export const ro = {
         Reviews: 'Recenzii',
         'Previous': 'Inapoi',
         Next: 'Inainte',
+        "properties": "proprietăți",
+        "guests": "oaspeți",
+        "guest": "oaspeți",
+        "rooms": "camere",
+    },
+    Booking:{
+        '/night': '/noapte',
+        'Total': 'Total',
+        'Your booking': 'Rezervarea ta',
+        'Reserve and pay': 'Rezervă și plătește',
+        'Service charge': 'Taxă de serviciu',
+        'Fee': 'Taxă',
+        'Tax': 'Impozit',
+        'Your trip': 'Călătoria ta',
+        'Click on the pencil icon to change your trip details.': 'Faceți clic pe creion pentru a schimba detaliile călătoriei.',
+        'per_night_x_nights': '{price} {currency} x {nights} nopți',
+    },
+    PayWith:{
+        'Credit card': 'Card de credit',
+        'Pay with': 'Plătește cu',
     },
     Header: {
         'List your property': 'Listează proprietatea ta',
@@ -96,6 +117,16 @@ export const ro = {
     'Add dates': 'Adaugă date',
     Search: 'Caută',
 
+
+  },
+  SectionHowItWork:{
+    'How it works': 'Cum funcționează',
+    'Book & relax': 'Rezervă și relaxează-te',
+    'Smart planning': 'Planificare inteligentă',
+    'Save more': 'Salvează mai mult',
+    'Choose from our cozy apartments in selected cities — booking is fast and easy.': 'Alege din apartamentele noastre confortabile din orașe selectate — rezervarea este rapidă și ușoară.',
+    'Get all the details you need in one place and check in stress-free.': 'Obține toate detaliile de care ai nevoie într-un singur loc și fă check-in fără stres.',
+    'Enjoy comfortable stays at great prices — no hidden fees, just good deals.': 'Bucură-te de șederi confortabile la prețuri excelente — fără taxe ascunse, doar oferte bune.',
 
   },
     HeroSearchForm: {
@@ -274,7 +305,7 @@ export const ro = {
     },
     homePage: {
         sectionHero: {
-            title: 'Hoteluri, mașini & experiențe',
+            title: 'Bine ati venit la DailyGuest!',
             description:
                 'Alături de noi, ai o călătorie plină de experiențe. Cu Chisfis, rezervi cazare, vile de resort, hoteluri',
             'Start your search': 'Începe căutarea',
