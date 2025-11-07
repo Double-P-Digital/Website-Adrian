@@ -10,12 +10,12 @@ interface Props {
 }
 
 const ListingReview: FC<Props> = ({ className = '', reivew }) => {
-  const { author, authorAvatar, content, date, rating, title } = reivew
+  const { author, content, date, rating } = reivew
 
   return (
     <div className={`flex gap-x-4 ${className}`}>
       <div className="pt-0.5">
-        <Avatar className="size-10" src={authorAvatar.src} />
+        <Avatar className="size-10" />
       </div>
       <div className="grow">
         <div className="flex justify-between gap-x-3">

@@ -1,4 +1,3 @@
-import SectionSubscribe2 from '@/components/SectionSubscribe2'
 import ButtonPrimary from '@/shared/ButtonPrimary'
 import { Divider } from '@/shared/divider'
 import { Field, Label } from '@/shared/fieldset'
@@ -65,12 +64,6 @@ const PageContact = () => {
             </div>
           </form>
         </div>
-      </div>
-
-      {/* OTHER SECTIONS */}
-      <div className="container mt-20 lg:mt-32">
-        <Divider />
-        <SectionSubscribe2 className="mt-20 lg:mt-32" />
       </div>
     </div>
   )

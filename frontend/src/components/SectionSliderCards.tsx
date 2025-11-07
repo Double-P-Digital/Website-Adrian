@@ -1,18 +1,17 @@
 'use client'
 
-import { TExperienceListing, TStayListing } from '@/data/listings'
+import { TStayListing } from '@/data/listings'  // ← Șters TExperienceListing
 import useSnapSlider from '@/hooks/useSnapSlider'
 import { ButtonCircle } from '@/shared/Button'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { FC, useRef } from 'react'
-import ExperiencesCard from './ExperiencesCard'
 import StayCard2 from './StayCard2'
 
 interface Props {
   className?: string
   itemClassName?: string
-  listings: TStayListing[] | TExperienceListing[]
+  listings: TStayListing[]  // ← Schimbat
   cardType: 'stay' | 'experience' | 'real-estate'
 }
 
@@ -29,8 +28,6 @@ const SectionSliderCards: FC<Props> = ({
     switch (cardType) {
       case 'stay':
         return <StayCard2 data={item as TStayListing} />
-      case 'experience':
-        return <ExperiencesCard data={item as TExperienceListing} />
       default:
         return <StayCard2 data={item as TStayListing} />
     }
