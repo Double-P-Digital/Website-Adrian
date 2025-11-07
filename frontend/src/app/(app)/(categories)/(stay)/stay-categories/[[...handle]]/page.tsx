@@ -6,7 +6,7 @@ import { getStayCategoryByHandle } from '@/data/categories'
 import { getStayListingFilterOptions, getStayListingsByCategory } from '@/data/listings'
 import { Button } from '@/shared/Button'
 import { Divider } from '@/shared/divider'
-import Pagination from '@/shared/Pagination'
+import PaginationComponent from '@/components/PaginationComponent'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import { MapsLocation01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -27,12 +27,25 @@ export async function generateMetadata({ params }: { params: Promise<{ handle?: 
   return { title: name, description }
 }
 
-const Page = async ({ params }: { params: Promise<{ handle?: string[] }> }) => {
+const Page = async ({ params, searchParams }: { 
+  params: Promise<{ handle?: string[] }>,
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) => {
   const { handle } = await params
+  const urlSearchParams = await searchParams
+  
+  const currentPage = Number(urlSearchParams.page) || 1
+  const itemsPerPage = 12
 
   const category = await getStayCategoryByHandle(handle?.[0])
-  const listings = await getStayListingsByCategory(handle?.[0])
+  const allListings = await getStayListingsByCategory(handle?.[0])
   const filterOptions = await getStayListingFilterOptions()
+
+  // Paginare
+  const totalItems = allListings.length
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const listings = allListings.slice(startIndex, endIndex)
 
 
   if (!category?.id) {
@@ -84,7 +97,7 @@ const Page = async ({ params }: { params: Promise<{ handle?: string[] }> }) => {
           ))}
         </div>
         <div className="mt-16 flex items-center justify-center">
-          <Pagination />
+          <PaginationComponent totalItems={totalItems} itemsPerPage={itemsPerPage} />
         </div>
       </div>
     </div>

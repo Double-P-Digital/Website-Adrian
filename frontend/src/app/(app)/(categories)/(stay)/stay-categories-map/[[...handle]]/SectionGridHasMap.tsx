@@ -2,13 +2,14 @@
 
 import ListingFilterTabs from '@/components/ListingFilterTabs'
 import StayCard2 from '@/components/StayCard2'
+import PaginationComponent from '@/components/PaginationComponent'
 import { TStayCategory } from '@/data/categories'
 import { getStayListingFilterOptions, TStayListing } from '@/data/listings'
 import { Divider } from '@/shared/divider'
-import Pagination from '@/shared/Pagination'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import clsx from 'clsx'
-import { FC, useState } from 'react'
+import { FC, useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import MapFixedSection from '../../../MapFixedSection'
 
 interface Props {
@@ -18,8 +19,21 @@ interface Props {
   filterOptions: Awaited<ReturnType<typeof getStayListingFilterOptions>>
 }
 
-const SectionGridHasMap: FC<Props> = ({ className, listings, category, filterOptions }) => {
+const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, category, filterOptions }) => {
   const [currentHoverID, setCurrentHoverID] = useState<string>('')
+  const searchParams = useSearchParams()
+  const currentPage = Number(searchParams.get('page')) || 1
+  const itemsPerPage = 12
+  
+  // Paginare cu useMemo pentru performance
+  const { listings, totalItems } = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return {
+      listings: allListings.slice(startIndex, endIndex),
+      totalItems: allListings.length
+    }
+  }, [allListings, currentPage, itemsPerPage])
 
   return (
     <div className={clsx('relative flex min-h-screen gap-6', className)}>
@@ -42,14 +56,14 @@ const SectionGridHasMap: FC<Props> = ({ className, listings, category, filterOpt
           ))}
         </div>
         <div className="mt-16 flex items-center">
-          <Pagination />
+          <PaginationComponent totalItems={totalItems} itemsPerPage={itemsPerPage} />
         </div>
       </div>
 
       <MapFixedSection
         closeButtonHref={`/stay-categories/${category.handle}#heading`}
         currentHoverID={currentHoverID}
-        listings={listings}
+        listings={allListings}
         listingType="Stays"
       />
     </div>

@@ -5,11 +5,12 @@ import { Button } from "@/shared/Button";
 import { Divider } from '@/shared/divider';
 import { MapsLocation01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { TStayCategory } from "@/data/categories";
 
-export default function ListingHeaderClient({ category}) {
-    const T = useT(); // ✅ works client-side only
+export default function ListingHeaderClient({ category }: { category: TStayCategory }) {
+    const T = useT(); 
 
-    const convertNumbThousand = (num) => num.toLocaleString();
+    const convertNumbThousand = (num: number) => num.toLocaleString();
 
     return (
         <>

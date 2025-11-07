@@ -1,4 +1,3 @@
-import avatars1 from '@/images/avatars/Image-1.png'
 
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
@@ -676,7 +675,6 @@ export const getStayListingByHandle = async (handle: string) => {
     galleryImgs: getAllApartmentImages(city, apNumber),
     host: {
       displayName: 'Jane Smith',
-      avatarUrl: avatars1.src,
       handle: 'jane-smith',
       description:
         'Providing lake views, The Symphony 9 Tam Coc in Ninh Binh provides accommodation, an outdoor swimming pool, a bar, a shared lounge, a garden and barbecue facilities.',

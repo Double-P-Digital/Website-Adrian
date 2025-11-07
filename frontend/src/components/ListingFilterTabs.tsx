@@ -304,7 +304,7 @@ const ListingFilterTabs = ({
 
   const handleFormSubmit = async (formData: FormData) => {
     const formDataObject = Object.fromEntries(formData.entries())
-    console.log('Form submitted with data:', formDataObject)
+    //console.log('Form submitted with data:', formDataObject)
   }
 
   const renderTabAllFilters = () => {
@@ -397,7 +397,7 @@ const ListingFilterTabs = ({
         <div className="h-auto w-px bg-neutral-200 dark:bg-neutral-700"></div>
         {filterOptions.map((filterOption, index) => {
           // only show 3 filters in the tab. Other filters will be shown in the All-filters-popover
-          console.log(filterOption)
+          //console.log(filterOption)
           if (index > 1 || !filterOption) {
             return null
           }

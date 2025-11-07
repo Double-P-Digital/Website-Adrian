@@ -32,7 +32,6 @@ import HeaderGallery from '../../components/HeaderGallery'
 import SectionDateRange from '../../components/SectionDateRange'
 import SectionHeader from '../../components/SectionHeader'
 import { SectionHeading, SectionSubheading } from '../../components/SectionHeading'
-import SectionHost from '../../components/SectionHost'
 import SidebarPriceAndFormWrapper from './SidebarPriceAndFormWrapper'
 
 import SectionMap from '../../components/SectionMap'
@@ -79,7 +78,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     reviewCount,
     reviewStart,
     title,
-    host,
     beds,
   } = listing
   const reviews = (await getListingReviews(handle)).slice(0, 3) // Fetching only the first 3 reviews for display
@@ -99,7 +97,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     return (
       <SectionHeader
         address={address}
-        host={host}
         listingCategory={listingCategory}
         reviewCount={reviewCount}
         reviewStart={reviewStart}
@@ -294,12 +291,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
       <Divider className="my-16" />
 
       <div className="flex flex-col gap-y-10">
-        <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
-          <div className="w-full lg:w-4/9 xl:w-1/3">
-            <SectionHost {...host} />
-          </div>
-        </div>
-
         <SectionMap />
       </div>
     </div>

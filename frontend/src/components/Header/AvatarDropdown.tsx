@@ -1,6 +1,4 @@
 'use client'
-
-import avatarImage from '@/images/avatars/Image-1.png'
 import Avatar from '@/shared/Avatar'
 import { Divider } from '@/shared/divider'
 import { Link } from '@/shared/link'
@@ -25,7 +23,6 @@ export default function AvatarDropdown({ className }: Props) {
     <div className={className}>
       <Popover>
         <PopoverButton className="-m-1.5 flex cursor-pointer items-center justify-center rounded-full p-1.5 hover:bg-neutral-100 focus-visible:outline-hidden dark:hover:bg-neutral-800">
-          <Avatar src={avatarImage.src} className="size-8" />
         </PopoverButton>
 
         <PopoverPanel
@@ -38,7 +35,6 @@ export default function AvatarDropdown({ className }: Props) {
         >
           <div className="relative grid grid-cols-1 gap-6 bg-white px-6 py-7 dark:bg-neutral-800">
             <div className="flex items-center space-x-3">
-              <Avatar src={avatarImage.src} className="size-12" />
 
               <div className="grow">
                 <h4 className="font-semibold">Eden Smith</h4>
