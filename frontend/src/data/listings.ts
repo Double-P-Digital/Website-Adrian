@@ -1,3 +1,4 @@
+import { fetchApartmentsFromBackend, fetchApartmentsByCategory, fetchApartmentByHandle } from '@/lib/api/apartments'
 
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
@@ -93,6 +94,13 @@ const getAllApartmentImages = (city: string, apNumber: number) => {
 }
 
 export async function getStayListings() {
+  // Try to fetch from backend first
+  const backendListings = await fetchApartmentsFromBackend()
+  if (backendListings.length > 0) {
+    return backendListings
+  }
+
+  // Fallback to mock data if backend is not available
   return [
     {
       id: 'stay-listing://cluj-1',
@@ -650,6 +658,13 @@ export async function getStayListings() {
 }
 
 export const getStayListingsByCategory = async (categoryHandle?: string) => {
+  // Try to fetch from backend first
+  const backendListings = await fetchApartmentsByCategory(categoryHandle)
+  if (backendListings.length > 0) {
+    return backendListings
+  }
+
+  // Fallback to mock data
   const listings = await getStayListings()
   
   if (!categoryHandle || categoryHandle === 'all') {
@@ -660,6 +675,30 @@ export const getStayListingsByCategory = async (categoryHandle?: string) => {
 }
 
 export const getStayListingByHandle = async (handle: string) => {
+  // Try to fetch from backend first
+  const backendListing = await fetchApartmentByHandle(handle)
+  if (backendListing) {
+    // Add host info (mock for now, can be added to backend later)
+    return {
+      ...backendListing,
+      host: {
+        displayName: 'Jane Smith',
+        handle: 'jane-smith',
+        description:
+          'Providing lake views, The Symphony 9 Tam Coc in Ninh Binh provides accommodation, an outdoor swimming pool, a bar, a shared lounge, a garden and barbecue facilities.',
+        listingsCount: 5,
+        reviewsCount: 120,
+        rating: 4.8,
+        responseRate: 95,
+        responseTime: 'within an hour',
+        isSuperhost: true,
+        isVerified: true,
+        joinedDate: 'March 2024',
+      },
+    }
+  }
+
+  // Fallback to mock data
   const listings = await getStayListings()
   let listing = listings.find((listing) => listing.handle === handle)
   if (!listing?.id) {

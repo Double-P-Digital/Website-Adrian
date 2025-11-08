@@ -1,8 +1,7 @@
-import { getCurrencies, getLanguages, getNavMegaMenu } from '@/data/navigation'
+import { getCurrencies, getLanguages } from '@/data/navigation'
 import Logo from '@/shared/Logo'
 import clsx from 'clsx'
 import { FC } from 'react'
-import AvatarDropdown from './AvatarDropdown'
 import CurrLangDropdown from './CurrLangDropdown'
 import HamburgerBtnMenu from './HamburgerBtnMenu'
 interface HeaderProps {
