@@ -262,7 +262,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           </DescriptionDetails>
         </DescriptionList>
 
-        <ReserveButton price={Number(numericPrice)} />
+        <ReserveButton price={Number(numericPrice)} apartmentId={listing.id} />
       </div>
     )
   }

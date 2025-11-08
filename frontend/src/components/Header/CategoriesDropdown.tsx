@@ -3,7 +3,7 @@
 import T from '@/utils/getT'
 import { CloseButton, Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
-import { Airplane02Icon, Building03Icon, Car03Icon, HotAirBalloonIcon, House04Icon } from '@hugeicons/core-free-icons'
+import { House04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -14,30 +14,6 @@ const solutions = [
     description: T['Header']['DropdownTravelers']['stayDescription'],
     href: '/',
     icon: House04Icon,
-  },
-  {
-    name: T['Header']['DropdownTravelers']['Real Estate'],
-    description: T['Header']['DropdownTravelers']['estateDescription'],
-    href: '/real-estate',
-    icon: Building03Icon,
-  },
-  {
-    name: T['Header']['DropdownTravelers']['Cars'],
-    description: T['Header']['DropdownTravelers']['carDescription'],
-    href: '/car',
-    icon: Car03Icon,
-  },
-  {
-    name: T['Header']['DropdownTravelers']['Experiences'],
-    description: T['Header']['DropdownTravelers']['experienceDescription'],
-    href: '/experience',
-    icon: HotAirBalloonIcon,
-  },
-  {
-    name: T['Header']['DropdownTravelers']['Flights'],
-    description: T['Header']['DropdownTravelers']['Flight description'],
-    href: '/flight-categories/all',
-    icon: Airplane02Icon,
   },
 ]
 
