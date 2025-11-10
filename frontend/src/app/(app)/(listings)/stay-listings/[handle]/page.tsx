@@ -14,7 +14,6 @@ import {
   WaterPoloIcon,
   Wifi01Icon,
 } from '@/components/Icons'
-import { getListingReviews } from '@/data/data'
 import { getStayListingByHandle } from '@/data/listings'
 import ReserveButton from './ReserveButton'
 
@@ -25,7 +24,6 @@ import { UsersIcon } from '@heroicons/react/24/outline'
 import { Metadata } from 'next'
 import Form from 'next/form'
 import { redirect } from 'next/navigation'
-import { Fragment } from 'react'
 import DatesRangeInputPopover from '../../components/DatesRangeInputPopover'
 import GuestsInputPopover from '../../components/GuestsInputPopover'
 import HeaderGallery from '../../components/HeaderGallery'
@@ -33,7 +31,6 @@ import SectionDateRange from '../../components/SectionDateRange'
 import SectionHeader from '../../components/SectionHeader'
 import { SectionHeading, SectionSubheading } from '../../components/SectionHeading'
 import SidebarPriceAndFormWrapper from './SidebarPriceAndFormWrapper'
-
 import SectionMap from '../../components/SectionMap'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
@@ -55,22 +52,18 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 
 const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
   const { handle } = await params
-
   const listing = await getStayListingByHandle(handle)
 
   if (!listing?.id) {
     return redirect('/stay-categories/all')
   }
+
   const {
     address,
     bathrooms,
     bedrooms,
-    date,
     description,
-    featuredImage,
     galleryImgs,
-    isAds,
-    like,
     listingCategory,
     map,
     maxGuests,
@@ -80,18 +73,14 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     title,
     beds,
   } = listing
-  const reviews = (await getListingReviews(handle)).slice(0, 3) // Fetching only the first 3 reviews for display
+
   const numericPrice = Number(listing.price.replace(/[^0-9.-]+/g, ''))
+
   // Server action to handle form submission
   const handleSubmitForm = async (formData: FormData) => {
     'use server'
-
-    // Handle form submission logic here
     console.log('Form submitted with data:', Object.fromEntries(formData.entries()))
-    // For example, you can redirect to a checkout page or process the booking
-    //redirect('/checkout')
   }
-  //
 
   const renderSectionHeader = () => {
     return (
@@ -123,84 +112,43 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
   }
 
   const renderSectionInfo = () => {
-    const roomRates = [
-      {
-        name: 'monday-thursday',
-        title: 'Monday - Thursday',
-        price: '$199',
-      },
-      {
-        name: 'friday-sunday',
-        title: 'Friday - Sunday',
-        price: '$219',
-      },
-      {
-        name: 'rent-by-month',
-        title: 'Rent by month',
-        price: '-8.34 %',
-      },
-      {
-        name: 'minimum-nights',
-        title: 'Minimum number of nights',
-        price: '1 night',
-      },
-      {
-        name: 'maximum-nights',
-        title: 'Max number of nights',
-        price: '90 nights',
-      },
-    ]
     return (
       <div className="listingSection__wrap">
         <SectionHeading>Stay information</SectionHeading>
+        
+        {/* ✅ FOLOSEȘTE description din backend */}
         <div className="leading-relaxed text-neutral-700 dark:text-neutral-300">
-          <span>
-            Providing lake views, The Symphony 9 Tam Coc in Ninh Binh provides accommodation, an outdoor swimming pool,
-            a bar, a shared lounge, a garden and barbecue facilities. Complimentary WiFi is provided.
-          </span>
-          <br />
-          <br />
-          <span>There is a private bathroom with bidet in all units, along with a hairdryer and free toiletries.</span>
-          <br /> <br />
-          <span>
-            The Symphony 9 Tam Coc offers a terrace. Both a bicycle rental service and a car rental service are
-            available at the accommodation, while cycling can be enjoyed nearby.
-          </span>
+          {description ? (
+            <p className="whitespace-pre-line">{description}</p>
+          ) : (
+            <p>No description available for this property.</p>
+          )}
         </div>
 
-        <Divider className="w-14!" />
-
-        <div>
-          <SectionHeading>Room Rates </SectionHeading>
-          <SectionSubheading>Prices may increase on weekends or holidays</SectionSubheading>
-        </div>
-        <DescriptionList>
-          {roomRates.map((item) => (
-            <Fragment key={item.name}>
-              <DescriptionTerm>{item.title}</DescriptionTerm>
-              <DescriptionDetails></DescriptionDetails>
-            </Fragment>
-          ))}
-        </DescriptionList>
+        {/* ❌ ȘTERS - Room Rates hardcodat (implementează când backend are pricing rules) */}
       </div>
     )
   }
 
   const renderSectionAmenities = () => {
-    const Amenities_demos = [
-      { name: 'Fast wifi', icon: Wifi01Icon },
-      { name: 'Bathtub', icon: Bathtub02Icon },
-      { name: 'Hair dryer', icon: HairDryerIcon },
-      { name: 'Sound system', icon: Speaker01Icon },
-      { name: 'Shampoo', icon: ShampooIcon },
-      { name: 'Body soap', icon: BodySoapIcon },
-      { name: 'Water Energy ', icon: WaterEnergyIcon },
-      { name: 'Water Polo', icon: WaterPoloIcon },
-      { name: 'Cable Car', icon: CableCarIcon },
-      { name: 'Tv Smart', icon: TvSmartIcon },
-      { name: 'Cctv Camera', icon: CctvCameraIcon },
-      { name: 'Virtual Reality Vr', icon: VirtualRealityVr01Icon },
-    ]
+    // ✅ Map amenities icons (poți extinde lista)
+    const amenityIcons: { [key: string]: any } = {
+      'WiFi': Wifi01Icon,
+      'Fast wifi': Wifi01Icon,
+      'Bathtub': Bathtub02Icon,
+      'Hair dryer': HairDryerIcon,
+      'Sound system': Speaker01Icon,
+      'TV': TvSmartIcon,
+      'Tv Smart': TvSmartIcon,
+      'Kitchen': MeetingRoomIcon,
+      'Parking': CableCarIcon,
+      'Heating': WaterEnergyIcon,
+      'AC': WaterEnergyIcon,
+    }
+
+    // ✅ FOLOSEȘTE amenities din backend (dacă există în listing)
+    // Dacă backend nu returnează amenities, folosește fallback
+    const apartmentAmenities = listing.amenities || []
 
     return (
       <div className="listingSection__wrap">
@@ -210,20 +158,34 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
         </div>
         <Divider className="w-14!" />
 
-        <div className="grid grid-cols-1 gap-6 text-sm text-neutral-700 xl:grid-cols-3 dark:text-neutral-300">
-          {Amenities_demos.filter((_, i) => i < 12).map((item) => (
-            <div key={item.name} className="flex items-center gap-x-3">
-              <item.icon className="h-6 w-6" />
-              <span>{item.name}</span>
+        {apartmentAmenities.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 gap-6 text-sm text-neutral-700 xl:grid-cols-3 dark:text-neutral-300">
+              {apartmentAmenities.slice(0, 12).map((amenity: string) => {
+                const Icon = amenityIcons[amenity] || Wifi01Icon // Fallback icon
+                return (
+                  <div key={amenity} className="flex items-center gap-x-3">
+                    <Icon className="h-6 w-6" />
+                    <span>{amenity}</span>
+                  </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
 
-        {/* ----- */}
-        <div className="w-14 border-b border-neutral-200"></div>
-        <div>
-          <ButtonSecondary>View more 20 amenities</ButtonSecondary>
-        </div>
+            {apartmentAmenities.length > 12 && (
+              <>
+                <div className="w-14 border-b border-neutral-200"></div>
+                <div>
+                  <ButtonSecondary>
+                    View {apartmentAmenities.length - 12} more amenities
+                  </ButtonSecondary>
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <p className="text-neutral-500">No amenities information available.</p>
+        )}
       </div>
     )
   }
@@ -233,11 +195,7 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
       <div className="listingSection__wrap sm:shadow-xl">
         {/* PRICE */}
         <div className="flex items-end text-2xl font-semibold sm:text-3xl">
-          {/* <span className="text-neutral-300 line-through">$350</span> */}
           <SidebarPriceAndFormWrapper price={price} />
-          {/* <div className="pb-1">
-            <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">/night</span>
-          </div> */}
         </div>
 
         {/* FORM */}
@@ -251,13 +209,14 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           <GuestsInputPopover className="flex-1" />
         </Form>
 
+        {/* ✅ Calculare dinamică based on dates (implementează când ai date picker functional) */}
         <DescriptionList>
-          <DescriptionTerm>$19.00 x 3 day</DescriptionTerm>
+          <DescriptionTerm>{price} x 1 night</DescriptionTerm>
           <DescriptionDetails className="sm:text-right">
             <SidebarPriceAndFormWrapper price={price} />
           </DescriptionDetails>
-          <DescriptionTerm className="font-semibold text-neutral-900">Total</DescriptionTerm>
-          <DescriptionDetails className="font-semibold sm:text-right">
+          <DescriptionTerm className="font-semibold text-neutral-900 dark:text-neutral-100">Total</DescriptionTerm>
+          <DescriptionDetails className="font-semibold sm:text-right dark:text-neutral-100">
             <SidebarPriceAndFormWrapper price={price} />
           </DescriptionDetails>
         </DescriptionList>
@@ -291,7 +250,8 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
       <Divider className="my-16" />
 
       <div className="flex flex-col gap-y-10">
-        <SectionMap />
+        {/* ✅ FOLOSEȘTE map și address din backend */}
+        <SectionMap address={address} lat={map.lat} lng={map.lng} />
       </div>
     </div>
   )

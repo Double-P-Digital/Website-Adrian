@@ -1,31 +1,104 @@
 import stayCategoryCoverImage from '@/images/hero-right-2.png'
-import { Cloudinary } from '@cloudinary/url-gen';
-import { fill } from '@cloudinary/url-gen/actions/resize';
-import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 
-// Cloudinary configuration
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUD_NAME || 'dcbzjspdt'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY || ''
 
-// Initialize Cloudinary instance
-const cld = new Cloudinary({ 
-  cloud: { 
-    cloudName: CLOUDINARY_CLOUD_NAME 
-  } 
-});
+// ============ TYPES ============
 
-// Helper function to generate Cloudinary URL strings
-function getCloudinaryUrl(publicId: string, width = 500, height = 500): string {
-  const img = cld
-    .image(publicId)
-    .format('auto')
-    .quality('auto')
-    .resize(fill().width(width).height(height).gravity(autoGravity()));
-  
-  // Return URL as string
-  return img.toURL();
+interface BackendApartment {
+  id: string
+  name: string
+  address: string
+  price: number
+  description: string
+  amenities: string[]
+  images: string[]
+  status?: string
 }
 
-export async function getStayCategories() {
+export interface TStayCategory {
+  id: string
+  name: string
+  region: string
+  handle: string
+  href: string
+  count: number
+  thumbnail: string
+  coverImage: {
+    src: string
+    width: number
+    height: number
+  }
+  description: string
+}
+
+// ============ HELPER FUNCTIONS ============
+
+/**
+ * Extract category handle from address
+ */
+function extractCategoryHandleFromAddress(address: string): string {
+  if (!address) return 'all'
+  
+  const city = address.split(',')[0]?.trim().toLowerCase()
+  if (!city) return 'all'
+  
+  return city.replace(/\s+/g, '-')
+}
+
+/**
+ * Fetch all apartments from backend to count by category
+ */
+async function fetchApartmentsForCount(): Promise<BackendApartment[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/apartments/all`, {
+      headers: {
+        'x-api-key': API_KEY,
+      },
+      cache: 'no-store',
+    })
+
+    if (!response.ok) {
+      console.error('[Categories] Failed to fetch apartments:', response.status)
+      return []
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('[Categories] Error fetching apartments:', error)
+    return []
+  }
+}
+
+/**
+ * Count apartments by category
+ */
+function countApartmentsByCategory(apartments: BackendApartment[]): { [key: string]: number } {
+  const counts: { [key: string]: number } = {
+    'cluj-napoca': 0,
+    'baia-mare': 0,
+    'oradea': 0,
+  }
+
+  apartments.forEach((apt) => {
+    const categoryHandle = extractCategoryHandleFromAddress(apt.address)
+    if (counts[categoryHandle] !== undefined) {
+      counts[categoryHandle]++
+    }
+  })
+
+  return counts
+}
+
+// ============ PUBLIC API ============
+
+export async function getStayCategories(): Promise<TStayCategory[]> {
+  // Fetch apartments to get real counts
+  const apartments = await fetchApartmentsForCount()
+  const counts = countApartmentsByCategory(apartments)
+
+  console.log('[Categories] Apartment counts:', counts)
+
   return [
     {
       id: 'stay-cat://1',
@@ -33,14 +106,14 @@ export async function getStayCategories() {
       region: 'Romania',
       handle: 'cluj-napoca',
       href: '/stay-categories/cluj-napoca',
-      count: 9,
+      count: counts['cluj-napoca'] || 0, 
       thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Cluj-Napoca.jpg',
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
         height: stayCategoryCoverImage.height,
       },
-      description: 'lorem ipsum dolor sit amet',
+      description: 'Explore apartments in Cluj-Napoca',
     },
     {
       id: 'stay-cat://2',
@@ -48,14 +121,14 @@ export async function getStayCategories() {
       region: 'Romania',
       handle: 'baia-mare',
       href: '/stay-categories/baia-mare',
-      count: 13,
+      count: counts['baia-mare'] || 0, 
       thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/baia-mare.webp',
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
         height: stayCategoryCoverImage.height,
       },
-      description: 'lorem ipsum dolor sit amet',
+      description: 'Explore apartments in Baia Mare',
     },
     {
       id: 'stay-cat://3',
@@ -63,31 +136,34 @@ export async function getStayCategories() {
       region: 'Romania',
       handle: 'oradea',
       href: '/stay-categories/oradea',
-      count: 2,
+      count: counts['oradea'] || 0, 
       thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Oradea.jpg',
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
         height: stayCategoryCoverImage.height,
       },
-      description: 'lorem ipsum dolor sit amet',
-    }
+      description: 'Explore apartments in Oradea',
+    },
   ]
 }
 
-export async function getStayCategoryByHandle(handle?: string) {
+export async function getStayCategoryByHandle(handle?: string): Promise<TStayCategory | null> {
   handle = handle?.toLowerCase()
 
   if (!handle || handle === 'all') {
+    // Fetch total count for "all" category
+    const apartments = await fetchApartmentsForCount()
+    
     return {
       id: 'stay://all',
       name: 'Explore stays',
       handle: 'all',
       href: '/stay-categories/all',
-      region: 'Worldwide',
-      count: 144000,
-      description: 'Explore all stays around the world',
-      thumbnail: getCloudinaryUrl('cld-sample-5', 800, 600),
+      region: 'Romania',
+      count: apartments.length, 
+      description: 'Explore all stays in Romania',
+      thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Cluj-Napoca.jpg',
       coverImage: {
         src: stayCategoryCoverImage.src,
         width: stayCategoryCoverImage.width,
@@ -97,9 +173,7 @@ export async function getStayCategoryByHandle(handle?: string) {
   }
 
   const categories = await getStayCategories()
-  return categories.find((category) => category.handle === handle)
+  return categories.find((category) => category.handle === handle) || null
 }
 
-// types
-export type TStayCategory = Awaited<ReturnType<typeof getStayCategories>>[number]
 export type TCategory = TStayCategory
