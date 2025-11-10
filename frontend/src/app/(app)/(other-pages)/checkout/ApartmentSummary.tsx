@@ -3,104 +3,88 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getStayListingByHandle, getStayListings } from '@/data/listings'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY || ''
 
 interface Apartment {
   id: string
   name: string
-  address?: string
-  featuredImage?: string
-  images?: string[]
+  address: string
   price: number
-  handle?: string
-  title?: string
+  images: string[]
+  handle: string
 }
 
 interface ApartmentSummaryProps {
   apartmentId: string
 }
 
+function generateHandle(name: string, id: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim()
+  
+  return slug || id
+}
+
 export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps) {
   const [apartment, setApartment] = useState<Apartment | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!apartmentId) {
       setLoading(false)
+      setError('ID apartament lipsește')
+      return
+    }
+
+    if (apartmentId.startsWith('stay-listing://')) {
+      setLoading(false)
+      setError('Vă rugăm să selectați un apartament valid din backend')
+      return
+    }
+
+    if (!/^[0-9a-fA-F]{24}$/.test(apartmentId)) {
+      setLoading(false)
+      setError('ID apartament invalid')
       return
     }
 
     const fetchApartment = async () => {
       try {
-        // Dacă este ID mock (ex: stay-listing://cluj-1), folosește datele mock ca fallback
-        if (apartmentId.startsWith('stay-listing://')) {
-          // Extrage handle-ul din ID (ex: stay-listing://cluj-1 -> cluj-napoca-apartment-1)
-          const idPart = apartmentId.replace('stay-listing://', '')
-          // Încearcă să găsească listing-ul după handle sau după ID
-          const listings = await getStayListings()
-          let listing = listings.find((l) => l.id === apartmentId || l.handle?.includes(idPart))
-          
-          if (!listing) {
-            // Dacă nu găsește, folosește primul listing disponibil
-            listing = listings[0]
-          }
-          
-          // Obține listing-ul complet cu galleryImgs
-          const fullListing = await getStayListingByHandle(listing?.handle || 'cluj-napoca-apartment-1')
-          
-          if (fullListing) {
-            // featuredImage poate fi string sau obiect cu src
-            const featuredImg = typeof fullListing.featuredImage === 'string' 
-              ? fullListing.featuredImage 
-              : (fullListing.featuredImage as any)?.src || fullListing.featuredImage
-            
-            // galleryImgs este array de string-uri
-            const images = Array.isArray(fullListing.galleryImgs) 
-              ? fullListing.galleryImgs.map((img: any) => typeof img === 'string' ? img : img?.src || img)
-              : []
-            
-            setApartment({
-              id: fullListing.id,
-              name: fullListing.title || 'Apartment',
-              address: fullListing.address,
-              featuredImage: featuredImg,
-              images: images,
-              price: Number(String(fullListing.price || '0').replace(/[^0-9.-]+/g, '')) || 0,
-              handle: fullListing.handle,
-            })
-          }
-          setLoading(false)
-          return
-        }
-
-        // Pentru MongoDB ObjectId sau orice alt ID, face fetch la backend
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-        const API_KEY = process.env.NEXT_PUBLIC_API_KEY || ''
-
         const response = await fetch(`${API_BASE_URL}/api/apartments/${apartmentId}`, {
           headers: {
             'x-api-key': API_KEY,
           },
+          cache: 'no-store',
         })
 
-        if (response.ok) {
-          const data = await response.json()
-          // Map backend data to frontend format
-          setApartment({
-            id: data.id,
-            name: data.name,
-            address: data.address,
-            featuredImage: data.featuredImage || data.images?.[0],
-            images: data.images || [],
-            price: data.price || 0,
-            handle: data.handle || data.id,
-          })
-        } else {
-          console.warn(`Failed to fetch apartment ${apartmentId}: ${response.status}`)
+        if (!response.ok) {
+          throw new Error(`Apartamentul nu a fost găsit (${response.status})`)
         }
+
+        const data = await response.json()
+        const handle = generateHandle(data.name, data.id)
+        
+        const mappedApartment: Apartment = {
+          id: data.id,
+          name: data.name,
+          address: data.address || '',
+          price: data.price || 0,
+          images: data.images || [],
+          handle: handle,
+        }
+        
+        setApartment(mappedApartment)
+        setError(null)
       } catch (error) {
-        console.error('Error fetching apartment:', error)
-        // Nu aruncă eroarea, doar loghează
+        console.error('[ApartmentSummary] Error:', error)
+        setError(error instanceof Error ? error.message : 'Eroare la încărcarea apartamentului')
       } finally {
         setLoading(false)
       }
@@ -111,41 +95,80 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
 
   if (loading) {
     return (
-      <div className="mb-6 animate-pulse">
-        <div className="h-32 w-full rounded-lg bg-neutral-200 dark:bg-neutral-700"></div>
-        <div className="mt-3 h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700"></div>
+      <div className="mb-6 animate-pulse rounded-2xl border border-neutral-200 p-4 dark:border-neutral-700">
+        <div className="h-48 w-full rounded-xl bg-neutral-200 dark:bg-neutral-700"></div>
+        <div className="mt-4 h-6 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700"></div>
         <div className="mt-2 h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700"></div>
       </div>
     )
   }
 
-  if (!apartment) {
-    return null
+  if (error) {
+    return (
+      <div className="mb-6 rounded-2xl border-2 border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
+        <p className="font-semibold text-red-800 dark:text-red-200">⚠️ Eroare</p>
+        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+      </div>
+    )
   }
 
-  const imageUrl = apartment.featuredImage || apartment.images?.[0] || '/images/placeholder.jpg'
-  const apartmentLink = apartment.handle ? `/stay-listings/${apartment.handle}` : '#'
+  if (!apartment) {
+    return (
+      <div className="mb-6 rounded-2xl border-2 border-yellow-200 bg-yellow-50 p-6 dark:border-yellow-800 dark:bg-yellow-900/20">
+        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+          Apartamentul nu a fost găsit.
+        </p>
+      </div>
+    )
+  }
+
+  const imageUrl = apartment.images && apartment.images.length > 0 
+    ? apartment.images[0] 
+    : 'https://via.placeholder.com/400x300/e5e7eb/6b7280?text=No+Image'
+
+  const apartmentLink = `/stay-listings/${apartment.handle}`
 
   return (
-    <div className="mb-6 border-b border-neutral-200 pb-6 dark:border-neutral-700">
-      <Link href={apartmentLink} className="group block">
-        <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-          <Image
-            src={imageUrl}
-            alt={apartment.name}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 400px"
-          />
-        </div>
-        <h3 className="mt-3 text-lg font-semibold text-neutral-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
-          {apartment.name}
-        </h3>
-        {apartment.address && (
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{apartment.address}</p>
-        )}
-      </Link>
+    <div className="mb-6">
+      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
+        <Link href={apartmentLink} className="group block">
+          {/* IMAGINE APARTAMENT */}
+          <div className="relative h-52 w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+            <Image
+              src={imageUrl}
+              alt={apartment.name}
+              fill
+              priority
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 400px"
+              unoptimized={imageUrl.includes('cloudinary')}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.src = 'https://via.placeholder.com/400x300/e5e7eb/6b7280?text=Image+Error'
+              }}
+            />
+          </div>
+
+          {/* INFO APARTAMENT */}
+          <div className="p-5">
+            <h3 className="text-xl font-bold text-neutral-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
+              {apartment.name}
+            </h3>
+            
+            {apartment.address && (
+              <p className="mt-2 flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
+                <span>📍</span>
+                {apartment.address}
+              </p>
+            )}
+            
+            <p className="mt-3 text-2xl font-bold text-neutral-900 dark:text-white">
+              {apartment.price} RON{' '}
+              <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">/noapte</span>
+            </p>
+          </div>
+        </Link>
+      </div>
     </div>
   )
 }
-
