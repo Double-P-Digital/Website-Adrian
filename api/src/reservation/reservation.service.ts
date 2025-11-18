@@ -13,7 +13,6 @@ export class ReservationService {
 
   async create(reservationDto: CreateReservationDto): Promise<Reservation> {
     try {
-      console.log(reservationDto);
       const newReservation = new this.reservationModel(reservationDto);
 
       return await newReservation.save();

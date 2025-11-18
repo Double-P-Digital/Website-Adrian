@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApartmentService } from './apartment.service';
 import { Apartment } from './apartment.schema';
-import type ApartmentDto from './dto/apartment.dto';
+import { ApartmentDto } from './dto/apartment.dto';
 import { ApiKeyGuard } from '../security/guard';
 
 @UseGuards(ApiKeyGuard)
@@ -26,6 +26,11 @@ export class ApartmentController {
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Apartment> {
     return this.apartmentService.findOne(id);
+  }
+
+  @Get(':city')
+  findByCity(@Param('city') city: string): Promise<Apartment[]> {
+    return this.apartmentService.findByCity(city);
   }
 
   @Post()

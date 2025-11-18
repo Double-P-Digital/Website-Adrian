@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Apartment } from './apartment.schema';
 import { Model } from 'mongoose';
-import ApartmentDto from './dto/apartment.dto';
+import { ApartmentDto } from './dto/apartment.dto';
 import { handleDbError } from '../helpers/handleDbError';
 import { mapDocumentToDto } from '../utils/mapper.util';
 
@@ -14,6 +14,12 @@ export class ApartmentService {
 
   async findAll(): Promise<Apartment[]> {
     const apartments = await this.apartmentModel.find().exec();
+
+    return apartments.map((apt) => mapDocumentToDto(apt));
+  }
+
+  async findByCity(city: string): Promise<Apartment[]> {
+    const apartments = await this.apartmentModel.find({ city }).exec();
 
     return apartments.map((apt) => mapDocumentToDto(apt));
   }

@@ -26,10 +26,22 @@ export class Reservation extends Document {
   totalPrice: number;
 
   @Prop({ required: true })
+  currency: string;
+
+  @Prop({ required: true, unique: true })
   paymentIntentId: string;
 
   @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'cancelled'] })
   status: string;
+
+  @Prop()
+  externalBookingId: string;
+
+  @Prop({ default: false })
+  syncFailed: boolean;
+
+  @Prop()
+  syncError: string;
 }
 
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);
