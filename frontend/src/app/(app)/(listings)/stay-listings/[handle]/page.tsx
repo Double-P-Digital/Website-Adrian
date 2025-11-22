@@ -14,7 +14,7 @@ import {
   WaterPoloIcon,
   Wifi01Icon,
 } from '@/components/Icons'
-import { getStayListingByHandle } from '@/data/listings'
+import { getListingByHandle } from '@/services/listings'
 import ReserveButton from './ReserveButton'
 
 import ButtonSecondary from '@/shared/ButtonSecondary'
@@ -35,7 +35,7 @@ import SectionMap from '../../components/SectionMap'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params
-  const listing = await getStayListingByHandle(handle)
+  const listing = await getListingByHandle(handle)
 
   if (!listing) {
     return {
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 
 const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
   const { handle } = await params
-  const listing = await getStayListingByHandle(handle)
+  const listing = await getListingByHandle(handle)
 
   if (!listing?.id) {
     return redirect('/stay-categories/all')
@@ -68,8 +68,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     map,
     maxGuests,
     price,
-    reviewCount,
-    reviewStart,
     title,
     beds,
   } = listing
@@ -87,8 +85,6 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
       <SectionHeader
         address={address}
         listingCategory={listingCategory}
-        reviewCount={reviewCount}
-        reviewStart={reviewStart}
         title={title}
       >
         <div className="flex items-center gap-x-3">

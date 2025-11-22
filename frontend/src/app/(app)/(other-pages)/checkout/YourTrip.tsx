@@ -7,18 +7,49 @@ import { useT } from '@/hooks/useT'
 import { GuestsObject } from '@/type'
 import converSelectedDateToString from '@/utils/converSelectedDateToString'
 import { PencilSquareIcon } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const YourTrip = () => {
+interface YourTripProps {
+  onDatesChange?: (startDate: Date | null, endDate: Date | null) => void
+  onGuestsChange?: (guests: GuestsObject) => void
+}
+
+const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
   const T = useT()
   const { language } = useLanguage()
-  const [startDate, setStartDate] = useState<Date | null>(new Date('2025/02/06'))
-  const [endDate, setEndDate] = useState<Date | null>(new Date('2025/02/23'))
+  
+  // Folosește data curentă ca check-in și data curentă + 1 zi ca check-out (minim 1 noapte)
+  const getDefaultDates = () => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return { today, tomorrow }
+  }
+  
+  const { today, tomorrow } = getDefaultDates()
+  const [startDate, setStartDate] = useState<Date | null>(today)
+  const [endDate, setEndDate] = useState<Date | null>(tomorrow)
   const [guests, setGuests] = useState<GuestsObject>({
     guestAdults: 2,
     guestChildren: 1,
     guestInfants: 1,
   })
+
+  // Notifică părintele când se schimbă datele (inclusiv la mount)
+  useEffect(() => {
+    if (onDatesChange) {
+      onDatesChange(startDate, endDate)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDate, endDate])
+
+  // Notifică părintele când se schimbă oaspeții
+  useEffect(() => {
+    if (onGuestsChange) {
+      onGuestsChange(guests)
+    }
+  }, [guests, onGuestsChange])
 
   // ✅ Helpers for plural forms (works in English and Romanian)
   const formatGuests = (count: number) => {
@@ -45,6 +76,7 @@ const YourTrip = () => {
             const [start, end] = dates
             setStartDate(start)
             setEndDate(end)
+            // Callback-ul va fi apelat automat prin useEffect
           }}
           triggerButton={({ openModal }) => (
             <button

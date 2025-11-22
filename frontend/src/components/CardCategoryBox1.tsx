@@ -1,6 +1,6 @@
 'use client'
 
-import { TCategory } from '@/data/categories'
+import { Category } from '@/services/categories'
 import { useT } from '@/hooks/useT'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import Image from 'next/image'
@@ -9,7 +9,7 @@ import { FC } from 'react'
 
 export interface CardCategoryBox1Props {
   className?: string
-  category: TCategory
+  category: Category
 }
 
 const CardCategoryBox1: FC<CardCategoryBox1Props> = ({ className = '', category }) => {

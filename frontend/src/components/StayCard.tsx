@@ -1,7 +1,5 @@
-import BtnLikeIcon from '@/components/BtnLikeIcon'
 import SaleOffBadge from '@/components/SaleOffBadge'
-import StartRating from '@/components/StartRating'
-import { TStayListing } from '@/data/listings'
+import { Listing } from '@/services/listings'
 import { Badge } from '@/shared/Badge'
 import { Location06Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -11,7 +9,7 @@ import GallerySlider from './GallerySlider'
 
 interface StayCardProps {
   className?: string
-  data: TStayListing
+  data: Listing
   size?: 'default' | 'small'
 }
 
@@ -23,13 +21,12 @@ const StayCard: FC<StayCardProps> = ({ size = 'default', className = '', data })
     title,
     bedrooms,
     handle: listingHandle,
-    like,
-    saleOff,
-    isAds,
+    discountCode,
     price,
-    reviewStart,
-    reviewCount,
   } = data
+  
+  // Show sale badge if discount code exists
+  const saleOff = !!discountCode
 
   const listingHref = `/stay-listings/${listingHandle}`
 
@@ -42,7 +39,6 @@ const StayCard: FC<StayCardProps> = ({ size = 'default', className = '', data })
           href={listingHref}
           galleryClass={size === 'default' ? undefined : ''}
         />
-        <BtnLikeIcon isLiked={like} className="absolute end-3 top-3 z-1" />
         {saleOff && <SaleOffBadge className="absolute start-3 top-3" />}
       </div>
     )
@@ -56,7 +52,6 @@ const StayCard: FC<StayCardProps> = ({ size = 'default', className = '', data })
             {listingCategory} · {bedrooms} beds
           </span>
           <div className="flex items-center gap-x-2">
-            {isAds && <Badge color="green">ADS</Badge>}
             <h2 className={`text-base font-semibold text-neutral-900 capitalize dark:text-white`}>
               <span className="line-clamp-1">{title}</span>
             </h2>
@@ -77,7 +72,6 @@ const StayCard: FC<StayCardProps> = ({ size = 'default', className = '', data })
               <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400">/night</span>
             )}
           </span>
-          {!!reviewStart && <StartRating reviewCount={reviewCount} point={reviewStart} />}
         </div>
       </div>
     )

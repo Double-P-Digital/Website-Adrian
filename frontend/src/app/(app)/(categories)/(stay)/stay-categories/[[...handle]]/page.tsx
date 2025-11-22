@@ -2,8 +2,8 @@ import HeroSectionWithSearchForm1 from '@/components/hero-sections/HeroSectionWi
 import { StaySearchForm } from '@/components/HeroSearchForm/StaySearchForm'
 import ListingFilterTabs from '@/components/ListingFilterTabs'
 import StayCard2 from '@/components/StayCard2'
-import { getStayCategoryByHandle } from '@/data/categories'
-import { getStayListingFilterOptions, getStayListingsByCategory } from '@/data/listings'
+import { getCategoryByHandle } from '@/services/categories'
+import { getListingFilterOptions, getListingsByCategory } from '@/services/listings'
 import { Button } from '@/shared/Button'
 import { Divider } from '@/shared/divider'
 import PaginationComponent from '@/components/PaginationComponent'
@@ -16,7 +16,7 @@ import ListingHeaderClient from "./ListingHeaderClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ handle?: string[] }> }): Promise<Metadata> {
   const { handle } = await params
-  const category = await getStayCategoryByHandle(handle?.[0])
+  const category = await getCategoryByHandle(handle?.[0])
   if (!category) {
     return {
       title: 'Collection not found',
@@ -37,15 +37,56 @@ const Page = async ({ params, searchParams }: {
   const currentPage = Number(urlSearchParams.page) || 1
   const itemsPerPage = 12
 
-  const category = await getStayCategoryByHandle(handle?.[0])
-  const allListings = await getStayListingsByCategory(handle?.[0])
-  const filterOptions = await getStayListingFilterOptions()
+  // Extract filter parameters from URL
+  const city = typeof urlSearchParams.city === 'string' ? urlSearchParams.city : undefined
+  const checkin = typeof urlSearchParams.checkin === 'string' ? urlSearchParams.checkin : undefined
+  const checkout = typeof urlSearchParams.checkout === 'string' ? urlSearchParams.checkout : undefined
+  const guests = urlSearchParams.guests ? Number(urlSearchParams.guests) : undefined
+
+  console.log('[Page] Filter parameters from URL:', {
+    city,
+    checkin,
+    checkout,
+    guests,
+    allParams: urlSearchParams,
+  })
+
+  const category = await getCategoryByHandle(handle?.[0])
+  const allListings = await getListingsByCategory(handle?.[0], {
+    city,
+    checkin,
+    checkout,
+    guests,
+  })
+  
+  console.log('[Page] Filtered listings count:', allListings.length)
+  const filterOptions = await getListingFilterOptions()
 
   // Paginare
   const totalItems = allListings.length
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const listings = allListings.slice(startIndex, endIndex)
+  
+  console.log('[Page] Pagination:', {
+    currentPage,
+    itemsPerPage,
+    totalItems,
+    startIndex,
+    endIndex,
+    listingsCount: listings.length,
+    allListingsCount: allListings.length,
+  })
+  
+  if (listings.length > 0) {
+    console.log('[Page] First listing to display:', {
+      id: listings[0].id,
+      title: listings[0].title,
+      handle: listings[0].handle,
+      address: listings[0].address,
+      categoryHandle: listings[0].categoryHandle,
+    })
+  }
 
 
   if (!category?.id) {

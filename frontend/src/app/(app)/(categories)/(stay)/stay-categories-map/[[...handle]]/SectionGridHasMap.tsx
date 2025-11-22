@@ -3,8 +3,8 @@
 import ListingFilterTabs from '@/components/ListingFilterTabs'
 import StayCard2 from '@/components/StayCard2'
 import PaginationComponent from '@/components/PaginationComponent'
-import { TStayCategory } from '@/data/categories'
-import { getStayListingFilterOptions, TStayListing } from '@/data/listings'
+import { Category } from '@/services/categories'
+import { getListingFilterOptions, Listing } from '@/services/listings'
 import { Divider } from '@/shared/divider'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import clsx from 'clsx'
@@ -14,9 +14,9 @@ import MapFixedSection from '../../../MapFixedSection'
 
 interface Props {
   className?: string
-  listings: TStayListing[]
-  category: TStayCategory
-  filterOptions: Awaited<ReturnType<typeof getStayListingFilterOptions>>
+  listings: Listing[]
+  category: Category
+  filterOptions: Awaited<ReturnType<typeof getListingFilterOptions>>
 }
 
 const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, category, filterOptions }) => {

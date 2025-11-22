@@ -4,8 +4,11 @@ import HeroSearchForm from '@/components/HeroSearchForm/HeroSearchForm'
 
 import SectionGridCategoryBox from '@/components/SectionGridCategoryBox'
 import SectionHowItWork from '@/components/SectionHowItWork'
-import SectionVideos from '@/components/SectionVideos'
-import { getStayCategories } from '@/data/categories'
+import SectionTopBooked from '@/components/SectionTopBooked'
+// import SectionVideos from '@/components/SectionVideos'
+import { getAllCategories } from '@/services/categories'
+import { getTopBookedApartments } from '@/services/apartments'
+import { getAllListings } from '@/services/listings'
 import heroImage from '@/images/hero-right.png'
 import { Divider } from '@/shared/divider'
 import { Metadata } from 'next'
@@ -16,7 +19,14 @@ export const metadata: Metadata = {
 }
 
 async function Page() {
-  const categories = await getStayCategories()
+  const categories = await getAllCategories()
+  const topBookedApartments = await getTopBookedApartments(5)
+  // Convert apartments to listings format for display
+  const allListings = await getAllListings()
+  const topBookedListings = allListings.filter((listing) => 
+    topBookedApartments.some((apt) => apt.id === listing.id)
+  ).slice(0, 5)
+  
   return (
     <main className="relative overflow-hidden">
       <BgGlassmorphism />
@@ -36,7 +46,9 @@ async function Page() {
         <Divider />
         <SectionHowItWork />
         <Divider />
-        <SectionVideos />
+        <SectionTopBooked apartments={topBookedListings} />
+        {/* <Divider />
+        <SectionVideos /> */}
       </div>
     </main>
   )

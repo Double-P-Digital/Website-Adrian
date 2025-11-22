@@ -23,15 +23,54 @@ export const StaySearchForm = ({ className, formStyle = 'default' }: Props) => {
 
   const handleFormSubmit = (formData: FormData) => {
     const formDataEntries = Object.fromEntries(formData.entries())
-    console.log('Form submitted', formDataEntries)
-    // You can also redirect or perform other actions based on the form data
-
-    // example: add location to the URL
+    console.log('[StaySearchForm] Form submitted with data:', formDataEntries)
+    
+    // Build URL with all search parameters
+    // Note: LocationInputField uses 'location' as inputName by default
     const location = formDataEntries['location'] as string
+    const checkin = formDataEntries['checkin'] as string
+    const checkout = formDataEntries['checkout'] as string
+    const guestAdults = formDataEntries['guestAdults'] as string
+    const guestChildren = formDataEntries['guestChildren'] as string
+    const guestInfants = formDataEntries['guestInfants'] as string
+    
+    console.log('[StaySearchForm] Extracted values:', {
+      location,
+      checkin,
+      checkout,
+      guestAdults,
+      guestChildren,
+      guestInfants,
+    })
+    
     let url = '/stay-categories/all'
+    const params = new URLSearchParams()
+    
     if (location) {
-      url = url + `?location=${encodeURIComponent(location)}`
+      params.append('city', location)
+      console.log('[StaySearchForm] Added city to URL:', location)
     }
+    if (checkin) {
+      params.append('checkin', checkin)
+      console.log('[StaySearchForm] Added checkin to URL:', checkin)
+    }
+    if (checkout) {
+      params.append('checkout', checkout)
+      console.log('[StaySearchForm] Added checkout to URL:', checkout)
+    }
+    
+    // Calculate total guests
+    const totalGuests = (Number(guestAdults) || 0) + (Number(guestChildren) || 0) + (Number(guestInfants) || 0)
+    if (totalGuests > 0) {
+      params.append('guests', totalGuests.toString())
+      console.log('[StaySearchForm] Added guests to URL:', totalGuests)
+    }
+    
+    if (params.toString()) {
+      url = url + '?' + params.toString()
+    }
+    
+    console.log('[StaySearchForm] Navigating to:', url)
     router.push(url)
   }
 

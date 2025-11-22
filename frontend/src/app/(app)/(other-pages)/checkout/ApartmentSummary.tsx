@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || ''
+import { getApartmentForCheckout, type ApartmentForCheckout } from '@/services/apartments'
 
 interface Apartment {
   id: string
@@ -18,17 +16,6 @@ interface Apartment {
 
 interface ApartmentSummaryProps {
   apartmentId: string
-}
-
-function generateHandle(name: string, id: string): string {
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
-  
-  return slug || id
 }
 
 export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps) {
@@ -57,19 +44,11 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
 
     const fetchApartment = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/apartments/${apartmentId}`, {
-          headers: {
-            'x-api-key': API_KEY,
-          },
-          cache: 'no-store',
-        })
-
-        if (!response.ok) {
-          throw new Error(`Apartamentul nu a fost găsit (${response.status})`)
+        const data = await getApartmentForCheckout(apartmentId)
+        
+        if (!data) {
+          throw new Error('Apartamentul nu a fost găsit')
         }
-
-        const data = await response.json()
-        const handle = generateHandle(data.name, data.id)
         
         const mappedApartment: Apartment = {
           id: data.id,
@@ -77,7 +56,7 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
           address: data.address || '',
           price: data.price || 0,
           images: data.images || [],
-          handle: handle,
+          handle: data.handle,
         }
         
         setApartment(mappedApartment)

@@ -1,10 +1,8 @@
 'use client'
-import BtnLikeIcon from '@/components/BtnLikeIcon'
 import GallerySlider from '@/components/GallerySlider'
 import SaleOffBadge from '@/components/SaleOffBadge'
-import StartRating from '@/components/StartRating'
 import { useCurrency } from '@/context/CurrencyContext'
-import { TStayListing } from '@/data/listings'
+import { Listing } from '@/services/listings'
 import { useT } from '@/hooks/useT'
 import { Badge } from '@/shared/Badge'
 import { Location06Icon } from '@hugeicons/core-free-icons'
@@ -15,13 +13,22 @@ import { FC } from 'react'
 
 interface StayCard2Props {
   className?: string
-  data: TStayListing
+  data: Listing
   size?: 'default' | 'small'
 }
 
 const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data }) => {
   const T = useT()
   const { currency, convert } = useCurrency()
+
+  console.log('[StayCard2] Rendering listing:', {
+    id: data.id,
+    title: data.title,
+    galleryImgs: data.galleryImgs?.length || 0,
+    address: data.address,
+    bedrooms: data.bedrooms,
+    price: data.price,
+  })
 
   const {
     galleryImgs,
@@ -30,14 +37,13 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
     title,
     bedrooms,
     handle: listingHandle,
-    like,
-    saleOff,
-    isAds,
+    discountCode,
     price,
-    reviewStart,
-    reviewCount,
     id,
   } = data
+  
+  // Show sale badge if discount code exists
+  const saleOff = !!discountCode
 
   const listingHref = `/stay-listings/${listingHandle}`
   const numericPrice = Number(String(price).replace(/[^0-9.]/g, ''))
@@ -47,7 +53,6 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
     return (
       <div className="relative w-full">
         <GallerySlider ratioClass="aspect-w-12 aspect-h-11" galleryImgs={galleryImgs} href={listingHref} />
-        <BtnLikeIcon isLiked={like} className="absolute end-3 top-3 z-1" />
         {saleOff && <SaleOffBadge className="absolute start-3 top-3" />}
       </div>
     )
@@ -61,7 +66,6 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
             {listingCategory} · {bedrooms} beds
           </span>
           <div className="flex items-center gap-x-2">
-            {isAds && <Badge color="green">ADS</Badge>}
             <h2 className={`text-base font-semibold text-neutral-900 capitalize dark:text-white`}>
               <span className="line-clamp-1">{title}</span>
             </h2>
@@ -94,7 +98,6 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
               </>
             )}
           </div>
-          {!!reviewStart && <StartRating reviewCount={reviewCount} point={reviewStart} />}
         </div>
       </div>
     )
