@@ -1,13 +1,13 @@
 "use client";
 
-import { useT } from "@/hooks/useT"; // your existing translation hook
+import { useT } from "@/hooks/useT"; 
 import { Button } from "@/shared/Button";
 import { Divider } from '@/shared/divider';
 import { MapsLocation01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { TStayCategory } from "@/data/categories";
+import { Category } from "@/services/categories";
 
-export default function ListingHeaderClient({ category }: { category: TStayCategory }) {
+export default function ListingHeaderClient({ category }: { category: Category }) {
     const T = useT(); 
 
     const convertNumbThousand = (num: number) => num.toLocaleString();

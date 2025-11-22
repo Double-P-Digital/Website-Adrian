@@ -1,13 +1,11 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { createPaymentIntent, type CreatePaymentIntentRequest } from '@/services/payments'
 
 /**
  * Server Action pentru procesarea rezervării și crearea payment intent
  */
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || ''
 
 export async function handleCheckoutSubmit(formData: FormData) {
   try {
@@ -63,8 +61,8 @@ export async function handleCheckoutSubmit(formData: FormData) {
     // Construim numele complet
     const guestName = `${firstName} ${lastName}`
 
-    // Pregătim datele pentru backend - conform cu CreatePaymentIntentDto
-    const requestBody = {
+    // Pregătim datele pentru backend - conform cu CreatePaymentIntentRequest
+    const requestBody: CreatePaymentIntentRequest = {
       apartment: apartmentId,
       guestName,
       guestEmail: email,
@@ -72,67 +70,41 @@ export async function handleCheckoutSubmit(formData: FormData) {
       checkOutDate: new Date(checkOutDate).toISOString(),
       guestsCount,
       amount: totalPrice,
+      phoneNumber,
+      customerType: customerType || 'individual',
+      ...(customerType === 'company' && {
+        companyName: formData.get('companyName') as string,
+        taxId: formData.get('taxId') as string,
+        registrationNumber: formData.get('registrationNumber') as string | undefined,
+        companyAddress: formData.get('companyAddress') as string | undefined,
+      }),
     }
 
     console.log('=== SENDING TO BACKEND ===')
-    console.log('URL:', `${API_BASE_URL}/api/payments/create-intent`)
-    console.log('Body:', JSON.stringify(requestBody, null, 2))
-    console.log('API Key present:', !!API_KEY)
+    console.log('Request:', JSON.stringify(requestBody, null, 2))
 
-    // Creăm payment intent prin backend API
-    const paymentIntentResponse = await fetch(`${API_BASE_URL}/api/payments/create-intent`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-      },
-      body: JSON.stringify(requestBody),
-    })
-
-    console.log('=== BACKEND RESPONSE ===')
-    console.log('Status:', paymentIntentResponse.status)
-    console.log('Status Text:', paymentIntentResponse.statusText)
-
-    if (!paymentIntentResponse.ok) {
-      const errorText = await paymentIntentResponse.text()
-      console.error('Backend error response:', errorText)
+    try {
+      // Creăm payment intent prin API client
+      const response = await createPaymentIntent(requestBody)
       
-      let error: any
-      try {
-        error = JSON.parse(errorText)
-      } catch {
-        error = { message: errorText || 'Eroare la crearea payment intent' }
+      console.log('=== SUCCESS ===')
+      console.log('Response:', response)
+
+      const { clientSecret } = response
+
+      if (!clientSecret) {
+        throw new Error('Nu s-a primit clientSecret de la backend')
       }
-      
-      // NestJS ValidationPipe returnează erori în format diferit
-      let errorMessage = 'Eroare la procesarea plății'
-      
-      if (error.message) {
-        if (Array.isArray(error.message)) {
-          errorMessage = error.message.join(', ')
-        } else {
-          errorMessage = error.message
-        }
-      } else if (error.error) {
-        errorMessage = error.error
-      }
-      
-      console.error('Error message:', errorMessage)
-      throw new Error(errorMessage)
+
+      // Salvează datele rezervării pentru pagina de mulțumire
+      // (se va salva în sessionStorage din componentă)
+
+      // Returnăm clientSecret pentru a afișa formularul Stripe
+      return { success: true, clientSecret }
+    } catch (error: any) {
+      // Error handling este făcut în payments.ts
+      throw error
     }
-
-    const responseData = await paymentIntentResponse.json()
-    console.log('=== SUCCESS ===')
-    console.log('Response:', responseData)
-
-    const { clientSecret } = responseData
-
-    if (!clientSecret) {
-      throw new Error('Nu s-a primit clientSecret de la backend')
-    }
-
-    // Returnăm clientSecret pentru a afișa formularul Stripe
-    return { success: true, clientSecret }
   } catch (error) {
     console.error('=== ERROR IN CHECKOUT ===')
     console.error('Error:', error)

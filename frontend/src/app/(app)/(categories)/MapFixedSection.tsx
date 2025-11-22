@@ -1,6 +1,6 @@
 
 import StayCard from '@/components/StayCard'
-import {TStayListing } from '@/data/listings'
+import { Listing } from '@/services/listings'
 import { Button } from '@/shared/Button'
 import ButtonClose from '@/shared/ButtonClose'
 import { Checkbox, CheckboxField } from '@/shared/Checkbox'
@@ -14,7 +14,7 @@ import { Fragment, useEffect, useState } from 'react'
 
 interface Props {
   currentHoverID: string
-  listings: TStayListing[]
+  listings: Listing[]
   // The type of listing being displayed on the map.
   // This is used to determine the type of markers and interactions on the map.
   listingType: ListingType
@@ -102,7 +102,7 @@ const AdvancedMarkerCard = ({
   listingType,
   isSelected,
 }: {
-  listing: TStayListing 
+  listing: Listing 
   listingType: ListingType
   isSelected?: boolean
   lat: number

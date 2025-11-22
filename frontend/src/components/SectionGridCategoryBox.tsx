@@ -1,11 +1,11 @@
 'use client'
 import CardCategoryBox1 from '@/components/CardCategoryBox1'
-import { TCategory } from '@/data/categories'
+import { Category } from '@/services/categories'
 import React from 'react'
 import {useT} from "@/hooks/useT";
 
 interface SectionGridCategoryBoxProps {
-  categories: TCategory[]
+  categories: Category[]
   className?: string
 }
 

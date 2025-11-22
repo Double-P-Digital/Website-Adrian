@@ -45,9 +45,184 @@ export const DateRangeField: FC<Props> = ({
   panelClassName,
   isOnlySingleDate = false,
 }) => {
-  const [startDate, setStartDate] = useState<Date | null>(new Date('2025/09/08'))
-  const [endDate, setEndDate] = useState<Date | null>(new Date('2025/09/19'))
+  // Use current date as check-in and current date + 1 day as check-out (minimum 1 night)
+  const getDefaultDates = () => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return { today, tomorrow }
+  }
+  
+  const { today, tomorrow } = getDefaultDates()
+  const [startDate, setStartDate] = useState<Date | null>(today)
+  const [endDate, setEndDate] = useState<Date | null>(tomorrow)
   const T = useT();
+
+  const onChangeDate = (dates: [Date | null, Date | null]) => {
+    const [start, end] = dates
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    
+    // Comportament ca booking.com:
+    // 1. Dacă nu există niciun interval selectat
+    if (!startDate && !endDate) {
+      // Prima dată selectată devine check-in
+      if (start && !end) {
+        const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        if (startDateOnly < todayOnly) {
+          setStartDate(today)
+        } else {
+          setStartDate(start)
+        }
+        setEndDate(null)
+        return
+      }
+      // Dacă se selectează ambele date deodată
+      if (start && end) {
+        const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+        
+        // Verifică explicit că check-in și check-out nu sunt aceeași dată
+        if (startDateOnly.getTime() === endDateOnly.getTime()) {
+          setStartDate(start)
+          setEndDate(null)
+          return
+        }
+        
+        if (startDateOnly < todayOnly) {
+          setStartDate(today)
+        } else {
+          setStartDate(start)
+        }
+        
+        const actualStart = startDateOnly < todayOnly ? todayOnly : startDateOnly
+        const diffTime = endDateOnly.getTime() - actualStart.getTime()
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+        
+        if (diffDays >= 1) {
+          setEndDate(end)
+        } else {
+          setEndDate(null)
+        }
+        return
+      }
+    }
+    
+    // 2. Dacă există doar check-in selectat (se așteaptă check-out)
+    if (startDate && !endDate) {
+      if (start && end) {
+        // S-a selectat check-out
+        const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+        const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+        
+        // Verifică explicit că check-in și check-out nu sunt aceeași dată
+        if (startDateOnly.getTime() === endDateOnly.getTime()) {
+          setEndDate(null)
+          return
+        }
+        
+        const diffTime = endDateOnly.getTime() - startDateOnly.getTime()
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+        
+        if (diffDays >= 1) {
+          setEndDate(end)
+        } else {
+          setEndDate(null)
+        }
+        return
+      }
+      // Dacă se selectează o nouă dată
+      if (start && !end) {
+        const selectedDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        
+        // Verifică dacă data selectată este în trecut
+        if (selectedDateOnly < todayOnly) {
+          setStartDate(today)
+          setEndDate(null)
+          return
+        }
+        
+        // Orice dată selectată >= data curentă devine noul check-in
+        setStartDate(start)
+        setEndDate(null)
+        return
+      }
+    }
+    
+    // 3. Dacă există deja un interval complet (check-in și check-out)
+    // Orice dată selectată >= data curentă devine automat noul check-in (resetează check-out-ul)
+    if (startDate && endDate) {
+      // Dacă se selectează o dată nouă
+      if (start && !end) {
+        const selectedDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        
+        // Verifică dacă data selectată este în trecut
+        if (selectedDateOnly < todayOnly) {
+          setStartDate(today)
+          setEndDate(null)
+          return
+        }
+        
+        // Orice dată selectată >= data curentă devine noul check-in
+        setStartDate(start)
+        setEndDate(null)
+        return
+      }
+      
+      // Dacă se selectează ambele date (interval nou)
+      if (start && end) {
+        const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+        
+        if (startDateOnly < todayOnly) {
+          setStartDate(today)
+        } else {
+          setStartDate(start)
+        }
+        
+        const actualStart = startDateOnly < todayOnly ? todayOnly : startDateOnly
+        const diffTime = endDateOnly.getTime() - actualStart.getTime()
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+        
+        if (diffDays >= 1) {
+          setEndDate(end)
+        } else {
+          setEndDate(null)
+        }
+        return
+      }
+    }
+    
+    // Fallback: gestionează cazurile standard
+    if (start) {
+      const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+      if (startDateOnly < todayOnly) {
+        setStartDate(today)
+      } else {
+        setStartDate(start)
+      }
+    } else {
+      setStartDate(null)
+    }
+    
+    if (end) {
+      const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+      const currentStart = startDate || today
+      const currentStartOnly = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate())
+      const diffTime = endDateOnly.getTime() - currentStartOnly.getTime()
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+      
+      if (diffDays >= 1) {
+        setEndDate(end)
+      } else {
+        setEndDate(null)
+      }
+    } else {
+      setEndDate(null)
+    }
+  }
 
   return (
     <>
@@ -98,11 +273,24 @@ export const DateRangeField: FC<Props> = ({
                 <DatePicker
                   selected={startDate}
                   onChange={(date) => {
-                    setStartDate(date)
-                    // set end-date = start-date + 2 day
-                    setEndDate(new Date((date?.getTime() || 0) + 2 * 24 * 60 * 60 * 1000))
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+                    if (date && date < today) {
+                      setStartDate(today)
+                      setEndDate(new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000))
+                    } else {
+                      setStartDate(date)
+                      setEndDate(new Date((date?.getTime() || 0) + 2 * 24 * 60 * 60 * 1000))
+                    }
                   }}
                   startDate={startDate}
+                  minDate={new Date()}
+                  filterDate={(date) => {
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+                    const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                    return currentDate >= today
+                  }}
                   monthsShown={2}
                   showPopperArrow={false}
                   inline
@@ -112,19 +300,60 @@ export const DateRangeField: FC<Props> = ({
               ) : (
                 <DatePicker
                   selected={startDate}
-                  onChange={(dates) => {
-                    const [start, end] = dates
-                    setStartDate(start)
-                    setEndDate(end)
-                  }}
+                  onChange={onChangeDate}
                   startDate={startDate}
                   endDate={endDate}
+                  minDate={new Date()}
                   selectsRange
+                  filterDate={(date) => {
+                    // Nu permite selectarea datelor din trecut
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+                    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+                    const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                    
+                    if (currentDate < todayOnly) {
+                      return false
+                    }
+                    
+                    // Comportament ca booking.com:
+                    // 1. Dacă nu există niciun interval, permite toate datele viitoare
+                    if (!startDate && !endDate) {
+                      return true
+                    }
+                    
+                    // 2. Dacă există doar check-in, permite selectarea oricărei date valide (>= today)
+                    // Dar nu permite selectarea aceleiași zile ca check-in pentru check-out
+                    if (startDate && !endDate) {
+                      const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+                      
+                      // Nu permite selectarea aceleiași zile ca check-in
+                      if (currentDate.getTime() === startDateOnly.getTime()) {
+                        return false
+                      }
+                      
+                      return true
+                    }
+                    
+                    // 3. Dacă există interval complet, permite selectarea oricărei date valide (>= today)
+                    if (startDate && endDate) {
+                      return true
+                    }
+                    
+                    return true
+                  }}
                   monthsShown={2}
                   showPopperArrow={false}
                   inline
                   renderCustomHeader={(p) => <DatePickerCustomHeaderTwoMonth {...p} />}
-                  renderDayContents={(day, date) => <DatePickerCustomDay dayOfMonth={day} date={date} />}
+                  renderDayContents={(day, date) => (
+                    <DatePickerCustomDay 
+                      dayOfMonth={day} 
+                      date={date} 
+                      startDate={startDate}
+                      endDate={endDate}
+                    />
+                  )}
                 />
               )}
             </PopoverPanel>

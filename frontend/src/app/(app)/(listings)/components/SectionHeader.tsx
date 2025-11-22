@@ -1,5 +1,4 @@
 import LikeSaveBtns from '@/components/LikeSaveBtns'
-import StartRating from '@/components/StartRating'
 import { Badge } from '@/shared/Badge'
 import { Divider } from '@/shared/divider'
 import { Location06Icon } from '@hugeicons/core-free-icons'
@@ -9,13 +8,11 @@ import React from 'react'
 interface Props {
   title: string
   listingCategory: string
-  reviewStart: number
-  reviewCount: number
   address: string
   children?: React.ReactNode
 }
 
-const SectionHeader = ({ address, listingCategory, reviewCount, reviewStart, title, children }: Props) => {
+const SectionHeader = ({ address, listingCategory, title, children }: Props) => {
   return (
     <div className="relative listingSection__wrap">
       <LikeSaveBtns className="absolute end-0 -top-2 sm:end-3 sm:top-3 md:end-5 md:top-5" />
@@ -23,8 +20,6 @@ const SectionHeader = ({ address, listingCategory, reviewCount, reviewStart, tit
         <Badge>{listingCategory}</Badge>
         <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          <StartRating size="lg" point={reviewStart} reviewCount={reviewCount} />
-          <span>·</span>
           <div className="flex items-center">
             <HugeiconsIcon icon={Location06Icon} size={20} color="currentColor" className="mb-0.5" strokeWidth={1.5} />
             <span className="ms-1.5 text-neutral-700 dark:text-neutral-300">{address}</span>

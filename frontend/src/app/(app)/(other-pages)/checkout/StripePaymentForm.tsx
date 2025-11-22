@@ -49,7 +49,24 @@ export default function StripePaymentForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6">
-      <PaymentElement />
+      <PaymentElement 
+        options={{
+          // Activează Apple Pay și Google Pay (wallets)
+          wallets: {
+            applePay: 'auto', // 'auto' permite Apple Pay dacă este disponibil
+            googlePay: 'auto', // 'auto' permite Google Pay dacă este disponibil
+          },
+          // Permite introducerea doar a numelui și prenumelui de pe card
+          fields: {
+            billingDetails: {
+              name: 'auto', // Permite introducerea numelui și prenumelui de pe card
+              email: 'never', // Nu solicită email
+              phone: 'never', // Nu solicită telefon
+              address: 'never', // Nu solicită adresă
+            },
+          },
+        }}
+      />
       
       {errorMessage && (
         <div className="mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">

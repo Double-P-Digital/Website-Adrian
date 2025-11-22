@@ -3,21 +3,9 @@
 import { ButtonCircle } from '@/shared/Button'
 import SocialsShare from '@/shared/SocialsShare'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { HeartIcon as HeartIconOutline } from '@heroicons/react/24/outline'
-import { HeartIcon } from '@heroicons/react/24/solid'
 import { Share03Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
-import { useState } from 'react'
-
-export const LikeButton = () => {
-  const [isLiked, setIsLiked] = useState(false)
-  return (
-    <ButtonCircle outline onClick={() => setIsLiked(!isLiked)}>
-      {isLiked ? <HeartIcon className={'size-5! text-red-400'} /> : <HeartIconOutline className="size-5!" />}
-    </ButtonCircle>
-  )
-}
 
 export const ShareButton = () => {
   return (
@@ -43,7 +31,6 @@ export const ShareButton = () => {
 const LikeSaveBtns = ({ className }: { className?: string }) => {
   return (
     <div className={clsx('flex gap-2', className)}>
-      <LikeButton />
       <ShareButton />
     </div>
   )

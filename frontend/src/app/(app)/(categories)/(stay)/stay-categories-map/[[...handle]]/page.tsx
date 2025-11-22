@@ -1,12 +1,12 @@
-import { getStayCategoryByHandle } from '@/data/categories'
-import { getStayListingFilterOptions, getStayListingsByCategory } from '@/data/listings'
+import { getCategoryByHandle } from '@/services/categories'
+import { getListingFilterOptions, getListingsByCategory } from '@/services/listings'
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import SectionGridHasMap from './SectionGridHasMap'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle?: string[] }> }): Promise<Metadata> {
   const { handle } = await params
-  const category = await getStayCategoryByHandle(handle?.[0])
+  const category = await getCategoryByHandle(handle?.[0])
   if (!category) {
     return {
       title: 'Collection not found',
@@ -19,9 +19,9 @@ export async function generateMetadata({ params }: { params: Promise<{ handle?: 
 
 const Page = async ({ params }: { params: Promise<{ handle?: string[] }> }) => {
   const { handle } = await params
-  const category = await getStayCategoryByHandle(handle?.[0])
-  const listings = await getStayListingsByCategory(handle?.[0])
-  const filterOptions = await getStayListingFilterOptions()
+  const category = await getCategoryByHandle(handle?.[0])
+  const listings = await getListingsByCategory(handle?.[0])
+  const filterOptions = await getListingFilterOptions()
 
   if (!category?.id) {
     return redirect('/stay-categories/all')
