@@ -4,9 +4,11 @@ import NcInputNumber from '@/components/NcInputNumber'
 import { GuestsObject } from '@/type'
 import { useT } from '@/hooks/useT'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { UserPlusIcon } from '@heroicons/react/24/outline'
+import { UserPlusIcon, UserIcon } from '@heroicons/react/24/outline'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { UserIcon as HugeUserIcon, Baby01Icon, UserGroupIcon } from '@hugeicons/core-free-icons'
 import clsx from 'clsx'
-import { FC, useState } from 'react'
+import { FC, useState, ReactElement } from 'react'
 import { ClearDataButton } from './ClearDataButton'
 
 const styles = {
@@ -64,6 +66,58 @@ export const GuestNumberField: FC<Props> = ({
   }
 
   const totalGuests = guestChildrenInputValue + guestAdultsInputValue + guestInfantsInputValue
+
+  // Generate guest display text with icons
+  const getGuestDisplayText = () => {
+    if (totalGuests === 0) {
+      return T['HeroSearchForm']['Add guests']
+    }
+
+    const parts: ReactElement[] = []
+    
+    if (guestAdultsInputValue > 0) {
+      parts.push(
+        <span key="adults" className="inline-flex items-center gap-1">
+          {guestAdultsInputValue}x
+          <HugeiconsIcon icon={HugeUserIcon} size={14} color="currentColor" strokeWidth={1.5} />
+        </span>
+      )
+    }
+    
+    if (guestChildrenInputValue > 0) {
+      parts.push(
+        <span key="children" className="inline-flex items-center gap-1">
+          {guestChildrenInputValue}x
+          <HugeiconsIcon icon={UserGroupIcon} size={14} color="currentColor" strokeWidth={1.5} />
+        </span>
+      )
+    }
+    
+    if (guestInfantsInputValue > 0) {
+      parts.push(
+        <span key="infants" className="inline-flex items-center gap-1">
+          {guestInfantsInputValue}x
+          <HugeiconsIcon icon={Baby01Icon} size={14} color="currentColor" strokeWidth={1.5} />
+        </span>
+      )
+    }
+
+    if (parts.length === 0) {
+      return T['HeroSearchForm']['Add guests']
+    }
+
+    return (
+      <span className="flex flex-wrap items-center gap-x-1.5">
+        {parts.map((part, index) => (
+          <span key={index} className="inline-flex items-center">
+            {part}
+            {index < parts.length - 1 && <span className="mx-1 text-neutral-300">·</span>}
+          </span>
+        ))}
+      </span>
+    )
+  }
+
   return (
     <Popover className={`group relative z-10 flex ${className}`}>
       {({ open: showPopover }) => (
@@ -80,7 +134,7 @@ export const GuestNumberField: FC<Props> = ({
                 {T.HeroSearchForm.Guests}
               </span>
               <span className="mt-1 block text-sm leading-none font-light text-neutral-400">
-                {totalGuests ? T['HeroSearchForm']['Guests'] : T['HeroSearchForm']['Add guests']}
+                {getGuestDisplayText()}
               </span>
             </div>
           </PopoverButton>

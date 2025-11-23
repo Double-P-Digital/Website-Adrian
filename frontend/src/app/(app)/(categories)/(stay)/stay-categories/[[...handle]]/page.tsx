@@ -42,12 +42,16 @@ const Page = async ({ params, searchParams }: {
   const checkin = typeof urlSearchParams.checkin === 'string' ? urlSearchParams.checkin : undefined
   const checkout = typeof urlSearchParams.checkout === 'string' ? urlSearchParams.checkout : undefined
   const guests = urlSearchParams.guests ? Number(urlSearchParams.guests) : undefined
+  const priceMin = urlSearchParams.price_min ? Number(urlSearchParams.price_min) : undefined
+  const priceMax = urlSearchParams.price_max ? Number(urlSearchParams.price_max) : undefined
 
   console.log('[Page] Filter parameters from URL:', {
     city,
     checkin,
     checkout,
     guests,
+    priceMin,
+    priceMax,
     allParams: urlSearchParams,
   })
 
@@ -57,6 +61,8 @@ const Page = async ({ params, searchParams }: {
     checkin,
     checkout,
     guests,
+    priceMin,
+    priceMax,
   })
   
   console.log('[Page] Filtered listings count:', allListings.length)

@@ -156,6 +156,8 @@ export interface ListingFilterOptions {
   checkin?: string
   checkout?: string
   guests?: number
+  priceMin?: number
+  priceMax?: number
 }
 
 /**
@@ -276,8 +278,48 @@ export async function getListingsByCategory(
       })
     }
 
+    // Filter by price range
+    if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
+      const beforePriceFilter = listings.length
+      const priceMin = filters.priceMin ?? 0
+      const priceMax = filters.priceMax ?? Infinity
+      
+      console.log('[Listings Service] Filtering by price:', {
+        priceMin,
+        priceMax: priceMax === Infinity ? 'no limit' : priceMax,
+        filterLogic: 'priceMin <= listing.price <= priceMax',
+      })
+      
+      listings = listings.filter((listing) => {
+        // Extract numeric price from "60 RON" format
+        const numericPrice = Number(listing.price.replace(/[^0-9.-]+/g, ''))
+        
+        const inRange = numericPrice >= priceMin && numericPrice <= priceMax
+        if (!inRange) {
+          console.log('[Listings Service] Listing filtered out by price:', {
+            listingId: listing.id,
+            listingTitle: listing.title,
+            listingPrice: listing.price,
+            numericPrice: numericPrice,
+            priceMin: priceMin,
+            priceMax: priceMax === Infinity ? 'no limit' : priceMax,
+            reason: 'price out of range',
+          })
+        }
+        return inRange
+      })
+      
+      console.log('[Listings Service] After price filter:', {
+        remainingListings: listings.length,
+        beforeFilter: beforePriceFilter,
+        priceMin: priceMin,
+        priceMax: priceMax === Infinity ? 'no limit' : priceMax,
+        removed: beforePriceFilter - listings.length,
+      })
+    }
+
     // Note: checkin/checkout filtering would require availability data from backend
-    // For now, we only filter by city and guests
+    // For now, we filter by city, guests, and price
     // TODO: Implement availability checking when backend endpoint is available
     
     console.log('[Listings Service] Final filtered listings count:', listings.length)

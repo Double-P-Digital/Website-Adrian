@@ -24,7 +24,8 @@ import { FilterVerticalIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import Form from 'next/form'
-import {useEffect, useState} from 'react'
+import { useState } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { PriceRangeSlider } from './PriceRangeSlider'
 
 type CheckboxFilter = {
@@ -263,7 +264,14 @@ const CheckboxPanel = ({ filterOption, className }: { filterOption: CheckboxFilt
   )
 }
 const PriceRagePanel = ({ filterOption: { min, max, name } }: { filterOption: PriceRangeFilter }) => {
-  const [rangePrices, setRangePrices] = useState([min, max])
+  const searchParams = useSearchParams()
+  const priceMinFromUrl = searchParams.get('price_min') ? Number(searchParams.get('price_min')) : undefined
+  const priceMaxFromUrl = searchParams.get('price_max') ? Number(searchParams.get('price_max')) : undefined
+  
+  const [rangePrices, setRangePrices] = useState([
+    priceMinFromUrl ?? min,
+    priceMaxFromUrl ?? max
+  ])
 
   return <PriceRangeSlider defaultValue={rangePrices} onChange={setRangePrices} min={min} max={max} />
 }
@@ -300,11 +308,68 @@ const ListingFilterTabs = ({
   filterOptions?: Partial<typeof demo_filters_options>
 }) => {
   const T = useT()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [showAllFilter, setShowAllFilter] = useState(false)
+
+  // Calculate number of active filters from URL params
+  const getActiveFiltersCount = () => {
+    let count = 0
+    
+    // Count checkbox filters (arrays)
+    searchParams.forEach((value, key) => {
+      if (key.includes('[]') || Array.isArray(searchParams.getAll(key))) {
+        const values = searchParams.getAll(key)
+        if (values.length > 0) count += values.length
+      } else if (key !== 'page' && value && value !== '') {
+        // Count other filters (price range, number inputs, etc.)
+        count++
+      }
+    })
+    
+    return count
+  }
+
+  const activeFiltersCount = getActiveFiltersCount()
 
   const handleFormSubmit = async (formData: FormData) => {
     const formDataObject = Object.fromEntries(formData.entries())
-    //console.log('Form submitted with data:', formDataObject)
+    console.log('[ListingFilterTabs] Form submitted with data:', formDataObject)
+    
+    // Build URL with filter parameters
+    const params = new URLSearchParams(searchParams.toString())
+    
+    // Remove old filter params (except page, city, checkin, checkout, guests)
+    const preserveParams = ['page', 'city', 'checkin', 'checkout', 'guests']
+    const keysToRemove: string[] = []
+    params.forEach((_, key) => {
+      if (!preserveParams.includes(key)) {
+        keysToRemove.push(key)
+      }
+    })
+    keysToRemove.forEach(key => params.delete(key))
+    
+    // Add new filter params
+    Object.entries(formDataObject).forEach(([key, value]) => {
+      if (value && value !== '') {
+        if (key.includes('[]')) {
+          // Handle array values (checkboxes)
+          const baseKey = key.replace('[]', '')
+          params.delete(baseKey) // Remove old values
+          const values = Array.isArray(value) ? value : [value]
+          values.forEach(v => params.append(baseKey, v))
+        } else {
+          params.set(key, value as string)
+        }
+      }
+    })
+    
+    // Reset to page 1 when filters change
+    params.set('page', '1')
+    
+    // Navigate to new URL
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   const renderTabAllFilters = () => {
@@ -317,9 +382,11 @@ const ListingFilterTabs = ({
         >
           <HugeiconsIcon icon={FilterVerticalIcon} size={16} color="currentColor" strokeWidth={1.5} />
           <span>{T['common']['All filters']}</span>
-          <span className="absolute top-0 -right-0.5 flex size-5 items-center justify-center rounded-full bg-black text-[0.65rem] font-semibold text-white ring-2 ring-white dark:bg-neutral-200 dark:text-neutral-900 dark:ring-neutral-900">
-            4
-          </span>
+          {activeFiltersCount > 0 && (
+            <span className="absolute top-0 -right-0.5 flex size-5 items-center justify-center rounded-full bg-black text-[0.65rem] font-semibold text-white ring-2 ring-white dark:bg-neutral-200 dark:text-neutral-900 dark:ring-neutral-900">
+              {activeFiltersCount}
+            </span>
+          )}
         </Button>
 
         <Dialog
