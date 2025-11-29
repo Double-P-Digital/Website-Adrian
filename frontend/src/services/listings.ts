@@ -163,8 +163,6 @@ export async function getListingsByCategory(
 
   // Apply additional filters
   if (filters) {
-    const initialCount = listings.length
-    
     // Filter by search query (name, address, description)
     if (filters.query && filters.query.trim()) {
       const queryLower = filters.query.toLowerCase().trim()
@@ -319,11 +317,8 @@ export async function getListingsByCategory(
     // Note: checkin/checkout filtering would require availability data from backend
     // For now, we only filter by city, guests, price, bedrooms, and bathrooms
     // TODO: Implement availability checking when backend endpoint is available
-    
-    console.log('[Listings Service] After all filters:', listings.length)
   }
 
-  console.log('[Listings Service] Final listings count:', listings.length)
   return listings
 }
 
