@@ -9,7 +9,7 @@ import { ListingType } from '@/type'
 import T from '@/utils/getT'
 import { Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import { AdvancedMarker, ControlPosition, Map, MapControl } from '@vis.gl/react-google-maps'
+import { AdvancedMarker, ControlPosition, Map, MapControl, useMap } from '@vis.gl/react-google-maps'
 import { Fragment, useEffect, useState } from 'react'
 
 interface Props {
@@ -23,11 +23,39 @@ interface Props {
   closeButtonHref: string
 }
 
+// Component pentru a controla centrarea hărții
+const MapController = ({ selectedListingId, listings }: { selectedListingId: string; listings: Listing[] }) => {
+  const map = useMap()
+  
+  useEffect(() => {
+    if (!map || !selectedListingId) return
+    
+    const selectedListing = listings.find(listing => listing.id === selectedListingId)
+    if (selectedListing) {
+      map.setCenter({
+        lat: selectedListing.map.lat,
+        lng: selectedListing.map.lng,
+      })
+      map.setZoom(15) // Zoom mai aproape când se selectează un apartament
+    }
+  }, [map, selectedListingId, listings])
+  
+  return null
+}
+
 const MapFixedSection = ({ closeButtonHref, currentHoverID: selectedID, listings, listingType }: Props) => {
   const [currentHoverID, setCurrentHoverID] = useState<string>('')
+  const [selectedListingId, setSelectedListingId] = useState<string>('')
 
   useEffect(() => {
     setCurrentHoverID(selectedID)
+  }, [selectedID])
+  
+  // Când se schimbă selectedID (de la click), setează selectedListingId pentru centrare
+  useEffect(() => {
+    if (selectedID) {
+      setSelectedListingId(selectedID)
+    }
   }, [selectedID])
 
   return (
@@ -39,10 +67,11 @@ const MapFixedSection = ({ closeButtonHref, currentHoverID: selectedID, listings
             height: '100%',
           }}
           defaultZoom={12}
-          defaultCenter={listings[0].map}
+          defaultCenter={listings[0]?.map || { lat: 46.7712, lng: 23.6236 }}
           gestureHandling={'greedy'}
-          mapId={process.env.NEXT_PUBLIC_GOOGLE_MAP_ID}
+          mapId={process.env.NEXT_PUBLIC_GOOGLE_MAP_ID || undefined}
         >
+          <MapController selectedListingId={selectedListingId} listings={listings} />
           <MapControl position={ControlPosition.TOP_CENTER}>
             <div className="z-10 mt-5 min-w-max rounded-2xl bg-neutral-100 px-4 py-2 shadow-xl dark:bg-neutral-900">
               <CheckboxField>

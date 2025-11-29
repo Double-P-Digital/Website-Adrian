@@ -24,6 +24,7 @@ const CardCategoryBox1: FC<CardCategoryBox1Props> = ({ className = '', category 
           src={thumbnail || ''}
           className="rounded-2xl object-cover object-center"
           sizes="(max-width: 400px) 100vw, 400px"
+          unoptimized={true}
         />
         <span className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover:opacity-100"></span>
       </div>

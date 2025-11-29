@@ -1,6 +1,5 @@
 'use client'
 import GallerySlider from '@/components/GallerySlider'
-import SaleOffBadge from '@/components/SaleOffBadge'
 import { useCurrency } from '@/context/CurrencyContext'
 import { Listing } from '@/services/listings'
 import { useT } from '@/hooks/useT'
@@ -9,7 +8,8 @@ import { Location06Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import Link from 'next/link'
-import { FC } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { FC, useMemo } from 'react'
 
 interface StayCard2Props {
   className?: string
@@ -20,15 +20,7 @@ interface StayCard2Props {
 const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data }) => {
   const T = useT()
   const { currency, convert } = useCurrency()
-
-  console.log('[StayCard2] Rendering listing:', {
-    id: data.id,
-    title: data.title,
-    galleryImgs: data.galleryImgs?.length || 0,
-    address: data.address,
-    bedrooms: data.bedrooms,
-    price: data.price,
-  })
+  const searchParams = useSearchParams()
 
   const {
     galleryImgs,
@@ -37,33 +29,52 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
     title,
     bedrooms,
     handle: listingHandle,
-    discountCode,
     price,
     id,
   } = data
-  
-  // Show sale badge if discount code exists
-  const saleOff = !!discountCode
 
-  const listingHref = `/stay-listings/${listingHandle}`
+  // Păstrează parametrii URL când navighează la detalii
+  const listingHref = useMemo(() => {
+    const baseUrl = `/stay-listings/${listingHandle}`
+    const params = new URLSearchParams()
+    
+    // Păstrează parametrii relevanți din URL
+    const checkin = searchParams.get('checkin')
+    const checkout = searchParams.get('checkout')
+    const guestAdults = searchParams.get('guestAdults')
+    const guestChildren = searchParams.get('guestChildren')
+    const guestRooms = searchParams.get('guestRooms')
+    
+    if (checkin) params.set('checkin', checkin)
+    if (checkout) params.set('checkout', checkout)
+    if (guestAdults) params.set('guestAdults', guestAdults)
+    if (guestChildren) params.set('guestChildren', guestChildren)
+    if (guestRooms) params.set('guestRooms', guestRooms)
+    
+    const queryString = params.toString()
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl
+  }, [listingHandle, searchParams])
+  
   const numericPrice = Number(String(price).replace(/[^0-9.]/g, ''))
   const convertedPrice = convert(numericPrice, 'RON', currency)
+
+  // Limităm la primele 5 poze
+  const limitedGalleryImgs = galleryImgs?.slice(0, 5) || []
 
   const renderSliderGallery = () => {
     return (
       <div className="relative w-full">
-        <GallerySlider ratioClass="aspect-w-12 aspect-h-11" galleryImgs={galleryImgs} href={listingHref} />
-        {saleOff && <SaleOffBadge className="absolute start-3 top-3" />}
+        <GallerySlider ratioClass="aspect-w-12 aspect-h-11" galleryImgs={limitedGalleryImgs} href={listingHref} />
       </div>
     )
   }
 
   const renderContent = () => {
     return (
-      <div className={clsx(size === 'default' ? 'mt-3 gap-y-3' : 'mt-2 gap-y-2', 'flex flex-col')}>
-        <div className="flex flex-col gap-y-2">
+      <div className={clsx(size === 'default' ? 'mt-3 gap-y-3' : 'mt-2 gap-y-2', 'flex flex-col h-full')}>
+        <div className="flex flex-col gap-y-2 flex-1">
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            {listingCategory} · {bedrooms} beds
+            {T.ListingPage[listingCategory as keyof typeof T.ListingPage] || listingCategory} · {bedrooms} {T.ListingPage.beds}
           </span>
           <div className="flex items-center gap-x-2">
             <h2 className={`text-base font-semibold text-neutral-900 capitalize dark:text-white`}>
@@ -80,11 +91,11 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
                 strokeWidth={1.5}
               />
             )}
-            <span>{address}</span>
+            <span className="line-clamp-2">{address}</span>
           </div>
         </div>
         <div className="w-14 border-b border-neutral-100 dark:border-neutral-800"></div>
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-end justify-between gap-2 mt-auto">
           <div>
             <span className="text-base font-semibold">
               {convertedPrice.toFixed(2)} {currency}
@@ -104,9 +115,11 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
   }
 
   return (
-    <div className={`group relative ${className}`}>
+    <div className={`group relative flex flex-col ${className}`}>
       {renderSliderGallery()}
-      <Link href={listingHref}>{renderContent()}</Link>
+      <Link href={listingHref} className="flex flex-col flex-1">
+        {renderContent()}
+      </Link>
     </div>
   )
 }

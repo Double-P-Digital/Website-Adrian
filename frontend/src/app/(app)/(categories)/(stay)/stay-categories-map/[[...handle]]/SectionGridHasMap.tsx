@@ -8,7 +8,7 @@ import { getListingFilterOptions, Listing } from '@/services/listings'
 import { Divider } from '@/shared/divider'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import clsx from 'clsx'
-import { FC, useState, useMemo } from 'react'
+import { FC, useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import MapFixedSection from '../../../MapFixedSection'
 
@@ -21,9 +21,18 @@ interface Props {
 
 const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, category, filterOptions }) => {
   const [currentHoverID, setCurrentHoverID] = useState<string>('')
+  const [selectedListingId, setSelectedListingId] = useState<string>('')
   const searchParams = useSearchParams()
   const currentPage = Number(searchParams.get('page')) || 1
   const itemsPerPage = 12
+  
+  // Citește listingId din URL pentru a centra harta
+  useEffect(() => {
+    const listingIdFromUrl = searchParams.get('listingId')
+    if (listingIdFromUrl) {
+      setSelectedListingId(listingIdFromUrl)
+    }
+  }, [searchParams])
   
   // Paginare cu useMemo pentru performance
   const { listings, totalItems } = useMemo(() => {
@@ -48,8 +57,19 @@ const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, catego
           {listings.map((listing) => (
             <div
               key={listing.id}
-              onMouseEnter={() => setCurrentHoverID(listing.id)}
-              onMouseLeave={() => setCurrentHoverID('')}
+              onMouseEnter={() => {
+                // Când mouse-ul este peste card, centrează harta pe el
+                setCurrentHoverID(listing.id)
+                setSelectedListingId(listing.id)
+                // Actualizează URL-ul cu listingId fără să reîncărci pagina
+                const params = new URLSearchParams(searchParams.toString())
+                params.set('listingId', listing.id)
+                window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`)
+              }}
+              onMouseLeave={() => {
+                // Când mouse-ul părăsește card-ul, păstrează selecția dar resetează hover
+                setCurrentHoverID('')
+              }}
             >
               <StayCard2 data={listing} />
             </div>
@@ -61,8 +81,20 @@ const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, catego
       </div>
 
       <MapFixedSection
-        closeButtonHref={`/stay-categories/${category.handle}#heading`}
-        currentHoverID={currentHoverID}
+        closeButtonHref={(() => {
+          // Construiește URL-ul pentru înapoi păstrând toate filtrele din URL (fără listingId)
+          const baseUrl = `/stay-categories/${category.handle}`
+          const params = new URLSearchParams()
+          searchParams.forEach((value, key) => {
+            // Nu include listingId în URL-ul de înapoi
+            if (key !== 'listingId') {
+              params.append(key, value)
+            }
+          })
+          const queryString = params.toString()
+          return queryString ? `${baseUrl}?${queryString}#heading` : `${baseUrl}#heading`
+        })()}
+        currentHoverID={selectedListingId || currentHoverID}
         listings={allListings}
         listingType="Stays"
       />

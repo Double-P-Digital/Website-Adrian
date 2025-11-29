@@ -8,6 +8,8 @@ import { GuestsObject } from '@/type'
 import converSelectedDateToString from '@/utils/converSelectedDateToString'
 import { PencilSquareIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { formatDateToYYYYMMDD, parseYYYYMMDDToDate } from '@/utils/dateUtils'
 
 interface YourTripProps {
   onDatesChange?: (startDate: Date | null, endDate: Date | null) => void
@@ -17,6 +19,14 @@ interface YourTripProps {
 const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
   const T = useT()
   const { language } = useLanguage()
+  const searchParams = useSearchParams()
+  
+  // Citește datele din URL
+  const urlCheckin = searchParams.get('checkin')
+  const urlCheckout = searchParams.get('checkout')
+  const urlGuestAdults = searchParams.get('guestAdults')
+  const urlGuestChildren = searchParams.get('guestChildren')
+  const urlGuestRooms = searchParams.get('guestRooms')
   
   // Folosește data curentă ca check-in și data curentă + 1 zi ca check-out (minim 1 noapte)
   const getDefaultDates = () => {
@@ -28,13 +38,73 @@ const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
   }
   
   const { today, tomorrow } = getDefaultDates()
-  const [startDate, setStartDate] = useState<Date | null>(today)
-  const [endDate, setEndDate] = useState<Date | null>(tomorrow)
-  const [guests, setGuests] = useState<GuestsObject>({
-    guestAdults: 2,
-    guestChildren: 1,
-    guestInfants: 1,
+  
+  // Inițializează datele din URL sau folosește default-uri
+  const [startDate, setStartDate] = useState<Date | null>(() => {
+    if (urlCheckin) {
+      try {
+        return parseYYYYMMDDToDate(urlCheckin)
+      } catch {
+        return today
+      }
+    }
+    return today
   })
+  const [endDate, setEndDate] = useState<Date | null>(() => {
+    if (urlCheckout) {
+      try {
+        return parseYYYYMMDDToDate(urlCheckout)
+      } catch {
+        return tomorrow
+      }
+    }
+    return tomorrow
+  })
+  const [guests, setGuests] = useState<GuestsObject>({
+    guestAdults: urlGuestAdults ? Number(urlGuestAdults) : 2,
+    guestChildren: urlGuestChildren ? Number(urlGuestChildren) : 1,
+    guestRooms: urlGuestRooms ? Number(urlGuestRooms) : 1,
+  })
+  
+  // Sincronizează cu URL când se schimbă
+  useEffect(() => {
+    const urlCheckin = searchParams.get('checkin')
+    const urlCheckout = searchParams.get('checkout')
+    const urlGuestAdults = searchParams.get('guestAdults')
+    const urlGuestChildren = searchParams.get('guestChildren')
+    const urlGuestRooms = searchParams.get('guestRooms')
+    
+    if (urlCheckin) {
+      try {
+        const newStart = parseYYYYMMDDToDate(urlCheckin)
+        if (!startDate || formatDateToYYYYMMDD(startDate) !== urlCheckin) {
+          setStartDate(newStart)
+        }
+      } catch {
+        // Ignoră date invalide
+      }
+    }
+    
+    if (urlCheckout) {
+      try {
+        const newEnd = parseYYYYMMDDToDate(urlCheckout)
+        if (!endDate || formatDateToYYYYMMDD(endDate) !== urlCheckout) {
+          setEndDate(newEnd)
+        }
+      } catch {
+        // Ignoră date invalide
+      }
+    }
+    
+    if (urlGuestAdults || urlGuestChildren || urlGuestRooms) {
+      setGuests({
+        guestAdults: urlGuestAdults ? Number(urlGuestAdults) : guests.guestAdults,
+        guestChildren: urlGuestChildren ? Number(urlGuestChildren) : guests.guestChildren,
+        guestRooms: urlGuestRooms ? Number(urlGuestRooms) : guests.guestRooms,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   // Notifică părintele când se schimbă datele (inclusiv la mount)
   useEffect(() => {
@@ -59,11 +129,11 @@ const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
     return count === 1 ? `${count} guest` : `${count} guests`
   }
 
-  const formatInfants = (count: number) => {
+  const formatRooms = (count: number) => {
     if (language === 'ro') {
-      return count === 1 ? `${count} sugar` : `${count} sugari`
+      return count === 1 ? `${count} cameră` : `${count} camere`
     }
-    return count === 1 ? `${count} infant` : `${count} infants`
+    return count === 1 ? `${count} room` : `${count} rooms`
   }
 
   return (
@@ -107,8 +177,8 @@ const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
                 <span className="text-sm text-neutral-400">{T['HeroSearchForm']['Guests']}</span>
                 <span className="mt-1.5 text-lg font-semibold">
                   <span className="line-clamp-1">
-                    {`${formatGuests((guests.guestAdults || 0) + (guests.guestChildren || 0))}, ${formatInfants(
-                      guests.guestInfants || 0
+                    {`${formatGuests((guests.guestAdults || 0) + (guests.guestChildren || 0))}, ${formatRooms(
+                      guests.guestRooms || 1
                     )}`}
                   </span>
                 </span>
@@ -125,7 +195,7 @@ const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
 
       <input type="hidden" name="guestAdults" value={guests.guestAdults} />
       <input type="hidden" name="guestChildren" value={guests.guestChildren} />
-      <input type="hidden" name="guestInfants" value={guests.guestInfants} />
+      <input type="hidden" name="guestRooms" value={guests.guestRooms} />
       <input type="hidden" name="startDate" value={startDate ? startDate.toISOString() : ''} />
       <input type="hidden" name="endDate" value={endDate ? endDate.toISOString() : ''} />
     </div>

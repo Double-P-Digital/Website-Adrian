@@ -15,7 +15,7 @@ interface Props {
 const GuestsInput: FC<Props> = ({ defaultValue, onChange, className }) => {
   const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(defaultValue?.guestAdults || 0)
   const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(defaultValue?.guestChildren || 0)
-  const [guestInfantsInputValue, setGuestInfantsInputValue] = useState(defaultValue?.guestInfants || 0)
+  const [guestRoomsInputValue, setGuestRoomsInputValue] = useState(defaultValue?.guestRooms || 1)
 
   useEffect(() => {
     setGuestAdultsInputValue(defaultValue?.guestAdults || 0)
@@ -24,14 +24,14 @@ const GuestsInput: FC<Props> = ({ defaultValue, onChange, className }) => {
     setGuestChildrenInputValue(defaultValue?.guestChildren || 0)
   }, [defaultValue?.guestChildren])
   useEffect(() => {
-    setGuestInfantsInputValue(defaultValue?.guestInfants || 0)
-  }, [defaultValue?.guestInfants])
+    setGuestRoomsInputValue(defaultValue?.guestRooms || 1)
+  }, [defaultValue?.guestRooms])
 
   const handleChangeData = (value: number, type: keyof GuestsObject) => {
     let newValue = {
       guestAdults: guestAdultsInputValue,
       guestChildren: guestChildrenInputValue,
-      guestInfants: guestInfantsInputValue,
+      guestRooms: guestRoomsInputValue,
     }
     if (type === 'guestAdults') {
       setGuestAdultsInputValue(value)
@@ -41,9 +41,9 @@ const GuestsInput: FC<Props> = ({ defaultValue, onChange, className }) => {
       setGuestChildrenInputValue(value)
       newValue.guestChildren = value
     }
-    if (type === 'guestInfants') {
-      setGuestInfantsInputValue(value)
-      newValue.guestInfants = value
+    if (type === 'guestRooms') {
+      setGuestRoomsInputValue(value)
+      newValue.guestRooms = value
     }
     onChange && onChange(newValue)
   }
@@ -72,12 +72,13 @@ const GuestsInput: FC<Props> = ({ defaultValue, onChange, className }) => {
 
       <NcInputNumber
         className="mt-6 w-full"
-        defaultValue={guestInfantsInputValue}
-        onChange={(value) => handleChangeData(value, 'guestInfants')}
-        max={20}
-        label={T['HeroSearchForm']['Infants']}
-        description={T['HeroSearchForm']['Ages 0–2']}
-        inputName="guestInfants"
+        defaultValue={guestRoomsInputValue}
+        onChange={(value) => handleChangeData(value, 'guestRooms')}
+        max={10}
+        min={1}
+        label={T['HeroSearchForm']['Rooms']}
+        description={T['HeroSearchForm']['Number of rooms']}
+        inputName="guestRooms"
       />
     </div>
   )

@@ -6,5 +6,5 @@
 export * from './apartments'
 export * from './listings'
 export * from './categories'
-export * from './payments'
+export * from './reservations'
 

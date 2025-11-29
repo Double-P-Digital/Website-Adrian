@@ -1,6 +1,7 @@
 'use client'
 
 import StayCard from '@/components/StayCard'
+import { useT } from '@/hooks/useT'
 import { Listing } from '@/services/listings'
 import Heading from '@/shared/Heading'
 import { FC } from 'react'
@@ -15,16 +16,22 @@ interface SectionTopBookedProps {
 const SectionTopBooked: FC<SectionTopBookedProps> = ({
   apartments = [],
   className = '',
-  title = 'Top Booked Apartments',
-  subheading = 'Discover our most popular apartments, chosen by travelers like you.',
+  title,
+  subheading,
 }) => {
+  const T = useT()
+  const defaultTitle = T.SectionTopBooked?.['Top Booked Apartments'] || 'Top Booked Apartments'
+  const defaultSubheading = T.SectionTopBooked?.['Discover our most popular apartments, chosen by travelers like you.'] || 'Discover our most popular apartments, chosen by travelers like you.'
+  
+  const displayTitle = title || defaultTitle
+  const displaySubheading = subheading || defaultSubheading
   if (!apartments || apartments.length === 0) {
     return null
   }
 
   return (
     <div className={`nc-SectionTopBooked ${className}`}>
-      <Heading subheading={subheading}>{title}</Heading>
+      <Heading subheading={displaySubheading}>{displayTitle}</Heading>
       
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {apartments.map((apartment) => (

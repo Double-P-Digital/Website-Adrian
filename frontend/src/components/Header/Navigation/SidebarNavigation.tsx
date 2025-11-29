@@ -1,10 +1,8 @@
 'use client'
 
 import { getCurrencies, getLanguages, TNavigationItem } from '@/data/navigation'
-import ButtonPrimary from '@/shared/ButtonPrimary'
 import { Divider } from '@/shared/divider'
 import { Link } from '@/shared/link'
-import SocialsList from '@/shared/SocialsList'
 import { Disclosure, DisclosureButton, DisclosurePanel, useClose } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Search01Icon } from '@hugeicons/core-free-icons'
@@ -34,7 +32,6 @@ const SidebarNavigation: React.FC<Props> = ({ data, currencies, languages }) => 
   const handleSubmitForm = async (formData: FormData) => {
     const formObject = Object.fromEntries(formData.entries())
     // Handle form submission logic here
-    console.log('Form submitted:', formObject)
     const searchQuery = formObject.search as string
     // Close the popover
     handleClose()
@@ -120,26 +117,11 @@ const SidebarNavigation: React.FC<Props> = ({ data, currencies, languages }) => 
 
   return (
     <div>
-      <span>Discover the most outstanding articles on all topics of life. Write your stories and share them</span>
-
-      <div className="mt-4 flex items-center justify-between">
-        <SocialsList itemClass="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xl" />
-      </div>
       <div className="mt-5">{renderSearchForm()}</div>
       <ul className="flex flex-col gap-y-1 px-2 py-6">{data?.map(_renderItem)}</ul>
       <Divider className="mb-6" />
 
-      {/* FOR OUR DEMO */}
-
-      <div className="flex items-center justify-between gap-x-2.5 py-6">
-        <ButtonPrimary
-          href="https://themeforest.net/item/chisfis-online-booking-nextjs-template/43399526"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Buy this template
-        </ButtonPrimary>
-
+      <div className="flex items-center justify-end gap-x-2.5 py-6">
         <CurrLangDropdown
           currencies={currencies}
           languages={languages}

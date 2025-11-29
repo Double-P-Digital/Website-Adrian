@@ -5,6 +5,8 @@
  */
 
 import { getAllApartments, getApartmentById, type Apartment } from './apartments'
+import { extractCategoryHandleFromApartment } from '@/utils/extractCategoryHandle'
+import { sanitizeImageUrl, sanitizeImageUrls } from '@/utils/imageUtils'
 
 /**
  * Listing domain model
@@ -19,7 +21,9 @@ export interface Listing {
   price: string
   featuredImage: string
   galleryImgs: string[]
-  description: string
+  description: string // Fallback description (ro by default)
+  descriptionRo?: string // Description in Romanian
+  descriptionEn?: string // Description in English
   amenities: string[]
   maxGuests: number
   bedrooms: number
@@ -50,22 +54,7 @@ function generateHandle(name: string, id: string): string {
   return slug || id
 }
 
-/**
- * Extract category handle from city or address
- */
-function extractCategoryHandle(apartment: Apartment): string {
-  if (apartment.city) {
-    return apartment.city.toLowerCase().replace(/\s+/g, '-')
-  }
-
-  // Fallback to extracting from address
-  if (!apartment.address) return 'all'
-
-  const city = apartment.address.split(',')[0]?.trim().toLowerCase()
-  if (!city) return 'all'
-
-  return city.replace(/\s+/g, '-')
-}
+// extractCategoryHandle moved to utils/extractCategoryHandle.ts
 
 /**
  * Get coordinates from apartment
@@ -86,21 +75,22 @@ function getCoordinates(apartment: Apartment): { lat: number; lng: number } {
     'oradea': { lat: 47.0465, lng: 21.9189 },
   }
 
-  const categoryHandle = extractCategoryHandle(apartment)
+  const categoryHandle = extractCategoryHandleFromApartment(apartment)
   return cityCoords[categoryHandle] || { lat: 0, lng: 0 }
 }
 
 /**
  * Map apartment to listing format
+ * @param apartment - Apartment data from backend
+ * @param language - Optional language preference ('en' | 'ro'). If not provided, uses descriptionEn as fallback
  */
-function mapApartmentToListing(apartment: Apartment): Listing {
-  const featuredImg = apartment.images?.[0] || '/images/placeholder.jpg'
-  const galleryImgs = apartment.images && apartment.images.length > 0 ? apartment.images : [featuredImg]
-  const categoryHandle = extractCategoryHandle(apartment)
+function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'ro'): Listing {
+  const featuredImg = sanitizeImageUrl(apartment.images?.[0])
+  const galleryImgs = apartment.images && apartment.images.length > 0 
+    ? sanitizeImageUrls(apartment.images) 
+    : [featuredImg]
+  const categoryHandle = extractCategoryHandleFromApartment(apartment)
   const handle = generateHandle(apartment.name, apartment.id)
-
-  // Use descriptionEn as default, fallback to descriptionRo, then description, then empty string
-  const description = apartment.descriptionEn || apartment.descriptionRo || apartment.description || ''
 
   return {
     id: apartment.id,
@@ -111,7 +101,9 @@ function mapApartmentToListing(apartment: Apartment): Listing {
     price: `${apartment.price} RON`,
     featuredImage: featuredImg,
     galleryImgs: galleryImgs,
-    description: description,
+    description: apartment.descriptionRo || apartment.descriptionEn || '', // Fallback pentru compatibilitate
+    descriptionRo: apartment.descriptionRo,
+    descriptionEn: apartment.descriptionEn,
     amenities: apartment.amenities || [],
     maxGuests: apartment.maxGuests || 4,
     bedrooms: apartment.bedrooms || 2,
@@ -120,7 +112,7 @@ function mapApartmentToListing(apartment: Apartment): Listing {
     categoryHandle: categoryHandle,
     listingCategory: 'Entire apartment',
     date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-    discountCode: apartment.discountCode, 
+    discountCode: apartment.discountCode ?? undefined, // Convert null to undefined
     status: apartment.status, 
     map: getCoordinates(apartment),
   }
@@ -132,15 +124,7 @@ function mapApartmentToListing(apartment: Apartment): Listing {
 export async function getAllListings(): Promise<Listing[]> {
   try {
     const apartments = await getAllApartments()
-    console.log('[Listings Service] Fetched apartments:', apartments.length)
-    if (apartments.length > 0) {
-      console.log('[Listings Service] First apartment:', JSON.stringify(apartments[0], null, 2))
-    }
-    const listings = apartments.map(mapApartmentToListing)
-    console.log('[Listings Service] Mapped to listings:', listings.length)
-    if (listings.length > 0) {
-      console.log('[Listings Service] First listing mapped:', JSON.stringify(listings[0], null, 2))
-    }
+    const listings = apartments.map((apartment) => mapApartmentToListing(apartment))
     return listings
   } catch (error) {
     console.error('[Listings Service] Error fetching listings:', error)
@@ -156,6 +140,11 @@ export interface ListingFilterOptions {
   checkin?: string
   checkout?: string
   guests?: number
+  priceMin?: number
+  priceMax?: number
+  bedrooms?: number
+  bathrooms?: number
+  query?: string // Search query for name, address, description
 }
 
 /**
@@ -174,8 +163,29 @@ export async function getListingsByCategory(
 
   // Apply additional filters
   if (filters) {
-    console.log('[Listings Service] Applying filters:', filters)
     const initialCount = listings.length
+    
+    // Filter by search query (name, address, description)
+    if (filters.query && filters.query.trim()) {
+      const queryLower = filters.query.toLowerCase().trim()
+      listings = listings.filter((listing) => {
+        // Search in title
+        const titleMatch = listing.title.toLowerCase().includes(queryLower)
+        
+        // Search in address
+        const addressMatch = listing.address.toLowerCase().includes(queryLower)
+        
+        // Search in city
+        const cityMatch = listing.city?.toLowerCase().includes(queryLower) || false
+        
+        // Search in descriptions (if available)
+        const descriptionRoMatch = listing.descriptionRo?.toLowerCase().includes(queryLower) || false
+        const descriptionEnMatch = listing.descriptionEn?.toLowerCase().includes(queryLower) || false
+        const descriptionMatch = descriptionRoMatch || descriptionEnMatch
+        
+        return titleMatch || addressMatch || cityMatch || descriptionMatch
+      })
+    }
     
     // Filter by city
     if (filters.city) {
@@ -187,12 +197,14 @@ export async function getListingsByCategory(
       const cityNormalized = normalizeCityName(cityLower)
       const cityHandle = cityLower.replace(/\s+/g, '-')
       
-      console.log('[Listings Service] Filtering by city:', {
-        original: filters.city,
-        lower: cityLower,
-        normalized: cityNormalized,
-        handle: cityHandle,
-      })
+      // Extract city from address (more flexible - looks for city in the address string)
+      const extractCityFromAddress = (address: string): string[] => {
+        if (!address) return []
+        const addressLower = address.toLowerCase()
+        const parts = address.split(',').map(p => p.trim().toLowerCase())
+        // Return all parts as potential city names
+        return parts
+      }
       
       listings = listings.filter((listing) => {
         // Check if listing has city field and it matches
@@ -202,87 +214,116 @@ export async function getListingsByCategory(
           
           // Exact match
           if (listingCityLower === cityLower) {
-            console.log('[Listings Service] City match (exact):', listing.city, '===', filters.city)
             return true
           }
           
           // Normalized match (handles "Cluj-Napoca" vs "Cluj Napoca")
           if (listingCityNormalized === cityNormalized) {
-            console.log('[Listings Service] City match (normalized):', listing.city, '===', filters.city)
             return true
           }
           
-          // Partial match (contains)
+          // Partial match (contains) - more flexible
           if (listingCityLower.includes(cityLower) || cityLower.includes(listingCityLower)) {
-            console.log('[Listings Service] City match (partial):', listing.city, 'contains', filters.city)
+            return true
+          }
+          
+          // Word match - check if any word from search matches any word in city
+          const searchWords = cityLower.split(/[\s-]+/).filter(w => w.length > 2)
+          const cityWords = listingCityLower.split(/[\s-]+/).filter(w => w.length > 2)
+          if (searchWords.some(sw => cityWords.some(cw => cw.includes(sw) || sw.includes(cw)))) {
             return true
           }
         }
         
-        // Check address (first part before comma)
-        const listingCityFromAddress = listing.address.split(',')[0]?.trim().toLowerCase()
-        if (listingCityFromAddress) {
-          const addressCityNormalized = normalizeCityName(listingCityFromAddress)
+        // Check address - more flexible search
+        if (listing.address) {
+          const addressLower = listing.address.toLowerCase()
           
-          if (listingCityFromAddress === cityLower || addressCityNormalized === cityNormalized) {
-            console.log('[Listings Service] City match (from address):', listingCityFromAddress, '===', filters.city)
+          // Check if search term appears anywhere in address
+          if (addressLower.includes(cityLower)) {
+            return true
+          }
+          
+          // Extract potential city names from address
+          const addressParts = extractCityFromAddress(listing.address)
+          for (const part of addressParts) {
+            const partNormalized = normalizeCityName(part)
+            if (part === cityLower || partNormalized === cityNormalized) {
+              return true
+            }
+            // Partial match in address parts
+            if (part.includes(cityLower) || cityLower.includes(part)) {
+              return true
+            }
+          }
+          
+          // Word match in address
+          const searchWords = cityLower.split(/[\s-]+/).filter(w => w.length > 2)
+          const addressWords = addressLower.split(/[\s,.-]+/).filter(w => w.length > 2)
+          if (searchWords.some(sw => addressWords.some(aw => aw.includes(sw) || sw.includes(aw)))) {
             return true
           }
         }
         
         // Check categoryHandle (city name as handle, e.g., "cluj-napoca")
         if (listing.categoryHandle === cityHandle || listing.categoryHandle === cityNormalized) {
-          console.log('[Listings Service] City match (categoryHandle):', listing.categoryHandle, '===', cityHandle)
+          return true
+        }
+        
+        // Check if categoryHandle contains search term
+        if (listing.categoryHandle && listing.categoryHandle.includes(cityNormalized)) {
           return true
         }
         
         return false
       })
-      
-      console.log('[Listings Service] After city filter:', listings.length, 'listings (was', initialCount, ')')
     }
 
     // Filter by guests (maxGuests must be >= requested guests)
     // Total guests = adults + children + infants
     // Apartamentul trebuie să poată găzdui cel puțin numărul total de oaspeți
     if (filters.guests && filters.guests > 0) {
-      const beforeGuestsFilter = listings.length
       const requestedGuests = filters.guests
       
-      console.log('[Listings Service] Filtering by guests:', {
-        requestedTotalGuests: requestedGuests,
-        filterLogic: 'maxGuests >= requestedGuests',
+      listings = listings.filter((listing) => {
+        return listing.maxGuests >= requestedGuests
       })
+    }
+
+    // Filter by price range
+    if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
+      const minPrice = filters.priceMin ?? 0
+      const maxPrice = filters.priceMax ?? Infinity
       
       listings = listings.filter((listing) => {
-        const canAccommodate = listing.maxGuests >= requestedGuests
-        if (!canAccommodate) {
-          console.log('[Listings Service] Listing filtered out:', {
-            listingId: listing.id,
-            listingTitle: listing.title,
-            maxGuests: listing.maxGuests,
-            requestedGuests: requestedGuests,
-            reason: 'maxGuests < requestedGuests',
-          })
-        }
-        return canAccommodate
+        // Extract numeric price from string like "500 RON"
+        const numericPrice = Number(listing.price.replace(/[^0-9.-]+/g, ''))
+        return numericPrice >= minPrice && numericPrice <= maxPrice
       })
-      
-      console.log('[Listings Service] After guests filter:', {
-        remainingListings: listings.length,
-        beforeFilter: beforeGuestsFilter,
-        requestedGuests: requestedGuests,
-        removed: beforeGuestsFilter - listings.length,
+    }
+
+    // Filter by bedrooms
+    if (filters.bedrooms && filters.bedrooms > 0) {
+      listings = listings.filter((listing) => {
+        return listing.bedrooms >= filters.bedrooms!
+      })
+    }
+
+    // Filter by bathrooms
+    if (filters.bathrooms && filters.bathrooms > 0) {
+      listings = listings.filter((listing) => {
+        return listing.bathrooms >= filters.bathrooms!
       })
     }
 
     // Note: checkin/checkout filtering would require availability data from backend
-    // For now, we only filter by city and guests
+    // For now, we only filter by city, guests, price, bedrooms, and bathrooms
     // TODO: Implement availability checking when backend endpoint is available
     
-    console.log('[Listings Service] Final filtered listings count:', listings.length)
+    console.log('[Listings Service] After all filters:', listings.length)
   }
 
+  console.log('[Listings Service] Final listings count:', listings.length)
   return listings
 }
 
@@ -308,7 +349,6 @@ export async function getListingByHandle(handle: string): Promise<Listing | null
     }
 
     // Fallback - return first listing if nothing found
-    console.log('[Listings Service] Listing not found, returning first available')
     return listings[0] || null
   } catch (error) {
     console.error('[Listings Service] Error fetching by handle:', error)
@@ -333,7 +373,6 @@ export async function getListingFilterOptions() {
       name: 'roomsAndBeds',
       tabUIType: 'select-number',
       options: [
-        { name: 'Beds', max: 10 },
         { name: 'Bedrooms', max: 10 },
         { name: 'Bathrooms', max: 10 },
       ],

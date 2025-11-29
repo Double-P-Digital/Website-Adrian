@@ -1,7 +1,7 @@
 export interface GuestsObject {
   guestAdults?: number
   guestChildren?: number
-  guestInfants?: number
+  guestRooms?: number
 }
 
 export type ListingType = 'Stays'

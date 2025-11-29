@@ -11,7 +11,8 @@ import {
 import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react'
 import clsx from 'clsx'
 import _ from 'lodash'
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ClearDataButton } from './ClearDataButton'
 import { getAllApartments } from '@/services/apartments'
 
@@ -60,6 +61,7 @@ export const LocationInputField: FC<Props> = ({
   fieldStyle = 'default',
 }) => {
   const T = useT();
+  const searchParams = useSearchParams()
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [showPopover, setShowPopover] = useState(false)
@@ -67,6 +69,19 @@ export const LocationInputField: FC<Props> = ({
   const [inputValue, setInputValue] = useState<string>('')
   const [cities, setCities] = useState<Suggest[]>([])
   const [isLoadingCities, setIsLoadingCities] = useState(true)
+  
+  // Read city from URL on mount
+  useEffect(() => {
+    const city = searchParams.get('city')
+    if (city) {
+      setSelected({
+        id: `city-${city}`,
+        name: city,
+        icon: Location01Icon,
+      })
+      setInputValue(city)
+    }
+  }, [searchParams])
 
   // Load cities from apartments
   useEffect(() => {
@@ -83,16 +98,7 @@ export const LocationInputField: FC<Props> = ({
           // Prefer city field if available
           if (apartment.city) {
             cityName = apartment.city.trim()
-          } 
-          // Fallback to extracting from address
-          else if (apartment.address) {
-            // Extract city from address (usually first part before comma)
-            const addressParts = apartment.address.split(',')
-            if (addressParts.length > 0) {
-              cityName = addressParts[0].trim()
-            }
-          }
-          
+          }   
           // Add to map if we found a valid city name
           if (cityName && cityName.length > 0) {
             const cityKey = cityName.toLowerCase()
@@ -111,7 +117,6 @@ export const LocationInputField: FC<Props> = ({
             icon: Location01Icon,
           }))
         
-        console.log('[LocationInputField] Loaded cities:', citySuggests)
         setCities(citySuggests)
       } catch (error) {
         console.error('[LocationInputField] Error loading cities:', error)
@@ -151,20 +156,21 @@ export const LocationInputField: FC<Props> = ({
   }, [])
   
   // Debounced handler for setting selected value
-  const handleInputChangeDebounced = useCallback(
-    _.debounce((value: string) => {
-      const trimmedValue = value.trim()
-      // If the input has a value, set it as selected (allows custom city input)
-      if (trimmedValue) {
-        setSelected({
-          id: `custom-${Date.now()}`, // Generate a unique id for custom input
-          name: trimmedValue,
-        })
-      } else {
-        // If input is empty, clear selection
-        setSelected({ id: '', name: '' })
-      }
-    }, 300),
+  const handleInputChangeDebounced = useMemo(
+    () =>
+      _.debounce((value: string) => {
+        const trimmedValue = value.trim()
+        // If the input has a value, set it as selected (allows custom city input)
+        if (trimmedValue) {
+          setSelected({
+            id: `custom-${Date.now()}`, // Generate a unique id for custom input
+            name: trimmedValue,
+          })
+        } else {
+          // If input is empty, clear selection
+          setSelected(null)
+        }
+      }, 300),
     []
   )
   

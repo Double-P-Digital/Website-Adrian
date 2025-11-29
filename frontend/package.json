@@ -28,6 +28,7 @@
     "@vis.gl/react-google-maps": "^1.5.2",
     "client-only": "^0.0.1",
     "clsx": "^2.1.1",
+    "dompurify": "^3.3.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "eslint": "^9.29.0",

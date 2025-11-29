@@ -4,32 +4,29 @@
  * Handles data fetching and business rules
  */
 
-import { apiClient } from '@/api/client'
+import {apiClient} from '@/api/client'
 import { API_ENDPOINTS } from '@/api/endpoints'
 
-/**
- * Apartment domain model
- */
 export interface Apartment {
-  id: string
-  name: string
-  price: number
-  maxGuests?: number
-  bedrooms?: number
-  bathrooms?: number
-  address: string
-  city?: string
-  coordinates?: {
+  id: string 
+  hotelId: string // required - ID-ul hotelului
+  name: string // required - Numele apartamentului
+  price?: number // optional - Prețul apartamentului
+  maxGuests?: number // optional - Numărul maxim de oaspeți
+  bedrooms?: number // optional - Numărul de dormitoare
+  bathrooms?: number // optional - Numărul de băi
+  address?: string // optional - Adresa apartamentului
+  city?: string // optional - Orașul în care se află apartamentul
+  coordinates: { // required - Coordonatele geografice
     latitude: number
     longitude: number
   }
-  description?: string // Backend returns this field
-  descriptionEn?: string
-  descriptionRo?: string
-  amenities: string[]
-  images: string[]
-  discountCode?: string
-  status?: string
+  descriptionEn?: string // optional - Descrierea în engleză
+  descriptionRo?: string // optional - Descrierea în română
+  amenities?: string[] // optional - Lista de facilități
+  images?: string[] // optional - Lista de imagini (URL-uri)
+  discountCode?: string | null // optional - Referință către codul de discount (ObjectId sau null)
+  status?: string // optional - Statusul apartamentului
 }
 
 /**
@@ -38,7 +35,7 @@ export interface Apartment {
 export async function getAllApartments(): Promise<Apartment[]> {
   try {
     return await apiClient.get<Apartment[]>(API_ENDPOINTS.APARTMENTS.ALL, {
-      next: { revalidate: 3600 }, // Revalidate every hour
+      next: { revalidate: 60 }, 
     })
   } catch (error) {
     console.error('[Apartments Service] Error fetching all apartments:', error)

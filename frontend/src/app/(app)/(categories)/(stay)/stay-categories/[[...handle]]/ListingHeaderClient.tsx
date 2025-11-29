@@ -6,11 +6,27 @@ import { Divider } from '@/shared/divider';
 import { MapsLocation01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Category } from "@/services/categories";
+import { useSearchParams } from 'next/navigation';
 
 export default function ListingHeaderClient({ category }: { category: Category }) {
     const T = useT(); 
+    const searchParams = useSearchParams();
 
     const convertNumbThousand = (num: number) => num.toLocaleString();
+
+    // Construiește URL-ul pentru hartă păstrând toate filtrele din URL
+    const getMapUrl = () => {
+        const baseUrl = `/stay-categories-map/${category.handle}`;
+        const params = new URLSearchParams();
+        
+        // Copiază toți parametrii din URL curent (filtrele)
+        searchParams.forEach((value, key) => {
+            params.append(key, value);
+        });
+        
+        const queryString = params.toString();
+        return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    };
 
     return (
         <>
@@ -24,7 +40,7 @@ export default function ListingHeaderClient({ category }: { category: Category }
                 <Button
                     color="white"
                     className="ms-auto"
-                    href={`/stay-categories-map/${category.handle}`}
+                    href={getMapUrl()}
                 >
                     <span className="me-1">{T.ListingHeaderClient["show_map"]}</span>
                     <HugeiconsIcon

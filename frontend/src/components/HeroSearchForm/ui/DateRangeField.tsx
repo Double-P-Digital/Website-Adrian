@@ -6,9 +6,11 @@ import { useT } from '@/hooks/useT'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { CalendarIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import { FC, useState } from 'react'
+import { FC, useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
+import { useSearchParams } from 'next/navigation'
 import { ClearDataButton } from './ClearDataButton'
+import { formatDateToYYYYMMDD } from '@/utils/dateUtils'
 
 const styles = {
   button: {
@@ -45,6 +47,8 @@ export const DateRangeField: FC<Props> = ({
   panelClassName,
   isOnlySingleDate = false,
 }) => {
+  const searchParams = useSearchParams()
+  
   // Use current date as check-in and current date + 1 day as check-out (minimum 1 night)
   const getDefaultDates = () => {
     const today = new Date()
@@ -54,10 +58,53 @@ export const DateRangeField: FC<Props> = ({
     return { today, tomorrow }
   }
   
-  const { today, tomorrow } = getDefaultDates()
-  const [startDate, setStartDate] = useState<Date | null>(today)
-  const [endDate, setEndDate] = useState<Date | null>(tomorrow)
+  // Read dates from URL on mount
+  const getInitialDates = () => {
+    const checkin = searchParams.get('checkin')
+    const checkout = searchParams.get('checkout')
+    const { today, tomorrow } = getDefaultDates()
+    
+    if (checkin) {
+      const checkinDate = new Date(checkin)
+      checkinDate.setHours(0, 0, 0, 0)
+      if (checkout) {
+        const checkoutDate = new Date(checkout)
+        checkoutDate.setHours(0, 0, 0, 0)
+        return { startDate: checkinDate, endDate: checkoutDate }
+      }
+      return { startDate: checkinDate, endDate: tomorrow }
+    }
+    return { startDate: today, endDate: tomorrow }
+  }
+  
+  const initialDates = getInitialDates()
+  const [startDate, setStartDate] = useState<Date | null>(initialDates.startDate)
+  const [endDate, setEndDate] = useState<Date | null>(initialDates.endDate)
   const T = useT();
+  
+  // Update dates when URL changes
+  useEffect(() => {
+    const checkin = searchParams.get('checkin')
+    const checkout = searchParams.get('checkout')
+    const { today, tomorrow } = getDefaultDates()
+    
+    if (checkin) {
+      const checkinDate = new Date(checkin)
+      checkinDate.setHours(0, 0, 0, 0)
+      setStartDate(checkinDate)
+      
+      if (checkout) {
+        const checkoutDate = new Date(checkout)
+        checkoutDate.setHours(0, 0, 0, 0)
+        setEndDate(checkoutDate)
+      } else {
+        setEndDate(tomorrow)
+      }
+    } else {
+      setStartDate(today)
+      setEndDate(tomorrow)
+    }
+  }, [searchParams])
 
   const onChangeDate = (dates: [Date | null, Date | null]) => {
     const [start, end] = dates
@@ -362,9 +409,9 @@ export const DateRangeField: FC<Props> = ({
       </Popover>
 
       {/* input:hidde */}
-      <input type="hidden" name="checkin" value={startDate ? startDate.toISOString().split('T')[0] : ''} />
+      <input type="hidden" name="checkin" value={startDate ? formatDateToYYYYMMDD(startDate) : ''} />
       {!isOnlySingleDate && (
-        <input type="hidden" name="checkout" value={endDate ? endDate.toISOString().split('T')[0] : ''} />
+        <input type="hidden" name="checkout" value={endDate ? formatDateToYYYYMMDD(endDate) : ''} />
       )}
     </>
   )

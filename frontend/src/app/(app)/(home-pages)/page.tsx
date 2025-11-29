@@ -9,9 +9,10 @@ import SectionTopBooked from '@/components/SectionTopBooked'
 import { getAllCategories } from '@/services/categories'
 import { getTopBookedApartments } from '@/services/apartments'
 import { getAllListings } from '@/services/listings'
-import heroImage from '@/images/hero-right.png'
+import heroImage from '@/images/img-site.png'
 import { Divider } from '@/shared/divider'
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'Home',
@@ -35,18 +36,24 @@ async function Page() {
           heading="Hotel, car, experiences"
           image={heroImage}
           imageAlt="hero"
-          searchForm={<HeroSearchForm initTab="Stays" />}
+          searchForm={
+            <Suspense fallback={<div className="h-20 w-full" />}>
+              <HeroSearchForm initTab="Stays" />
+            </Suspense>
+          }
         />
 
         <div className="text-center">
           <div className="mt-12">
-            <SectionGridCategoryBox categories={categories.slice(0, 3)} />
+            <SectionGridCategoryBox categories={categories.filter(cat => cat.handle !== 'all').slice(0, 3)} />
           </div>
         </div>
         <Divider />
         <SectionHowItWork />
         <Divider />
-        <SectionTopBooked apartments={topBookedListings} />
+        <Suspense fallback={<div className="h-96 w-full" />}>
+          <SectionTopBooked apartments={topBookedListings} />
+        </Suspense>
         {/* <Divider />
         <SectionVideos /> */}
       </div>

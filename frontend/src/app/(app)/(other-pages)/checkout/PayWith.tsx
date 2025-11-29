@@ -3,14 +3,10 @@
 import { useT } from '@/hooks/useT'
 import { Description, Field, Label } from '@/shared/fieldset'
 import Input from '@/shared/Input'
-import { Radio, RadioField, RadioGroup } from '@/shared/radio'
 import { MasterCardIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useState } from 'react'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import ApartmentSummary from './ApartmentSummary'
-
-type CustomerType = 'individual' | 'company'
 
 interface PayWithProps {
   apartmentId?: string
@@ -21,6 +17,7 @@ interface PayWithProps {
   fee: number
   tax: number
   currency: string
+  validationErrors?: Record<string, string>
 }
 
 const PayWith = ({
@@ -32,9 +29,9 @@ const PayWith = ({
   fee,
   tax,
   currency,
+  validationErrors = {},
 }: PayWithProps) => {
   const T = useT()
-  const [customerType, setCustomerType] = useState<CustomerType>('individual')
   const Booking = T.Booking as Record<string, string>
 
   return (
@@ -42,32 +39,6 @@ const PayWith = ({
       {/* Informații despre client */}
       <h3 className="text-2xl font-semibold">{Booking['Guest Information'] || 'Informații despre client'}</h3>
       <div className="my-5 w-14 border-b border-neutral-200 dark:border-neutral-700"></div>
-
-      {/* Tip client - Persoană fizică sau juridică */}
-      <div className="mb-6">
-        <label className="mb-3 block text-sm/6 font-medium text-neutral-950 dark:text-white">
-          {Booking['Customer Type'] || 'Tip client'}
-        </label>
-        <RadioGroup
-          value={customerType}
-          onChange={(value) => setCustomerType(value as CustomerType)}
-          className="flex flex-col gap-3 sm:flex-row sm:gap-6"
-        >
-          <RadioField>
-            <Radio value="individual" />
-            <span data-slot="label" className="text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
-              {Booking['Individual'] || 'Persoană fizică'}
-            </span>
-          </RadioField>
-          <RadioField>
-            <Radio value="company" />
-            <span data-slot="label" className="text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
-              {Booking['Company'] || 'Persoană juridică'}
-            </span>
-          </RadioField>
-        </RadioGroup>
-        <input type="hidden" name="customerType" value={customerType} />
-      </div>
 
       {/* Date client */}
       <div className="mb-8 flex flex-col gap-y-5">
@@ -79,10 +50,13 @@ const PayWith = ({
             </Label>
             <Input
               name="firstName"
-              className="mt-1.5"
+              className={`mt-1.5 ${validationErrors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
               required
               placeholder={Booking['Enter first name'] || 'Introduceți prenumele'}
             />
+            {validationErrors.firstName && (
+              <p className="mt-1 text-sm text-red-500">{validationErrors.firstName}</p>
+            )}
           </Field>
 
           <Field>
@@ -91,10 +65,13 @@ const PayWith = ({
             </Label>
             <Input
               name="lastName"
-              className="mt-1.5"
+              className={`mt-1.5 ${validationErrors.lastName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
               required
               placeholder={Booking['Enter last name'] || 'Introduceți numele'}
             />
+            {validationErrors.lastName && (
+              <p className="mt-1 text-sm text-red-500">{validationErrors.lastName}</p>
+            )}
           </Field>
         </div>
 
@@ -106,11 +83,15 @@ const PayWith = ({
           <Input
             name="email"
             type="email"
-            className="mt-1.5"
+            className={`mt-1.5 ${validationErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
             required
             placeholder="example@email.com"
           />
-          <Description>{Booking['We will send the booking confirmation to this email'] || 'Vom trimite confirmarea rezervării la acest email'}</Description>
+          {validationErrors.email ? (
+            <p className="mt-1 text-sm text-red-500">{validationErrors.email}</p>
+          ) : (
+            <Description>{Booking['We will send the booking confirmation to this email'] || 'Vom trimite confirmarea rezervării la acest email'}</Description>
+          )}
         </Field>
 
         {/* Număr de telefon */}
@@ -121,74 +102,16 @@ const PayWith = ({
           <Input
             name="phoneNumber"
             type="tel"
-            className="mt-1.5"
+            className={`mt-1.5 ${validationErrors.phoneNumber ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
             required
             placeholder="+40 123 456 789"
           />
-          <Description>{Booking['We may contact you regarding your booking'] || 'Vă putem contacta în legătură cu rezervarea'}</Description>
+          {validationErrors.phoneNumber ? (
+            <p className="mt-1 text-sm text-red-500">{validationErrors.phoneNumber}</p>
+          ) : (
+            <Description>{Booking['We may contact you regarding your booking'] || 'Vă putem contacta în legătură cu rezervarea'}</Description>
+          )}
         </Field>
-
-        {/* Câmpuri pentru persoană juridică */}
-        {customerType === 'company' && (
-          <div className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800">
-            <h4 className="mb-4 font-semibold text-neutral-900 dark:text-neutral-100">
-              {Booking['Company Information'] || 'Informații despre companie'}
-            </h4>
-
-            <div className="flex flex-col gap-y-5">
-              {/* Nume firmă */}
-              <Field>
-                <Label>
-                  {Booking['Company Name'] || 'Denumire firmă'} <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  name="companyName"
-                  className="mt-1.5"
-                  required={customerType === 'company'}
-                  placeholder={Booking['Enter company name'] || 'Introduceți numele firmei'}
-                />
-              </Field>
-
-              {/* CUI / CIF */}
-              <Field>
-                <Label>
-                  {Booking['Tax ID'] || 'CUI / CIF'} <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  name="taxId"
-                  className="mt-1.5"
-                  required={customerType === 'company'}
-                  placeholder="RO12345678"
-                />
-                <Description>{Booking['Company tax identification number'] || 'Număr de înregistrare la Registrul Comerțului'}</Description>
-              </Field>
-
-              {/* Număr de înregistrare */}
-              <Field>
-                <Label>
-                  {Booking['Registration Number'] || 'Număr de înregistrare'}
-                </Label>
-                <Input
-                  name="registrationNumber"
-                  className="mt-1.5"
-                  placeholder={Booking['Enter registration number'] || 'Introduceți numărul de înregistrare'}
-                />
-              </Field>
-
-              {/* Adresă firmă */}
-              <Field>
-                <Label>
-                  {Booking['Company Address'] || 'Adresă firmă'}
-                </Label>
-                <Input
-                  name="companyAddress"
-                  className="mt-1.5"
-                  placeholder={Booking['Enter company address'] || 'Introduceți adresa firmei'}
-                />
-              </Field>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Metodă de plată */}

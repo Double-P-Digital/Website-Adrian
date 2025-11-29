@@ -4,32 +4,25 @@
  */
 
 export const API_ENDPOINTS = {
-  // Apartments
   APARTMENTS: {
-    ALL: '/api/apartments/all',
-    BY_ID: (id: string) => `/api/apartments/${id}`,
-    TOP_BOOKED: (limit?: number) => `/api/apartments/top-booked${limit ? `?limit=${limit}` : ''}`,
+    ALL: '/api/apartment-service/all',
+    BY_ID: (id: string) => `/api/apartment-service/${id}`,
+    BY_CITY: (city: string) => `/api/apartment-service/city/${city}`,
   },
   
-  // Payments
   PAYMENTS: {
     CREATE_INTENT: '/api/payments/create-intent',
     WEBHOOK: '/api/payments/webhook',
   },
   
-  // Reservations
   RESERVATIONS: {
-    CREATE: '/api/reservation',
-    BY_EMAIL: (email: string) => `/api/reservations/by-email/${email}`,
-    BY_CODE: (code: string) => `/api/reservations/by-code/${code}`,
-    ALL: '/api/reservations',
-    BY_ID: (id: string) => `/api/reservations/${id}`,
+    CREATE: '/api/reservation-service',
   },
   
-  // Categories (dacă va fi adăugat în viitor)
-  CATEGORIES: {
-    ALL: '/api/categories',
-    BY_HANDLE: (handle: string) => `/api/categories/${handle}`,
+  DISCOUNT_CODES: {
+    ALL: '/api/discount-code-service/all',
+    BY_ID: (id: string) => `/api/discount-code-service/${id}`,
   },
+
 } as const
 

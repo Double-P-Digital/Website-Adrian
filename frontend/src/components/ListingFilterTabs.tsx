@@ -25,6 +25,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import Form from 'next/form'
 import {useEffect, useState} from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { PriceRangeSlider } from './PriceRangeSlider'
 
 type CheckboxFilter = {
@@ -97,7 +98,6 @@ const demo_filters_options = [
     name: 'rooms-beds',
     tabUIType: 'select-number',
     options: [
-      { name: 'Beds', max: 10 },
       { name: 'Bedrooms', max: 10 },
       { name: 'Bathrooms', max: 10 },
     ],
@@ -263,7 +263,14 @@ const CheckboxPanel = ({ filterOption, className }: { filterOption: CheckboxFilt
   )
 }
 const PriceRagePanel = ({ filterOption: { min, max, name } }: { filterOption: PriceRangeFilter }) => {
-  const [rangePrices, setRangePrices] = useState([min, max])
+  const searchParams = useSearchParams()
+  const urlPriceMin = searchParams.get('price_min') ? Number(searchParams.get('price_min')) : undefined
+  const urlPriceMax = searchParams.get('price_max') ? Number(searchParams.get('price_max')) : undefined
+  
+  const [rangePrices, setRangePrices] = useState([
+    urlPriceMin ?? min,
+    urlPriceMax ?? max
+  ])
 
   return <PriceRangeSlider defaultValue={rangePrices} onChange={setRangePrices} min={min} max={max} />
 }
@@ -284,12 +291,26 @@ const PriceRagePanel = ({ filterOption: { min, max, name } }: { filterOption: Pr
 
 const NumberSelectPanel = ({ filterOption: { name, options } }: { filterOption: SelectNumberFilter }) => {
   const T = useT()
+  const searchParams = useSearchParams()
+  
   // @ts-ignore
   return (
     <div className="relative flex flex-col gap-y-5">
-      {options.map((option) => (
-        <NcInputNumber key={option.name} inputName={option.name} label={T.ListingFilterTabs[option.name as keyof typeof T.ListingFilterTabs]} max={option.max} />
-      ))}
+      {options.map((option) => {
+        // Map option names to URL parameters (Bedrooms -> bedrooms, Bathrooms -> bathrooms)
+        const urlParamName = option.name.toLowerCase()
+        const urlValue = searchParams.get(urlParamName) ? Number(searchParams.get(urlParamName)) : undefined
+        
+        return (
+          <NcInputNumber 
+            key={option.name} 
+            inputName={option.name} 
+            label={T.ListingFilterTabs[option.name as keyof typeof T.ListingFilterTabs]} 
+            max={option.max}
+            defaultValue={urlValue ?? 0}
+          />
+        )
+      })}
     </div>
   )
 }
@@ -300,11 +321,76 @@ const ListingFilterTabs = ({
   filterOptions?: Partial<typeof demo_filters_options>
 }) => {
   const T = useT()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [showAllFilter, setShowAllFilter] = useState(false)
 
   const handleFormSubmit = async (formData: FormData) => {
     const formDataObject = Object.fromEntries(formData.entries())
-    //console.log('Form submitted with data:', formDataObject)
+    
+    // Construiește URL-ul cu parametrii existenți + noii parametri de filtre
+    const currentParams = new URLSearchParams(searchParams.toString())
+    
+    // Păstrează parametrii de date și oaspeți (nu se șterg când se aplică filtre)
+    const checkin = searchParams.get('checkin')
+    const checkout = searchParams.get('checkout')
+    const guestAdults = searchParams.get('guestAdults')
+    const guestChildren = searchParams.get('guestChildren')
+    const guestRooms = searchParams.get('guestRooms')
+    const city = searchParams.get('city')
+    const query = searchParams.get('q')
+    
+    // Adaugă parametrii de filtre
+    if (formDataObject.price_min) {
+      currentParams.set('price_min', formDataObject.price_min as string)
+    } else {
+      currentParams.delete('price_min')
+    }
+    
+    if (formDataObject.price_max) {
+      currentParams.set('price_max', formDataObject.price_max as string)
+    } else {
+      currentParams.delete('price_max')
+    }
+    
+    // Map input names to URL parameters (Bedrooms -> bedrooms, Bathrooms -> bathrooms)
+    if (formDataObject.Bedrooms) {
+      const bedrooms = Number(formDataObject.Bedrooms)
+      if (bedrooms > 0) {
+        currentParams.set('bedrooms', bedrooms.toString())
+      } else {
+        currentParams.delete('bedrooms')
+      }
+    } else {
+      currentParams.delete('bedrooms')
+    }
+    
+    if (formDataObject.Bathrooms) {
+      const bathrooms = Number(formDataObject.Bathrooms)
+      if (bathrooms > 0) {
+        currentParams.set('bathrooms', bathrooms.toString())
+      } else {
+        currentParams.delete('bathrooms')
+      }
+    } else {
+      currentParams.delete('bathrooms')
+    }
+    
+    // Păstrează parametrii de date și oaspeți
+    if (checkin) currentParams.set('checkin', checkin)
+    if (checkout) currentParams.set('checkout', checkout)
+    if (guestAdults) currentParams.set('guestAdults', guestAdults)
+    if (guestChildren) currentParams.set('guestChildren', guestChildren)
+    if (guestRooms) currentParams.set('guestRooms', guestRooms)
+    if (city) currentParams.set('city', city)
+    if (query) currentParams.set('q', query)
+    
+    // Resetează pagina la 1 când se aplică filtre noi
+    currentParams.set('page', '1')
+    
+    // Navighează la URL-ul actualizat
+    const newUrl = `${window.location.pathname}?${currentParams.toString()}`
+    router.push(newUrl)
   }
 
   const renderTabAllFilters = () => {
@@ -397,7 +483,6 @@ const ListingFilterTabs = ({
         <div className="h-auto w-px bg-neutral-200 dark:bg-neutral-700"></div>
         {filterOptions.map((filterOption, index) => {
           // only show 3 filters in the tab. Other filters will be shown in the All-filters-popover
-          //console.log(filterOption)
           if (index > 1 || !filterOption) {
             return null
           }

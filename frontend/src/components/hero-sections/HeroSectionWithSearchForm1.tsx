@@ -3,6 +3,7 @@
 import { useT } from '@/hooks/useT'
 import clsx from 'clsx'
 import Image from 'next/image'
+import { safeHtml } from '@/utils/sanitize'
 
 const HeroSectionWithSearchForm1 = ({
   className,
@@ -29,7 +30,7 @@ const HeroSectionWithSearchForm1 = ({
         <div className="relative flex w-full flex-col items-start gap-y-8 pb-16 lg:pe-10 lg:pt-12 lg:pb-60 xl:gap-y-10 xl:pe-14">
           <h2
             className="text-5xl/[1.15] font-medium tracking-tight text-pretty xl:text-7xl/[1.1]"
-            dangerouslySetInnerHTML={{ __html: T.homePage.sectionHero.title || '' }}
+            dangerouslySetInnerHTML={{ __html: safeHtml(T.homePage.sectionHero.title || '') }}
           />
           <>
             <p className="max-w-xl text-base text-neutral-500 sm:text-xl dark:text-neutral-400">
@@ -40,7 +41,7 @@ const HeroSectionWithSearchForm1 = ({
         </div>
 
         <div className="w-full">
-          <Image className="w-full" src={image} alt={imageAlt} priority />
+          <Image className="w-full" src={image} alt={imageAlt} priority unoptimized={true} />
         </div>
       </div>
     </div>

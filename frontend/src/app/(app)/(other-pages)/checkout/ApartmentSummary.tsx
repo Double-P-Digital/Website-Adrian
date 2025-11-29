@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getApartmentForCheckout, type ApartmentForCheckout } from '@/services/apartments'
+import { sanitizeImageUrl } from '@/utils/imageUtils'
+import { useCurrency } from '@/context/CurrencyContext'
 
 interface Apartment {
   id: string
@@ -19,6 +21,7 @@ interface ApartmentSummaryProps {
 }
 
 export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps) {
+  const { currency, convert } = useCurrency()
   const [apartment, setApartment] = useState<Apartment | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -101,9 +104,10 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
     )
   }
 
-  const imageUrl = apartment.images && apartment.images.length > 0 
-    ? apartment.images[0] 
-    : 'https://via.placeholder.com/400x300/e5e7eb/6b7280?text=No+Image'
+  const imageUrl = sanitizeImageUrl(
+    apartment.images && apartment.images.length > 0 ? apartment.images[0] : null,
+    '/images/placeholder.jpg'
+  )
 
   const apartmentLink = `/stay-listings/${apartment.handle}`
 
@@ -120,7 +124,7 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
               priority
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 400px"
-              unoptimized={imageUrl.includes('cloudinary')}
+              unoptimized={true}
               onError={(e) => {
                 const target = e.target as HTMLImageElement
                 target.src = 'https://via.placeholder.com/400x300/e5e7eb/6b7280?text=Image+Error'
@@ -142,7 +146,7 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
             )}
             
             <p className="mt-3 text-2xl font-bold text-neutral-900 dark:text-white">
-              {apartment.price} RON{' '}
+              {convert(apartment.price, 'RON', currency).toFixed(2)} {currency}{' '}
               <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">/noapte</span>
             </p>
           </div>

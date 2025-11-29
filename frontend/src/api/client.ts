@@ -207,9 +207,7 @@ class ApiClient {
   }
 }
 
-// Exportă o instanță singleton
 export const apiClient = new ApiClient()
 
-// Exportă și clasa pentru testare sau instanțe custom
 export { ApiClient }
 

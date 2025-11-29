@@ -20,7 +20,6 @@ import ReserveButton from './ReserveButton'
 import ButtonSecondary from '@/shared/ButtonSecondary'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Divider } from '@/shared/divider'
-import { UsersIcon } from '@heroicons/react/24/outline'
 import { Metadata } from 'next'
 import Form from 'next/form'
 import { redirect } from 'next/navigation'
@@ -28,10 +27,12 @@ import DatesRangeInputPopover from '../../components/DatesRangeInputPopover'
 import GuestsInputPopover from '../../components/GuestsInputPopover'
 import HeaderGallery from '../../components/HeaderGallery'
 import SectionDateRange from '../../components/SectionDateRange'
-import SectionHeader from '../../components/SectionHeader'
 import { SectionHeading, SectionSubheading } from '../../components/SectionHeading'
 import SidebarPriceAndFormWrapper from './SidebarPriceAndFormWrapper'
 import SectionMap from '../../components/SectionMap'
+import ListingHeaderClient from './ListingHeaderClient'
+import ListingInfoClient from './ListingInfoClient'
+import SidebarBookingSummary from './SidebarBookingSummary'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params
@@ -46,13 +47,27 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 
   return {
     title: listing?.title,
-    description: listing?.description,
+    description: listing?.descriptionRo || listing?.descriptionEn || '',
   }
 }
 
-const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
+const Page = async ({ 
+  params, 
+  searchParams 
+}: { 
+  params: Promise<{ handle: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) => {
   const { handle } = await params
+  const urlSearchParams = await searchParams
   const listing = await getListingByHandle(handle)
+  
+  // Extract dates and guests from URL if available
+  const checkin = typeof urlSearchParams.checkin === 'string' ? urlSearchParams.checkin : undefined
+  const checkout = typeof urlSearchParams.checkout === 'string' ? urlSearchParams.checkout : undefined
+  const guestAdults = urlSearchParams.guestAdults ? Number(urlSearchParams.guestAdults) : undefined
+  const guestChildren = urlSearchParams.guestChildren ? Number(urlSearchParams.guestChildren) : undefined
+  const guestRooms = urlSearchParams.guestRooms ? Number(urlSearchParams.guestRooms) : undefined
 
   if (!listing?.id) {
     return redirect('/stay-categories/all')
@@ -62,7 +77,8 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
     address,
     bathrooms,
     bedrooms,
-    description,
+    descriptionRo,
+    descriptionEn,
     galleryImgs,
     listingCategory,
     map,
@@ -77,53 +93,24 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
   // Server action to handle form submission
   const handleSubmitForm = async (formData: FormData) => {
     'use server'
-    console.log('Form submitted with data:', Object.fromEntries(formData.entries()))
   }
 
   const renderSectionHeader = () => {
     return (
-      <SectionHeader
+      <ListingHeaderClient
         address={address}
         listingCategory={listingCategory}
         title={title}
-      >
-        <div className="flex items-center gap-x-3">
-          <UsersIcon className="mb-0.5 size-6" />
-          <span>{maxGuests} guests</span>
-        </div>
-        <div className="flex items-center gap-x-3">
-          <BedSingle01Icon className="mb-0.5 size-6" />
-          <span>{beds} beds</span>
-        </div>
-        <div className="flex items-center gap-x-3">
-          <Bathtub02Icon className="mb-0.5 size-6" />
-          <span>{bathrooms} baths</span>
-        </div>
-        <div className="flex items-center gap-x-3">
-          <MeetingRoomIcon className="mb-0.5 size-6" />
-          <span>{bedrooms} bedrooms</span>
-        </div>
-      </SectionHeader>
+        maxGuests={maxGuests}
+        beds={beds}
+        bathrooms={bathrooms}
+        bedrooms={bedrooms}
+      />
     )
   }
 
   const renderSectionInfo = () => {
-    return (
-      <div className="listingSection__wrap">
-        <SectionHeading>Stay information</SectionHeading>
-        
-        {/* ✅ FOLOSEȘTE description din backend */}
-        <div className="leading-relaxed text-neutral-700 dark:text-neutral-300">
-          {description ? (
-            <p className="whitespace-pre-line">{description}</p>
-          ) : (
-            <p>No description available for this property.</p>
-          )}
-        </div>
-
-        {/* ❌ ȘTERS - Room Rates hardcodat (implementează când backend are pricing rules) */}
-      </div>
-    )
+    return <ListingInfoClient descriptionRo={descriptionRo} descriptionEn={descriptionEn} />
   }
 
   const renderSectionAmenities = () => {
@@ -200,24 +187,26 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           className="flex flex-col rounded-3xl border border-neutral-200 dark:border-neutral-700"
           id="booking-form"
         >
-          <DatesRangeInputPopover className="z-11 flex-1" />
+          <DatesRangeInputPopover 
+            className="z-11 flex-1" 
+            defaultStartDate={checkin ? new Date(checkin) : null}
+            defaultEndDate={checkout ? new Date(checkout) : null}
+          />
           <div className="w-full border-b border-neutral-200 dark:border-neutral-700"></div>
-          <GuestsInputPopover className="flex-1" />
+          <GuestsInputPopover 
+            className="flex-1"
+            defaultGuests={{
+              guestAdults,
+              guestChildren,
+              guestRooms,
+            }}
+          />
         </Form>
 
-        {/* ✅ Calculare dinamică based on dates (implementează când ai date picker functional) */}
-        <DescriptionList>
-          <DescriptionTerm>{price} x 1 night</DescriptionTerm>
-          <DescriptionDetails className="sm:text-right">
-            <SidebarPriceAndFormWrapper price={price} />
-          </DescriptionDetails>
-          <DescriptionTerm className="font-semibold text-neutral-900 dark:text-neutral-100">Total</DescriptionTerm>
-          <DescriptionDetails className="font-semibold sm:text-right dark:text-neutral-100">
-            <SidebarPriceAndFormWrapper price={price} />
-          </DescriptionDetails>
-        </DescriptionList>
+        {/* Calculare dinamică pe baza datelor selectate */}
+        <SidebarBookingSummary pricePerNight={price} />
 
-        <ReserveButton price={Number(numericPrice)} apartmentId={listing.id} />
+        <ReserveButton price={numericPrice} apartmentId={listing.id} />
       </div>
     )
   }
@@ -234,7 +223,10 @@ const Page = async ({ params }: { params: Promise<{ handle: string }> }) => {
           {renderSectionHeader()}
           {renderSectionInfo()}
           {renderSectionAmenities()}
-          <SectionDateRange />
+          <SectionDateRange 
+            defaultStartDate={checkin ? new Date(checkin) : null} 
+            defaultEndDate={checkout ? new Date(checkout) : null} 
+          />
         </div>
 
         {/* SIDEBAR */}

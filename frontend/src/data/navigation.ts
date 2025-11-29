@@ -1,14 +1,9 @@
 export async function getNavigation(): Promise<TNavigationItem[]> {
   return [
     {
-      id: '1',
+      id: '0',
       href: '/',
-      name: 'Stays',
-    },
-    {
-      id: '2',
-      href: '/stay-categories/all',
-      name: 'Categories',
+      name: 'Home',
     },
     {
       id: '3',

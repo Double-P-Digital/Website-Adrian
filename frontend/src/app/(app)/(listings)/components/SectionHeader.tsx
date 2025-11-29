@@ -1,4 +1,3 @@
-import LikeSaveBtns from '@/components/LikeSaveBtns'
 import { Badge } from '@/shared/Badge'
 import { Divider } from '@/shared/divider'
 import { Location06Icon } from '@hugeicons/core-free-icons'
@@ -15,7 +14,6 @@ interface Props {
 const SectionHeader = ({ address, listingCategory, title, children }: Props) => {
   return (
     <div className="relative listingSection__wrap">
-      <LikeSaveBtns className="absolute end-0 -top-2 sm:end-3 sm:top-3 md:end-5 md:top-5" />
       <div className="flex flex-col items-start gap-y-6">
         <Badge>{listingCategory}</Badge>
         <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>

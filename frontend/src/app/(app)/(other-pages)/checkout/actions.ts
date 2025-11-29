@@ -1,7 +1,8 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createPaymentIntent, type CreatePaymentIntentRequest } from '@/services/payments'
+import { apiClient } from '@/api/client'
+import { API_ENDPOINTS } from '@/api/endpoints'
 
 /**
  * Server Action pentru procesarea rezervării și crearea payment intent
@@ -15,36 +16,19 @@ export async function handleCheckoutSubmit(formData: FormData) {
     const lastName = formData.get('lastName') as string
     const email = formData.get('email') as string
     const phoneNumber = formData.get('phoneNumber') as string
-    const customerType = formData.get('customerType') as 'individual' | 'company'
     const checkInDate = formData.get('startDate') as string
     const checkOutDate = formData.get('endDate') as string
     const guestAdults = Number(formData.get('guestAdults') || 1)
     const guestChildren = Number(formData.get('guestChildren') || 0)
-    const guestsCount = guestAdults + guestChildren
+    const guestRooms = Number(formData.get('guestRooms') || 1)
+    const guestsCount = guestAdults + guestChildren // Rooms are not included in total guests
     const totalPrice = Number(formData.get('totalPrice') || 0)
+    const currency = (formData.get('currency') as string) || 'RON' // Default RON
 
-    console.log('=== CHECKOUT SUBMISSION ===')
-    console.log('Apartment ID:', apartmentId)
-    console.log('Guest:', `${firstName} ${lastName}`)
-    console.log('Email:', email)
-    console.log('Check-in:', checkInDate)
-    console.log('Check-out:', checkOutDate)
-    console.log('Guests:', guestsCount)
-    console.log('Total Price:', totalPrice)
 
     // Validare câmpuri obligatorii
     if (!apartmentId || !firstName || !lastName || !email || !phoneNumber || !checkInDate || !checkOutDate) {
       throw new Error('Toate câmpurile obligatorii trebuie completate')
-    }
-
-    // Validare pentru persoană juridică
-    if (customerType === 'company') {
-      const companyName = formData.get('companyName') as string | null
-      const taxId = formData.get('taxId') as string | null
-      
-      if (!companyName || !taxId) {
-        throw new Error('Pentru persoană juridică, numele firmei și CUI-ul sunt obligatorii')
-      }
     }
 
     // Validare apartmentId - verificăm dacă este MongoDB ObjectId valid
@@ -61,8 +45,18 @@ export async function handleCheckoutSubmit(formData: FormData) {
     // Construim numele complet
     const guestName = `${firstName} ${lastName}`
 
-    // Pregătim datele pentru backend - conform cu CreatePaymentIntentRequest
-    const requestBody: CreatePaymentIntentRequest = {
+    // Pregătim datele pentru backend pentru payment intent
+    // IMPORTANT: Payment Intent conține doar datele de bază (fără rooms)
+    // rooms se va trimite doar în rezervare, după plata reușită
+    const paymentIntentRequest: {
+      apartment: string
+      guestName: string
+      guestEmail: string
+      checkInDate: string
+      checkOutDate: string
+      guestsCount: number
+      amount: number
+    } = {
       apartment: apartmentId,
       guestName,
       guestEmail: email,
@@ -70,40 +64,43 @@ export async function handleCheckoutSubmit(formData: FormData) {
       checkOutDate: new Date(checkOutDate).toISOString(),
       guestsCount,
       amount: totalPrice,
-      phoneNumber,
-      customerType: customerType || 'individual',
-      ...(customerType === 'company' && {
-        companyName: formData.get('companyName') as string,
-        taxId: formData.get('taxId') as string,
-        registrationNumber: formData.get('registrationNumber') as string | undefined,
-        companyAddress: formData.get('companyAddress') as string | undefined,
-      }),
     }
 
-    console.log('=== SENDING TO BACKEND ===')
-    console.log('Request:', JSON.stringify(requestBody, null, 2))
 
     try {
       // Creăm payment intent prin API client
-      const response = await createPaymentIntent(requestBody)
+      const response = await apiClient.post<{ clientSecret: string; paymentIntentId?: string }>(
+        API_ENDPOINTS.PAYMENTS.CREATE_INTENT,
+        paymentIntentRequest
+      )
       
-      console.log('=== SUCCESS ===')
-      console.log('Response:', response)
 
-      const { clientSecret } = response
+      const { clientSecret, paymentIntentId } = response
 
       if (!clientSecret) {
         throw new Error('Nu s-a primit clientSecret de la backend')
       }
 
-      // Salvează datele rezervării pentru pagina de mulțumire
-      // (se va salva în sessionStorage din componentă)
+      // IMPORTANT: Rezervarea NU se salvează aici!
+      // Rezervarea se va crea DUPĂ plata reușită în StripePaymentForm.tsx
+      // cu status "confirmed" și cu toate datele, inclusiv rooms
 
       // Returnăm clientSecret pentru a afișa formularul Stripe
       return { success: true, clientSecret }
     } catch (error: any) {
-      // Error handling este făcut în payments.ts
-      throw error
+      console.error('[Checkout] Error creating payment intent:', error)
+      
+      // Parse error message from response
+      let errorMessage = 'Eroare la procesarea plății'
+      if (error?.message) {
+        if (Array.isArray(error.message)) {
+          errorMessage = error.message.join(', ')
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      throw new Error(errorMessage)
     }
   } catch (error) {
     console.error('=== ERROR IN CHECKOUT ===')

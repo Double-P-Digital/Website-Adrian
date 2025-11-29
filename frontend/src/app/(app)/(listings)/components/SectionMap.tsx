@@ -10,7 +10,14 @@ interface Props {
 
 const SectionMap = ({ className, address, lat, lng }: Props) => {
   // ✅ Generează Google Maps embed URL cu coordonate reale
-  const googleMapsEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}&q=${lat},${lng}&zoom=15`
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY
+  
+  // Verifică dacă API key-ul este setat
+  if (!apiKey) {
+    console.error('[SectionMap] Google Maps API key is not set in environment variables')
+  }
+  
+  const googleMapsEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${lat},${lng}&zoom=15`
 
   return (
     <div className="listingSection__wrap">

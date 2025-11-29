@@ -11,10 +11,14 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { ThemeContext } from '@/app/theme-provider'
 import { EmblaOptionsType } from 'embla-carousel'
 import Image from 'next/image'
+import { sanitizeImageUrl, getHighQualityImageUrl } from '@/utils/imageUtils'
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 const EmblaCarousel = ({ images, option }: { images: string[]; option: EmblaOptionsType }) => {
   const theme = useContext(ThemeContext)
+
+  // Sanitize image URLs
+  const sanitizedImages = images.map(img => sanitizeImageUrl(img))
 
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [emblaMainRef, emblaMainApi] = useEmblaCarousel({
@@ -53,19 +57,25 @@ const EmblaCarousel = ({ images, option }: { images: string[]; option: EmblaOpti
     <div className="relative size-full embla">
       <div className="embla__viewport relative mx-auto size-full overflow-hidden" ref={emblaMainRef}>
         <div className="embla__container size-full">
-          {images.map((image, index) => (
-            <div className="relative z-50 flex embla__slide basis-full items-center justify-center" key={index}>
-              <Image
-                alt="Slide image"
-                src={image}
-                width={2560}
-                height={1707}
-                quality={90}
-                priority={index === 0}
-                sizes="100vw"
-              />
-            </div>
-          ))}
+          {sanitizedImages.map((image, index) => {
+            // Pentru full-screen, folosim URL-uri de înaltă calitate
+            const highQualityImage = getHighQualityImageUrl(image)
+            
+            return (
+              <div className="relative z-50 flex embla__slide basis-full items-center justify-center" key={index}>
+                <Image
+                  alt="Slide image"
+                  src={highQualityImage}
+                  fill
+                  quality={100}
+                  priority={index === 0}
+                  sizes="100vw"
+                  unoptimized={true}
+                  className="object-contain"
+                />
+              </div>
+            )
+          })}
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center">
@@ -80,7 +90,7 @@ const EmblaCarousel = ({ images, option }: { images: string[]; option: EmblaOpti
       <div className="embla-thumbs fixed inset-x-0 bottom-5 z-10">
         <div className="embla-thumbs__viewport mx-auto max-w-28" ref={emblaThumbsRef}>
           <div className="embla-thumbs__container flex">
-            {images.map((image, index) => (
+            {sanitizedImages.map((image, index) => (
               <div
                 key={index}
                 className={clsx(
@@ -91,7 +101,7 @@ const EmblaCarousel = ({ images, option }: { images: string[]; option: EmblaOpti
                 )}
                 onClick={() => onThumbClick(index)}
               >
-                <Image alt="Slide image" src={image} fill sizes="100px" className={'object-cover'} />
+                <Image alt="Slide image" src={image} fill sizes="100px" className={'object-cover'} unoptimized={true} />
               </div>
             ))}
           </div>
@@ -158,6 +168,7 @@ const HeaderGalleryGrid1 = ({
             alt="bigger"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 80vw"
             priority
+            unoptimized={true}
           />
         )}
       </div>
@@ -171,6 +182,7 @@ const HeaderGalleryGrid1 = ({
               alt="others"
               sizes="(max-width: 768px) 33vw, 33vw"
               priority
+              unoptimized={true}
             />
           </div>
         ))}
@@ -203,6 +215,7 @@ const HeaderGalleryGrid2 = ({
             className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 80vw"
             priority
+            unoptimized={true}
           />
         )}
       </div>
@@ -217,6 +230,7 @@ const HeaderGalleryGrid2 = ({
               className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
               sizes="(max-width: 768px) 33vw, 33vw"
               priority
+              unoptimized={true}
             />
           </div>
         ))}
@@ -249,6 +263,7 @@ const HeaderGalleryGrid3 = ({
             className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 80vw"
             priority
+            unoptimized={true}
           />
         )}
       </div>
@@ -263,6 +278,7 @@ const HeaderGalleryGrid3 = ({
               className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
               sizes="(max-width: 768px) 33vw, 33vw"
               priority
+              unoptimized={true}
             />
           )}
         </div>
@@ -275,6 +291,7 @@ const HeaderGalleryGrid3 = ({
               className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
               sizes="(max-width: 768px) 33vw, 33vw"
               priority
+              unoptimized={true}
             />
           )}
         </div>
@@ -289,6 +306,7 @@ const HeaderGalleryGrid3 = ({
             className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 80vw"
             priority
+            unoptimized={true}
           />
         )}
       </div>
@@ -320,6 +338,7 @@ const HeaderGalleryGrid4 = ({
             className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 80vw"
             priority
+            unoptimized={true}
           />
         )}
       </div>
@@ -333,6 +352,7 @@ const HeaderGalleryGrid4 = ({
             className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 80vw"
             priority
+            unoptimized={true}
           />
         )}
       </div>
@@ -347,6 +367,7 @@ const HeaderGalleryGrid4 = ({
               className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
               sizes="(max-width: 768px) 33vw, 33vw"
               priority
+              unoptimized={true}
             />
           )}
         </div>
@@ -359,6 +380,7 @@ const HeaderGalleryGrid4 = ({
               className="rounded-xl object-cover brightness-100 transition-[filter] hover:brightness-75"
               sizes="(max-width: 768px) 33vw, 33vw"
               priority
+              unoptimized={true}
             />
           )}
         </div>

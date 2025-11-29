@@ -4,9 +4,12 @@ import NcInputNumber from '@/components/NcInputNumber'
 import { GuestsObject } from '@/type'
 import { useT } from '@/hooks/useT'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { UserPlusIcon } from '@heroicons/react/24/outline'
+import { UserPlusIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { MeetingRoomIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
-import { FC, useState } from 'react'
+import { FC, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ClearDataButton } from './ClearDataButton'
 
 const styles = {
@@ -38,16 +41,78 @@ export const GuestNumberField: FC<Props> = ({
   className = 'flex-1',
   clearDataButtonClassName,
 }) => {
-  const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(2)
-  const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(1)
-  const [guestInfantsInputValue, setGuestInfantsInputValue] = useState(1)
+  const searchParams = useSearchParams()
+  
+  // Read guest values from URL on mount
+  const getInitialGuests = () => {
+    const guestAdults = searchParams.get('guestAdults')
+    const guestChildren = searchParams.get('guestChildren')
+    const guestRooms = searchParams.get('guestRooms')
+    const guests = searchParams.get('guests') // Total guests (adults + children)
+    
+    // If we have individual values, use them
+    if (guestAdults || guestChildren || guestRooms) {
+      return {
+        adults: guestAdults ? Number(guestAdults) : 2,
+        children: guestChildren ? Number(guestChildren) : 1,
+        rooms: guestRooms ? Number(guestRooms) : 1,
+      }
+    }
+    
+    // If we only have total guests, split it (default: 2 adults, 0 children)
+    if (guests) {
+      const totalGuests = Number(guests)
+      return {
+        adults: totalGuests > 0 ? totalGuests : 2,
+        children: 0,
+        rooms: 1,
+      }
+    }
+    
+    // Default values
+    return {
+      adults: 2,
+      children: 1,
+      rooms: 1,
+    }
+  }
+  
+  const initialGuests = getInitialGuests()
+  const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(initialGuests.adults)
+  const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(initialGuests.children)
+  const [guestRoomsInputValue, setGuestRoomsInputValue] = useState(initialGuests.rooms)
   const T = useT()
+  
+  // Update guests when URL changes
+  useEffect(() => {
+    const guestAdults = searchParams.get('guestAdults')
+    const guestChildren = searchParams.get('guestChildren')
+    const guestRooms = searchParams.get('guestRooms')
+    const guests = searchParams.get('guests')
+    
+    if (guestAdults) {
+      setGuestAdultsInputValue(Number(guestAdults))
+    }
+    if (guestChildren) {
+      setGuestChildrenInputValue(Number(guestChildren))
+    }
+    if (guestRooms) {
+      setGuestRoomsInputValue(Number(guestRooms))
+    } else if (guests) {
+      // If only total guests is provided, set adults to that value
+      const totalGuests = Number(guests)
+      if (totalGuests > 0) {
+        setGuestAdultsInputValue(totalGuests)
+        setGuestChildrenInputValue(0)
+      }
+    }
+  }, [searchParams])
 
   const handleChangeData = (value: number, type: keyof GuestsObject) => {
     let newValue = {
       guestAdults: guestAdultsInputValue,
       guestChildren: guestChildrenInputValue,
-      guestInfants: guestInfantsInputValue,
+      guestRooms: guestRoomsInputValue,
     }
     if (type === 'guestAdults') {
       setGuestAdultsInputValue(value)
@@ -57,13 +122,14 @@ export const GuestNumberField: FC<Props> = ({
       setGuestChildrenInputValue(value)
       newValue.guestChildren = value
     }
-    if (type === 'guestInfants') {
-      setGuestInfantsInputValue(value)
-      newValue.guestInfants = value
+    if (type === 'guestRooms') {
+      setGuestRoomsInputValue(value)
+      newValue.guestRooms = value
     }
   }
 
-  const totalGuests = guestChildrenInputValue + guestAdultsInputValue + guestInfantsInputValue
+  const totalGuests = guestChildrenInputValue + guestAdultsInputValue
+  
   return (
     <Popover className={`group relative z-10 flex ${className}`}>
       {({ open: showPopover }) => (
@@ -79,8 +145,31 @@ export const GuestNumberField: FC<Props> = ({
               <span className={clsx('block font-semibold', styles.mainText[fieldStyle])}>
                 {T.HeroSearchForm.Guests}
               </span>
-              <span className="mt-1 block text-sm leading-none font-light text-neutral-400">
-                {totalGuests ? T['HeroSearchForm']['Guests'] : T['HeroSearchForm']['Add guests']}
+              <span className="mt-1 flex items-center gap-2 text-sm leading-none font-light text-neutral-400">
+                {totalGuests > 0 || guestRoomsInputValue > 1 ? (
+                  <>
+                    {guestAdultsInputValue > 0 && (
+                      <span className="flex items-center gap-1">
+                        <UserIcon className="size-4" />
+                        <span>{guestAdultsInputValue}</span>
+                      </span>
+                    )}
+                    {guestChildrenInputValue > 0 && (
+                      <span className="flex items-center gap-1">
+                        <UsersIcon className="size-4" />
+                        <span>{guestChildrenInputValue}</span>
+                      </span>
+                    )}
+                    {guestRoomsInputValue > 0 && (
+                      <span className="flex items-center gap-1">
+                        <HugeiconsIcon icon={MeetingRoomIcon} size={16} strokeWidth={1.5} />
+                        <span>{guestRoomsInputValue}</span>
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  T['HeroSearchForm']['Add guests']
+                )}
               </span>
             </div>
           </PopoverButton>
@@ -90,7 +179,7 @@ export const GuestNumberField: FC<Props> = ({
             onClick={() => {
               setGuestAdultsInputValue(0)
               setGuestChildrenInputValue(0)
-              setGuestInfantsInputValue(0)
+              setGuestRoomsInputValue(1)
             }}
           />
 
@@ -116,12 +205,13 @@ export const GuestNumberField: FC<Props> = ({
             />
             <NcInputNumber
               className="w-full"
-              defaultValue={guestInfantsInputValue}
-              onChange={(value) => handleChangeData(value, 'guestInfants')}
-              max={4}
-              label={T['HeroSearchForm']['Infants']}
-              description={T['HeroSearchForm']['Ages 0–2']}
-              inputName="guestInfants"
+              defaultValue={guestRoomsInputValue}
+              onChange={(value) => handleChangeData(value, 'guestRooms')}
+              max={10}
+              min={1}
+              label={T['HeroSearchForm']['Rooms']}
+              description={T['HeroSearchForm']['Number of rooms']}
+              inputName="guestRooms"
             />
           </PopoverPanel>
         </>

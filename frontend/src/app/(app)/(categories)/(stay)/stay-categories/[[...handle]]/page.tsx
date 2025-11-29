@@ -4,14 +4,10 @@ import ListingFilterTabs from '@/components/ListingFilterTabs'
 import StayCard2 from '@/components/StayCard2'
 import { getCategoryByHandle } from '@/services/categories'
 import { getListingFilterOptions, getListingsByCategory } from '@/services/listings'
-import { Button } from '@/shared/Button'
-import { Divider } from '@/shared/divider'
 import PaginationComponent from '@/components/PaginationComponent'
-import convertNumbThousand from '@/utils/convertNumbThousand'
-import { MapsLocation01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import ListingHeaderClient from "./ListingHeaderClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ handle?: string[] }> }): Promise<Metadata> {
@@ -42,14 +38,11 @@ const Page = async ({ params, searchParams }: {
   const checkin = typeof urlSearchParams.checkin === 'string' ? urlSearchParams.checkin : undefined
   const checkout = typeof urlSearchParams.checkout === 'string' ? urlSearchParams.checkout : undefined
   const guests = urlSearchParams.guests ? Number(urlSearchParams.guests) : undefined
-
-  console.log('[Page] Filter parameters from URL:', {
-    city,
-    checkin,
-    checkout,
-    guests,
-    allParams: urlSearchParams,
-  })
+  const priceMin = urlSearchParams.price_min ? Number(urlSearchParams.price_min) : undefined
+  const priceMax = urlSearchParams.price_max ? Number(urlSearchParams.price_max) : undefined
+  const bedrooms = urlSearchParams.bedrooms ? Number(urlSearchParams.bedrooms) : undefined
+  const bathrooms = urlSearchParams.bathrooms ? Number(urlSearchParams.bathrooms) : undefined
+  const query = typeof urlSearchParams.q === 'string' ? urlSearchParams.q : undefined
 
   const category = await getCategoryByHandle(handle?.[0])
   const allListings = await getListingsByCategory(handle?.[0], {
@@ -57,9 +50,13 @@ const Page = async ({ params, searchParams }: {
     checkin,
     checkout,
     guests,
+    priceMin,
+    priceMax,
+    bedrooms,
+    bathrooms,
+    query,
   })
   
-  console.log('[Page] Filtered listings count:', allListings.length)
   const filterOptions = await getListingFilterOptions()
 
   // Paginare
@@ -67,26 +64,6 @@ const Page = async ({ params, searchParams }: {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const listings = allListings.slice(startIndex, endIndex)
-  
-  console.log('[Page] Pagination:', {
-    currentPage,
-    itemsPerPage,
-    totalItems,
-    startIndex,
-    endIndex,
-    listingsCount: listings.length,
-    allListingsCount: allListings.length,
-  })
-  
-  if (listings.length > 0) {
-    console.log('[Page] First listing to display:', {
-      id: listings[0].id,
-      title: listings[0].title,
-      handle: listings[0].handle,
-      address: listings[0].address,
-      categoryHandle: listings[0].categoryHandle,
-    })
-  }
 
 
   if (!category?.id) {
@@ -101,7 +78,11 @@ const Page = async ({ params, searchParams }: {
           heading={category.name}
           image={category.coverImage}
           imageAlt={category.name}
-          searchForm={<StaySearchForm formStyle="default" />}
+          searchForm={
+            <Suspense fallback={<div className="h-20 w-full" />}>
+              <StaySearchForm formStyle="default" />
+            </Suspense>
+          }
           // description={
           //   <div className="flex items-center sm:text-lg">
           //     <HugeiconsIcon icon={MapPinpoint02Icon} size={20} color="currentColor" strokeWidth={1.5} />

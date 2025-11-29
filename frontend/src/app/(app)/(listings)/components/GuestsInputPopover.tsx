@@ -5,25 +5,75 @@ import { useT } from '@/hooks/useT'
 import { GuestsObject } from '@/type'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { UserPlusIcon } from '@heroicons/react/24/outline'
-import { FC, useState } from 'react'
+import { FC, useState, useEffect, useRef } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 interface Props {
   className?: string
+  defaultGuests?: GuestsObject
 }
 
-const GuestsInputPopover: FC<Props> = ({ className = 'flex-1' }) => {
-  const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(2)
-  const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(1)
-  const [guestInfantsInputValue, setGuestInfantsInputValue] = useState(1)
+const GuestsInputPopover: FC<Props> = ({ className = 'flex-1', defaultGuests }) => {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const isUpdatingFromUser = useRef(false)
+  
+  // Try to get guests from URL first, then from props, then use defaults
+  const urlGuestAdults = searchParams.get('guestAdults')
+  const urlGuestChildren = searchParams.get('guestChildren')
+  const urlGuestRooms = searchParams.get('guestRooms')
+  
+  const initialAdults = defaultGuests?.guestAdults ?? (urlGuestAdults ? Number(urlGuestAdults) : 2)
+  const initialChildren = defaultGuests?.guestChildren ?? (urlGuestChildren ? Number(urlGuestChildren) : 1)
+  const initialRooms = defaultGuests?.guestRooms ?? (urlGuestRooms ? Number(urlGuestRooms) : 1)
+  
+  const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(initialAdults)
+  const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(initialChildren)
+  const [guestRoomsInputValue, setGuestRoomsInputValue] = useState(initialRooms)
+
+  // Sincronizează cu datele din URL/props când se schimbă
+  useEffect(() => {
+    // Ignoră sincronizarea dacă actualizarea vine de la utilizator
+    if (isUpdatingFromUser.current) {
+      isUpdatingFromUser.current = false
+      return
+    }
+    
+    const urlGuestAdults = searchParams.get('guestAdults')
+    const urlGuestChildren = searchParams.get('guestChildren')
+    const urlGuestRooms = searchParams.get('guestRooms')
+    
+    if (urlGuestAdults) {
+      setGuestAdultsInputValue(Number(urlGuestAdults))
+    } else if (defaultGuests?.guestAdults !== undefined) {
+      setGuestAdultsInputValue(defaultGuests.guestAdults)
+    }
+    
+    if (urlGuestChildren) {
+      setGuestChildrenInputValue(Number(urlGuestChildren))
+    } else if (defaultGuests?.guestChildren !== undefined) {
+      setGuestChildrenInputValue(defaultGuests.guestChildren)
+    }
+    
+    if (urlGuestRooms) {
+      setGuestRoomsInputValue(Number(urlGuestRooms))
+    } else if (defaultGuests?.guestRooms !== undefined) {
+      setGuestRoomsInputValue(defaultGuests.guestRooms)
+    }
+  }, [searchParams, defaultGuests])
 
   const T = useT()
 
   const handleChangeData = (value: number, type: keyof GuestsObject) => {
+    // Marchează că actualizarea vine de la utilizator
+    isUpdatingFromUser.current = true
+    
     let newValue = {
       guestAdults: guestAdultsInputValue,
       guestChildren: guestChildrenInputValue,
-      guestInfants: guestInfantsInputValue,
+      guestRooms: guestRoomsInputValue,
     }
+    
     if (type === 'guestAdults') {
       setGuestAdultsInputValue(value)
       newValue.guestAdults = value
@@ -32,13 +82,20 @@ const GuestsInputPopover: FC<Props> = ({ className = 'flex-1' }) => {
       setGuestChildrenInputValue(value)
       newValue.guestChildren = value
     }
-    if (type === 'guestInfants') {
-      setGuestInfantsInputValue(value)
-      newValue.guestInfants = value
+    if (type === 'guestRooms') {
+      setGuestRoomsInputValue(value)
+      newValue.guestRooms = value
     }
+    
+    // Actualizează URL-ul pentru sincronizare
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('guestAdults', newValue.guestAdults.toString())
+    params.set('guestChildren', newValue.guestChildren.toString())
+    params.set('guestRooms', newValue.guestRooms.toString())
+    router.push(`?${params.toString()}`, { scroll: false })
   }
 
-  const totalGuests = guestChildrenInputValue + guestAdultsInputValue + guestInfantsInputValue
+  const totalGuests = guestChildrenInputValue + guestAdultsInputValue // Rooms are not included in total guests
   return (
     <Popover className={`relative flex ${className}`}>
       {({ open }) => (
@@ -86,12 +143,13 @@ const GuestsInputPopover: FC<Props> = ({ className = 'flex-1' }) => {
 
             <NcInputNumber
               className="mt-6 w-full"
-              defaultValue={guestInfantsInputValue}
-              onChange={(value) => handleChangeData(value, 'guestInfants')}
-              inputName="guestInfants"
-              max={4}
-              label={T['HeroSearchForm']['Infants']}
-              description={T['HeroSearchForm']['Ages 0–2']}
+              defaultValue={guestRoomsInputValue}
+              onChange={(value) => handleChangeData(value, 'guestRooms')}
+              inputName="guestRooms"
+              max={10}
+              min={1}
+              label={T['HeroSearchForm']['Rooms']}
+              description={T['HeroSearchForm']['Number of rooms']}
             />
           </PopoverPanel>
         </>

@@ -10,7 +10,7 @@ import GuestsInput from './HeroSearchFormMobile/GuestsInput'
 
 interface Props {
   triggerButton?: (p: { openModal: () => void }) => React.ReactNode
-  onChangeGuests?: (guests: { guestAdults: number; guestChildren: number; guestInfants: number }) => void
+  onChangeGuests?: (guests: { guestAdults: number; guestChildren: number; guestRooms: number }) => void
 }
 
 const ModalSelectGuests: FC<Props> = ({ triggerButton, onChangeGuests }) => {
@@ -18,7 +18,7 @@ const ModalSelectGuests: FC<Props> = ({ triggerButton, onChangeGuests }) => {
   const [guests, setGuests] = useState({
     guestAdults: 2,
     guestChildren: 1,
-    guestInfants: 1,
+    guestRooms: 1,
   })
   const T = useT()
 
@@ -60,7 +60,7 @@ const ModalSelectGuests: FC<Props> = ({ triggerButton, onChangeGuests }) => {
                       setGuests({
                         guestAdults: e.guestAdults || 0,
                         guestChildren: e.guestChildren || 0,
-                        guestInfants: e.guestInfants || 0,
+                        guestRooms: e.guestRooms || 1,
                       })
                     }}
                   />
@@ -77,7 +77,7 @@ const ModalSelectGuests: FC<Props> = ({ triggerButton, onChangeGuests }) => {
                   setGuests({
                     guestAdults: 0,
                     guestChildren: 0,
-                    guestInfants: 0,
+                    guestRooms: 1, // Minimum 1 room
                   })
                 }}
               >

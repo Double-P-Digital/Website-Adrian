@@ -1,91 +1,172 @@
 'use client'
 
-import { GuestsObject } from '@/type'
+import { useT } from '@/hooks/useT'
 import converSelectedDateToString from '@/utils/converSelectedDateToString'
-import T from '@/utils/getT'
 import Form from 'next/form'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import DatesRangeInput from '../DatesRangeInput'
+import { useState, useEffect } from 'react'
 import FieldPanelContainer from '../FieldPanelContainer'
+import { LocationInputField } from '@/components/HeroSearchForm/ui'
+import DatesRangeInput from '../DatesRangeInput'
 import GuestsInput from '../GuestsInput'
-import LocationInput from '../LocationInput'
 
 const StaySearchFormMobile = () => {
-  //
-  const [fieldNameShow, setFieldNameShow] = useState<'location' | 'dates' | 'guests'>('location')
-  //
-  const [locationInputTo, setLocationInputTo] = useState('')
-  const [guestInput, setGuestInput] = useState<GuestsObject>({
-    guestAdults: 0,
-    guestChildren: 0,
-    guestInfants: 0,
-  })
-  const [startDate, setStartDate] = useState<Date | null>(new Date('2025/10/05'))
-  const [endDate, setEndDate] = useState<Date | null>(new Date('2025/10/09'))
   const router = useRouter()
+  const T = useT()
+  
+  const [fieldNameShow, setFieldNameShow] = useState<'location' | 'dates' | 'guests'>('location')
+  
+  // State pentru a citi valorile din formular (pentru afișare în FieldPanelContainer)
+  const [locationValue, setLocationValue] = useState<string>('')
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
+  const [guestAdults, setGuestAdults] = useState<number>(0)
+  const [guestChildren, setGuestChildren] = useState<number>(0)
+  const [guestRooms, setGuestRooms] = useState<number>(0)
 
-  const onChangeDate = (dates: [Date | null, Date | null]) => {
-    const [start, end] = dates
-    setStartDate(start)
-    setEndDate(end)
-  }
+  // Citește valorile din formular când se schimbă
+  useEffect(() => {
+    const form = document.getElementById('form-hero-search-form-mobile') as HTMLFormElement
+    if (!form) return
+
+    const updateValues = () => {
+      const formData = new FormData(form)
+      
+      // Actualizează location
+      const location = formData.get('location') as string
+      if (location) {
+        setLocationValue(location)
+      }
+      
+      // Actualizează dates
+      const checkin = formData.get('checkin') as string
+      const checkout = formData.get('checkout') as string
+      if (checkin) {
+        setStartDate(new Date(checkin))
+      }
+      if (checkout) {
+        setEndDate(new Date(checkout))
+      }
+      
+      // Actualizează guests
+      const adults = formData.get('guestAdults') as string
+      const children = formData.get('guestChildren') as string
+      const rooms = formData.get('guestRooms') as string
+      if (adults) setGuestAdults(Number(adults))
+      if (children) setGuestChildren(Number(children))
+      if (rooms) setGuestRooms(Number(rooms))
+    }
+
+    // Ascultă evenimente de schimbare pe formular
+    form.addEventListener('change', updateValues)
+    form.addEventListener('input', updateValues)
+    
+    // Actualizează la mount
+    updateValues()
+
+    return () => {
+      form.removeEventListener('change', updateValues)
+      form.removeEventListener('input', updateValues)
+    }
+  }, [])
+
   const handleFormSubmit = (formData: FormData) => {
     const formDataEntries = Object.fromEntries(formData.entries())
-    console.log('Form submitted', formDataEntries)
-    // You can also redirect or perform other actions based on the form data
-
-    // example: add location to the URL
+    
+    // Build URL with all search parameters (similar to desktop version)
     const location = formDataEntries['location'] as string
+    const checkin = formDataEntries['checkin'] as string
+    const checkout = formDataEntries['checkout'] as string
+    const guestAdults = formDataEntries['guestAdults'] as string
+    const guestChildren = formDataEntries['guestChildren'] as string
+    const guestRooms = formDataEntries['guestRooms'] as string
+    
     let url = '/stay-categories/all'
+    const params = new URLSearchParams()
+    
     if (location) {
-      url = url + `?location=${encodeURIComponent(location)}`
+      params.append('city', location)
     }
+    if (checkin) {
+      params.append('checkin', checkin)
+    }
+    if (checkout) {
+      params.append('checkout', checkout)
+    }
+    
+    // Calculate total guests (adults + children, rooms nu se include în total guests)
+    const totalGuests = (Number(guestAdults) || 0) + (Number(guestChildren) || 0)
+    if (totalGuests > 0) {
+      params.append('guests', totalGuests.toString())
+    }
+    
+    if (params.toString()) {
+      url = url + '?' + params.toString()
+    }
+    
     router.push(url)
   }
 
-  //
-  const totalGuests = (guestInput.guestAdults || 0) + (guestInput.guestChildren || 0) + (guestInput.guestInfants || 0)
+  const totalGuests = guestAdults + guestChildren
   const guestStringConverted = totalGuests
     ? `${totalGuests} ${T['HeroSearchForm']['Guests']}`
     : T['HeroSearchForm']['Add guests']
 
   return (
     <Form id="form-hero-search-form-mobile" action={handleFormSubmit} className="flex w-full flex-col gap-y-3">
-      {/*  LOCATION */}
+      {/* LOCATION - folosește componenta dinamică */}
       <FieldPanelContainer
         isActive={fieldNameShow === 'location'}
         headingOnClick={() => setFieldNameShow('location')}
         headingTitle={T['HeroSearchForm']['Where']}
-        headingValue={locationInputTo || T['HeroSearchForm']['Location']}
+        headingValue={locationValue || T['HeroSearchForm']['Location']}
       >
-        <LocationInput
-          defaultValue={locationInputTo}
-          onChange={(value) => {
-            setLocationInputTo(value)
-            setFieldNameShow('dates')
-          }}
-        />
+        <div className="px-1.5 sm:px-4">
+          <LocationInputField
+            fieldStyle="default"
+            inputName="location"
+            className="w-full"
+          />
+        </div>
       </FieldPanelContainer>
 
-      {/* DATE RANGE  */}
+      {/* DATE RANGE - folosește componenta mobilă (fără Popover) */}
       <FieldPanelContainer
         isActive={fieldNameShow === 'dates'}
         headingOnClick={() => setFieldNameShow('dates')}
         headingTitle={T['HeroSearchForm']['When']}
         headingValue={startDate ? converSelectedDateToString([startDate, endDate]) : T['HeroSearchForm']['Add dates']}
       >
-        <DatesRangeInput defaultStartDate={startDate} defaultEndDate={endDate} onChange={onChangeDate} />
+        <DatesRangeInput 
+          defaultStartDate={startDate} 
+          defaultEndDate={endDate} 
+          onChange={(dates) => {
+            const [start, end] = dates
+            setStartDate(start)
+            setEndDate(end)
+          }} 
+        />
       </FieldPanelContainer>
 
-      {/* GUEST NUMBER */}
+      {/* GUEST NUMBER - folosește componenta mobilă directă (fără Popover) */}
       <FieldPanelContainer
         isActive={fieldNameShow === 'guests'}
         headingOnClick={() => setFieldNameShow('guests')}
         headingTitle={T['HeroSearchForm']['Who']}
         headingValue={guestStringConverted}
       >
-        <GuestsInput defaultValue={guestInput} onChange={setGuestInput} />
+        <GuestsInput 
+          defaultValue={{
+            guestAdults: guestAdults,
+            guestChildren: guestChildren,
+            guestRooms: guestRooms,
+          }}
+          onChange={(guests) => {
+            setGuestAdults(guests.guestAdults || 0)
+            setGuestChildren(guests.guestChildren || 0)
+            setGuestRooms(guests.guestRooms || 0)
+          }}
+        />
       </FieldPanelContainer>
     </Form>
   )

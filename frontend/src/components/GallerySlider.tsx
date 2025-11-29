@@ -8,8 +8,9 @@ import clsx from 'clsx'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useContext, useState } from 'react'
+import { useContext, useState, useMemo } from 'react'
 import { useSwipeable } from 'react-swipeable'
+import { sanitizeImageUrl, sanitizeImageUrls } from '@/utils/imageUtils'
 
 interface GallerySliderProps {
   className?: string
@@ -42,7 +43,29 @@ export default function GallerySlider({
   const [loaded, setLoaded] = useState(false)
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState(0)
-  const images = galleryImgs
+  
+  // Sanitize image URLs to prevent invalid URLs from causing errors
+  const images = useMemo(() => {
+    if (!galleryImgs || galleryImgs.length === 0) {
+      return ['/images/placeholder.jpg']
+    }
+    
+    // Convert galleryImgs to string array and sanitize
+    const imageStrings: string[] = galleryImgs.map((img) => {
+      if (typeof img === 'string') {
+        return sanitizeImageUrl(img)
+      }
+      // If it's an object with src property
+      if (typeof img === 'object' && img !== null && 'src' in img) {
+        return sanitizeImageUrl(img.src)
+      }
+      return '/images/placeholder.jpg'
+    })
+    
+    // Filter out duplicates and ensure at least one image
+    const uniqueImages = Array.from(new Set(imageStrings))
+    return uniqueImages.length > 0 ? uniqueImages : ['/images/placeholder.jpg']
+  }, [galleryImgs])
 
   function changePhotoId(newVal: number) {
     if (newVal > index) {
@@ -75,7 +98,13 @@ export default function GallerySlider({
     trackMouse: true,
   })
 
-  let currentImage = images[index]
+  // Ensure currentImage is always a valid URL
+  // images is now always a string array after sanitization
+  const currentImage = useMemo(() => {
+    const img = images[index] || images[0] || '/images/placeholder.jpg'
+    // images is already sanitized and is a string array
+    return typeof img === 'string' ? img : '/images/placeholder.jpg'
+  }, [images, index])
 
   return (
     <MotionConfig
@@ -105,6 +134,7 @@ export default function GallerySlider({
                   className={clsx(`rounded-xl object-cover`, imageClass)}
                   onLoad={() => setLoaded(true)}
                   sizes="(max-width: 1025px) 100vw, 25vw"
+                  unoptimized={true}
                 />
               </motion.div>
             </AnimatePresence>
