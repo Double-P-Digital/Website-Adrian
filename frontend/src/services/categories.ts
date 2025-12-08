@@ -86,7 +86,7 @@ export async function getAllCategories(): Promise<Category[]> {
         handle: 'cluj-napoca',
         href: '/stay-categories/cluj-napoca',
         count: counts['cluj-napoca'] || 0,
-        thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Cluj-Napoca.jpg',
+        thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/v1764674844/Cluj-Napoca_lkyjft.jpg',
         coverImage: {
           src: stayCategoryCoverImageCJ.src,
           width: stayCategoryCoverImageCJ.width,
@@ -101,7 +101,7 @@ export async function getAllCategories(): Promise<Category[]> {
         handle: 'baia-mare',
         href: '/stay-categories/baia-mare',
         count: counts['baia-mare'] || 0,
-        thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/baia-mare.webp',
+        thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/v1764674830/baia-mare_elqe32.webp',
         coverImage: {
           src: stayCategoryCoverImageBM.src,
           width: stayCategoryCoverImageBM.width,
@@ -116,7 +116,7 @@ export async function getAllCategories(): Promise<Category[]> {
         handle: 'oradea',
         href: '/stay-categories/oradea',
         count: counts['oradea'] || 0,
-        thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Oradea.jpg',
+        thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/v1764674861/Oradea_sg3cfa.jpg',
         coverImage: {
           src: stayCategoryCoverImageOR.src,
           width: stayCategoryCoverImageOR.width,

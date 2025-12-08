@@ -34,6 +34,8 @@ export interface Listing {
   date: string
   discountCode?: string 
   status?: string 
+  hotelId?: string // ID-ul hotelului (necesar pentru verificare disponibilitate)
+  roomId?: number // ID-ul camerei din PynBooking (necesar pentru verificare disponibilitate)
   map: {
     lat: number
     lng: number
@@ -84,7 +86,7 @@ function getCoordinates(apartment: Apartment): { lat: number; lng: number } {
  * @param apartment - Apartment data from backend
  * @param language - Optional language preference ('en' | 'ro'). If not provided, uses descriptionEn as fallback
  */
-function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'ro'): Listing {
+export function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'ro'): Listing {
   const featuredImg = sanitizeImageUrl(apartment.images?.[0])
   const galleryImgs = apartment.images && apartment.images.length > 0 
     ? sanitizeImageUrls(apartment.images) 
@@ -92,6 +94,8 @@ function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'ro'): Li
   const categoryHandle = extractCategoryHandleFromApartment(apartment)
   const handle = generateHandle(apartment.name, apartment.id)
 
+  // Verifică dacă apartamentul are hotelId și roomId (necesare pentru verificare disponibilitate)
+  
   return {
     id: apartment.id,
     title: apartment.name,
@@ -113,7 +117,9 @@ function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'ro'): Li
     listingCategory: 'Entire apartment',
     date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
     discountCode: apartment.discountCode ?? undefined, // Convert null to undefined
-    status: apartment.status, 
+    status: apartment.status,
+    hotelId: apartment.hotelId, // Păstrăm hotelId pentru verificare disponibilitate
+    roomId: apartment.roomId, // Păstrăm roomId pentru verificare disponibilitate
     map: getCoordinates(apartment),
   }
 }
@@ -127,7 +133,6 @@ export async function getAllListings(): Promise<Listing[]> {
     const listings = apartments.map((apartment) => mapApartmentToListing(apartment))
     return listings
   } catch (error) {
-    console.error('[Listings Service] Error fetching listings:', error)
     return []
   }
 }
@@ -314,9 +319,81 @@ export async function getListingsByCategory(
       })
     }
 
-    // Note: checkin/checkout filtering would require availability data from backend
-    // For now, we only filter by city, guests, price, bedrooms, and bathrooms
-    // TODO: Implement availability checking when backend endpoint is available
+    // Filter by date (checkin/checkout) - verifică disponibilitatea folosind endpoint-ul existent
+    if (filters.checkin && filters.checkout) {
+      try {
+        // Importăm funcția pentru verificare disponibilitate multiplă
+        const { checkMultipleRoomAvailability } = await import('./availability')
+        const { formatDateToYYYYMMDD } = await import('@/utils/dateUtils')
+        
+        // Normalizează datele în format YYYY-MM-DD
+        // Datele din URL pot fi în formate diferite, trebuie să le convertim
+        let checkInDate: string
+        let checkOutDate: string
+        
+        try {
+          // Încearcă să parseze datele ca Date objects
+          const checkIn = new Date(filters.checkin)
+          const checkOut = new Date(filters.checkout)
+          
+          // Verifică dacă datele sunt valide
+          if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+            throw new Error('Date invalide')
+          }
+          
+          checkInDate = formatDateToYYYYMMDD(checkIn)
+          checkOutDate = formatDateToYYYYMMDD(checkOut)
+        } catch (dateError) {
+          // Dacă datele sunt deja în format YYYY-MM-DD, le folosim direct
+          if (filters.checkin.match(/^\d{4}-\d{2}-\d{2}$/) && filters.checkout.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            checkInDate = filters.checkin
+            checkOutDate = filters.checkout
+          } else {
+            throw new Error('Format date invalid')
+          }
+        }
+        
+        // Verifică câte apartamente au hotelId și roomId
+        const listingsWithIds = listings.filter(listing => listing.hotelId && listing.roomId)
+        
+        // Pregătește request-urile pentru apartamentele care au hotelId și roomId
+        const availabilityRequests = listingsWithIds.map(listing => ({
+          apartmentId: listing.id,
+          hotelId: Number(listing.hotelId!),
+          roomId: listing.roomId!,
+          checkInDate: checkInDate,
+          checkOutDate: checkOutDate,
+          currency: 'RON', // Default currency - poți adăuga currency în filters dacă este necesar
+        }))
+        
+        // Verifică disponibilitatea pentru toate apartamentele în paralel
+        if (availabilityRequests.length > 0) {
+          const availabilityResults = await checkMultipleRoomAvailability(availabilityRequests)
+          
+          // Creează un map pentru a accesa rapid disponibilitatea după apartmentId
+          const availabilityMap: Record<string, boolean> = {}
+          availabilityRequests.forEach((request, index) => {
+            const result = availabilityResults[index]
+            availabilityMap[request.apartmentId] = result?.available === true
+          })
+          
+          // Filtrează doar apartamentele disponibile
+          listings = listings.filter(listing => {
+            // Dacă listing-ul nu are hotelId/roomId, îl păstrăm (nu putem verifica disponibilitatea)
+            if (!listing.hotelId || !listing.roomId) {
+              return true // Păstrăm listing-ul dacă nu putem verifica disponibilitatea
+            }
+            
+            // Verifică disponibilitatea din map
+            const isAvailable = availabilityMap[listing.id] === true
+            return isAvailable
+          })
+        }
+      } catch (error) {
+        // În caz de eroare, nu filtrează după dată (afișează toate apartamentele)
+        // Utilizatorul va vedea disponibilitatea reală în checkout
+      }
+    }
   }
 
   return listings
@@ -346,7 +423,6 @@ export async function getListingByHandle(handle: string): Promise<Listing | null
     // Fallback - return first listing if nothing found
     return listings[0] || null
   } catch (error) {
-    console.error('[Listings Service] Error fetching by handle:', error)
     return null
   }
 }

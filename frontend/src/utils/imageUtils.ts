@@ -69,6 +69,7 @@ export function sanitizeImageUrls(urls: (string | null | undefined)[], placehold
 /**
  * Gets a high-quality version of a Cloudinary image URL for full-screen display
  * Adds quality and format parameters for maximum clarity
+ * Uses q_100 for maximum quality instead of q_auto:best
  */
 export function getHighQualityImageUrl(url: string): string {
   if (!url || typeof url !== 'string') return url
@@ -86,20 +87,20 @@ export function getHighQualityImageUrl(url: string): string {
     if (afterUpload.includes('/')) {
       // Check if quality parameter exists
       if (afterUpload.includes('q_')) {
-        // Replace existing quality with best
-        return url.replace(/q_[^\/]+/, 'q_auto:best')
+        // Replace existing quality with maximum (100)
+        return url.replace(/q_[^\/]+/, 'q_100')
       } else {
         // Add quality parameter before the first slash
         const firstSlash = afterUpload.indexOf('/')
         if (firstSlash > 0) {
-          return `${beforeUpload}q_auto:best,f_auto/${afterUpload}`
+          return `${beforeUpload}q_100,f_auto/${afterUpload}`
         } else {
-          return `${beforeUpload}q_auto:best,f_auto/${afterUpload}`
+          return `${beforeUpload}q_100,f_auto/${afterUpload}`
         }
       }
     } else {
-      // No transformations, add quality parameters
-      return `${beforeUpload}q_auto:best,f_auto/${afterUpload}`
+      // No transformations, add quality parameters with maximum quality
+      return `${beforeUpload}q_100,f_auto/${afterUpload}`
     }
   }
   

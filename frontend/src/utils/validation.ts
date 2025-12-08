@@ -34,8 +34,8 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Validate phone number (Romanian format)
- * Accepts: +40, 0040, 07, 037, etc.
+ * Validate phone number (international format with country code)
+ * Accepts: +40, +1, +44, etc. with country code prefix
  */
 export function isValidPhoneNumber(phone: string): boolean {
   if (!phone || typeof phone !== 'string') return false
@@ -43,15 +43,27 @@ export function isValidPhoneNumber(phone: string): boolean {
   // Remove spaces, dashes, parentheses
   const cleaned = phone.replace(/[\s\-\(\)]/g, '')
   
-  // Romanian phone number patterns
-  const patterns = [
+  // International phone number patterns (with country code)
+  // Format: +[country code][number] (minimum 7 digits after country code, maximum 15 total)
+  const internationalPattern = /^\+[1-9]\d{1,14}$/ // E.164 format: +[country code][number]
+  
+  // Romanian phone number patterns (for backwards compatibility)
+  const romanianPatterns = [
     /^\+40[0-9]{9}$/,           // +40XXXXXXXXX
     /^0040[0-9]{9}$/,           // 0040XXXXXXXXX
     /^0[0-9]{9}$/,              // 0XXXXXXXXX
     /^07[0-9]{8}$/,             // 07XXXXXXXX
   ]
   
-  return patterns.some(pattern => pattern.test(cleaned))
+  // Check international format first (most common with country code selector)
+  if (internationalPattern.test(cleaned)) {
+    // Verify it has at least 7 digits after country code
+    const digitsAfterPlus = cleaned.substring(1)
+    return digitsAfterPlus.length >= 8 && digitsAfterPlus.length <= 15
+  }
+  
+  // Fallback to Romanian patterns for backwards compatibility
+  return romanianPatterns.some(pattern => pattern.test(cleaned))
 }
 
 /**

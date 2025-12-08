@@ -4,7 +4,6 @@ import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useState, FormEvent, useEffect } from 'react'
 import ButtonPrimary from '@/shared/ButtonPrimary'
 import { useT } from '@/hooks/useT'
-import { createReservation, type CreateReservationRequest } from '@/services/reservations'
 
 export default function StripePaymentForm() {
   const stripe = useStripe()
@@ -45,6 +44,11 @@ export default function StripePaymentForm() {
     e.preventDefault()
 
     if (!stripe || !elements) {
+      return
+    }
+
+    // Previne dublarea request-urilor
+    if (isProcessing) {
       return
     }
 
@@ -101,22 +105,11 @@ export default function StripePaymentForm() {
         }
       }
 
-      // Adaugă metadata cu datele de rezervare pentru Stripe Dashboard
-      if (checkInDate || checkOutDate) {
-        confirmParams.metadata = {}
-        if (checkInDate) {
-          confirmParams.metadata.check_in_date = checkInDate
-        }
-        if (checkOutDate) {
-          confirmParams.metadata.check_out_date = checkOutDate
-        }
-        // Adaugă range-ul de date pentru ușurință în dashboard
-        if (checkInDate && checkOutDate) {
-          const checkIn = new Date(checkInDate).toLocaleDateString('ro-RO')
-          const checkOut = new Date(checkOutDate).toLocaleDateString('ro-RO')
-          confirmParams.metadata.reservation_period = `${checkIn} - ${checkOut}`
-        }
-      }
+      // NOTĂ: Metadata NU se trimite aici în confirmParams
+      // confirmParams.metadata actualizează doar PaymentMethod.metadata, NU PaymentIntent.metadata
+      // Metadata completă este trimisă către backend în paymentIntentRequest
+      // Backend-ul va seta PaymentIntent.metadata când creează PaymentIntent-ul
+      // Aceasta asigură că webhook-ul poate citi toate datele din PaymentIntent.metadata
 
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -128,43 +121,14 @@ export default function StripePaymentForm() {
         setErrorMessage(error.message || 'A apărut o eroare la procesarea plății')
         setIsProcessing(false)
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        // ========== PASUL 3: Creează rezervarea după plata reușită ==========
-        try {
-          // Obține datele din sessionStorage
-          const reservationData = sessionStorage.getItem('reservationData')
-          if (!reservationData) {
-            throw new Error('Datele rezervării nu au fost găsite')
-          }
-
-          const data = JSON.parse(reservationData)
-          const guestName = data.firstName && data.lastName 
-            ? `${data.firstName} ${data.lastName}` 
-            : data.firstName || 'Guest'
-
-          // Creează rezervarea conform noii structuri
-          const reservationRequest: CreateReservationRequest = {
-            apartment: data.apartmentId, // REQUIRED - MongoDB ObjectId către Apartment
-            guestName, // REQUIRED - Numele oaspelui
-            guestEmail: data.email, // REQUIRED - Email oaspete
-            checkInDate: new Date(data.checkInDate || data.startDate).toISOString(), // REQUIRED - Data check-in (ISO date string)
-            checkOutDate: new Date(data.checkOutDate || data.endDate).toISOString(), // REQUIRED - Data check-out (ISO date string)
-            guestsCount: data.guestAdults + data.guestChildren, // REQUIRED - Număr oaspeți
-            totalPrice: data.totalPrice, // REQUIRED - Prețul total
-            currency: data.currency || 'RON', // REQUIRED - Moneda (ex: "RON", "EUR")
-            paymentIntentId: paymentIntent.id, // REQUIRED - ID Stripe PaymentIntent (UNIC)
-            status: 'confirmed', // OPTIONAL - Status (default: 'pending', dar 'confirmed' după plata reușită)
-          }
-
-          await createReservation(reservationRequest)
-
-          // Redirecționează către pagina de success
-          window.location.href = `/pay-done?payment_intent=${paymentIntent.id}&payment_intent_client_secret=${paymentIntent.client_secret}`
-        } catch (reservationError: any) {
-          console.error('[StripePaymentForm] Error creating reservation:', reservationError)
-          // Chiar dacă rezervarea eșuează, plata a reușit, deci redirecționăm
-          // Backend-ul poate crea rezervarea prin webhook
-          window.location.href = `/pay-done?payment_intent=${paymentIntent.id}&payment_intent_client_secret=${paymentIntent.client_secret}`
-        }
+        // ✅ PLATA A REUȘIT
+        // IMPORTANT: NU creăm rezervarea aici pentru a evita race conditions!
+        // Backend-ul va crea rezervarea prin webhook Stripe (payment_intent.succeeded)
+        // Webhook-ul este mai sigur și verifică disponibilitatea înainte de a crea rezervarea
+        
+        // Redirecționează către pagina de success
+        // Backend-ul va procesa rezervarea prin webhook
+        window.location.href = `/pay-done?payment_intent=${paymentIntent.id}&payment_intent_client_secret=${paymentIntent.client_secret}`
       } else {
         setIsProcessing(false)
       }

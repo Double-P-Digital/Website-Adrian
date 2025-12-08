@@ -82,6 +82,26 @@ export const GuestNumberField: FC<Props> = ({
   const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(initialGuests.children)
   const [guestRoomsInputValue, setGuestRoomsInputValue] = useState(initialGuests.rooms)
   const T = useT()
+  const [guestsText, setGuestsText] = useState("Guests")
+  const [addGuestsText, setAddGuestsText] = useState("Add guests")
+  const [adultsText, setAdultsText] = useState("Adults")
+  const [adultsDescriptionText, setAdultsDescriptionText] = useState("Ages 13 or above")
+  const [childrenText, setChildrenText] = useState("Children")
+  const [childrenDescriptionText, setChildrenDescriptionText] = useState("Ages 2–12")
+  const [roomsText, setRoomsText] = useState("Rooms")
+  const [roomsDescriptionText, setRoomsDescriptionText] = useState("Number of rooms")
+  
+  // Update translated texts only on client side to avoid hydration mismatch
+  useEffect(() => {
+    setGuestsText(T.HeroSearchForm.Guests || "Guests")
+    setAddGuestsText(T['HeroSearchForm']['Add guests'] || "Add guests")
+    setAdultsText(T['HeroSearchForm']['Adults'] || "Adults")
+    setAdultsDescriptionText(T['HeroSearchForm']['Ages 13 or above'] || "Ages 13 or above")
+    setChildrenText(T['HeroSearchForm']['Children'] || "Children")
+    setChildrenDescriptionText(T['HeroSearchForm']['Ages 2–12'] || "Ages 2–12")
+    setRoomsText(T['HeroSearchForm']['Rooms'] || "Rooms")
+    setRoomsDescriptionText(T['HeroSearchForm']['Number of rooms'] || "Number of rooms")
+  }, [T])
   
   // Update guests when URL changes
   useEffect(() => {
@@ -143,7 +163,7 @@ export const GuestNumberField: FC<Props> = ({
 
             <div className="grow">
               <span className={clsx('block font-semibold', styles.mainText[fieldStyle])}>
-                {T.HeroSearchForm.Guests}
+                {guestsText}
               </span>
               <span className="mt-1 flex items-center gap-2 text-sm leading-none font-light text-neutral-400">
                 {totalGuests > 0 || guestRoomsInputValue > 1 ? (
@@ -168,7 +188,7 @@ export const GuestNumberField: FC<Props> = ({
                     )}
                   </>
                 ) : (
-                  T['HeroSearchForm']['Add guests']
+                  addGuestsText
                 )}
               </span>
             </div>
@@ -190,8 +210,8 @@ export const GuestNumberField: FC<Props> = ({
               onChange={(value) => handleChangeData(value, 'guestAdults')}
               max={10}
               min={1}
-              label={T['HeroSearchForm']['Adults']}
-              description={T['HeroSearchForm']['Ages 13 or above']}
+              label={adultsText}
+              description={adultsDescriptionText}
               inputName="guestAdults"
             />
             <NcInputNumber
@@ -199,8 +219,8 @@ export const GuestNumberField: FC<Props> = ({
               defaultValue={guestChildrenInputValue}
               onChange={(value) => handleChangeData(value, 'guestChildren')}
               max={4}
-              label={T['HeroSearchForm']['Children']}
-              description={T['HeroSearchForm']['Ages 2–12']}
+              label={childrenText}
+              description={childrenDescriptionText}
               inputName="guestChildren"
             />
             <NcInputNumber
@@ -209,8 +229,8 @@ export const GuestNumberField: FC<Props> = ({
               onChange={(value) => handleChangeData(value, 'guestRooms')}
               max={10}
               min={1}
-              label={T['HeroSearchForm']['Rooms']}
-              description={T['HeroSearchForm']['Number of rooms']}
+              label={roomsText}
+              description={roomsDescriptionText}
               inputName="guestRooms"
             />
           </PopoverPanel>

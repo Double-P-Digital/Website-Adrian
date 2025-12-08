@@ -77,6 +77,7 @@ class ApiClient {
       cache?: RequestCache
       next?: { revalidate?: number }
       headers?: HeadersInit
+      signal?: AbortSignal
     }
   ): Promise<T> {
     try {
@@ -85,6 +86,11 @@ class ApiClient {
       const fetchOptions: RequestInit & { next?: { revalidate?: number } } = {
         method: 'GET',
         headers: this.getHeaders(options?.headers),
+      }
+
+      // Adaugă AbortSignal dacă este furnizat (pentru request cancellation)
+      if (options?.signal) {
+        fetchOptions.signal = options.signal
       }
 
       // Adaugă cache doar dacă este specificat (pentru server-side)
@@ -108,8 +114,17 @@ class ApiClient {
 
       const result = await this.handleResponse<T>(response)
       return result.data
-    } catch (error) {
-      console.error(`[API Client] GET ${endpoint} error:`, error)
+    } catch (error: any) {
+      // Nu logăm eroarea dacă request-ul a fost anulat intenționat
+      if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
+        throw error // Re-throw pentru a fi gestionat de caller
+      }
+      
+      // Nu logăm eroarea aici - lasă serviciile să gestioneze erorile
+      // Doar pentru "Failed to fetch" (network errors) logăm un warning
+      if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+        console.warn(`[API Client] Network error for GET ${endpoint}. Backend might not be accessible.`)
+      }
       throw this.handleError(error)
     }
   }

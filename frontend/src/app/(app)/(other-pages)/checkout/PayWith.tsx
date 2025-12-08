@@ -7,6 +7,8 @@ import { MasterCardIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import ApartmentSummary from './ApartmentSummary'
+import { useState } from 'react'
+import Select from '@/shared/Select'
 
 interface PayWithProps {
   apartmentId?: string
@@ -33,6 +35,27 @@ const PayWith = ({
 }: PayWithProps) => {
   const T = useT()
   const Booking = T.Booking as Record<string, string>
+  
+  // Country codes pentru telefon
+  const countryCodes = [
+    { code: '+40', country: 'RO', label: '🇷🇴 +40' },
+    { code: '+1', country: 'US', label: '🇺🇸 +1' },
+    { code: '+44', country: 'GB', label: '🇬🇧 +44' },
+    { code: '+49', country: 'DE', label: '🇩🇪 +49' },
+    { code: '+33', country: 'FR', label: '🇫🇷 +33' },
+    { code: '+39', country: 'IT', label: '🇮🇹 +39' },
+    { code: '+34', country: 'ES', label: '🇪🇸 +34' },
+    { code: '+31', country: 'NL', label: '🇳🇱 +31' },
+    { code: '+32', country: 'BE', label: '🇧🇪 +32' },
+    { code: '+41', country: 'CH', label: '🇨🇭 +41' },
+    { code: '+43', country: 'AT', label: '🇦🇹 +43' },
+    { code: '+36', country: 'HU', label: '🇭🇺 +36' },
+    { code: '+359', country: 'BG', label: '🇧🇬 +359' },
+    { code: '+381', country: 'RS', label: '🇷🇸 +381' },
+    { code: '+385', country: 'HR', label: '🇭🇷 +385' },
+  ]
+  
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+40') // Default: România
 
   return (
     <div className="pt-5">
@@ -94,18 +117,34 @@ const PayWith = ({
           )}
         </Field>
 
-        {/* Număr de telefon */}
+        {/* Număr de telefon cu country code */}
         <Field>
           <Label>
             {Booking['Phone Number'] || 'Număr de telefon'} <span className="text-red-500">*</span>
           </Label>
-          <Input
-            name="phoneNumber"
-            type="tel"
-            className={`mt-1.5 ${validationErrors.phoneNumber ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-            required
-            placeholder="+40 123 456 789"
-          />
+          <div className="mt-1.5 flex items-stretch gap-2">
+            <div className="relative shrink-0">
+              <Select
+                name="countryCode"
+                value={selectedCountryCode}
+                onChange={(e) => setSelectedCountryCode(e.target.value)}
+                className={`h-11 w-20 !rounded-2xl !px-2 text-sm ${validationErrors.phoneNumber ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+              >
+                {countryCodes.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.code}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <Input
+              name="phoneNumber"
+              type="tel"
+              className={`flex-1 ${validationErrors.phoneNumber ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+              required
+              placeholder="712 345 678"
+            />
+          </div>
           {validationErrors.phoneNumber ? (
             <p className="mt-1 text-sm text-red-500">{validationErrors.phoneNumber}</p>
           ) : (

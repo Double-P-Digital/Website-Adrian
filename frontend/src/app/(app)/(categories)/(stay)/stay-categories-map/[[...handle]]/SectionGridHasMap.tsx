@@ -2,13 +2,12 @@
 
 import ListingFilterTabs from '@/components/ListingFilterTabs'
 import StayCard2 from '@/components/StayCard2'
-import PaginationComponent from '@/components/PaginationComponent'
 import { Category } from '@/services/categories'
 import { getListingFilterOptions, Listing } from '@/services/listings'
 import { Divider } from '@/shared/divider'
 import convertNumbThousand from '@/utils/convertNumbThousand'
 import clsx from 'clsx'
-import { FC, useState, useMemo, useEffect } from 'react'
+import { FC, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import MapFixedSection from '../../../MapFixedSection'
 
@@ -19,12 +18,10 @@ interface Props {
   filterOptions: Awaited<ReturnType<typeof getListingFilterOptions>>
 }
 
-const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, category, filterOptions }) => {
+const SectionGridHasMap: FC<Props> = ({ className, listings, category, filterOptions }) => {
   const [currentHoverID, setCurrentHoverID] = useState<string>('')
   const [selectedListingId, setSelectedListingId] = useState<string>('')
   const searchParams = useSearchParams()
-  const currentPage = Number(searchParams.get('page')) || 1
-  const itemsPerPage = 12
   
   // Citește listingId din URL pentru a centra harta
   useEffect(() => {
@@ -33,16 +30,6 @@ const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, catego
       setSelectedListingId(listingIdFromUrl)
     }
   }, [searchParams])
-  
-  // Paginare cu useMemo pentru performance
-  const { listings, totalItems } = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    return {
-      listings: allListings.slice(startIndex, endIndex),
-      totalItems: allListings.length
-    }
-  }, [allListings, currentPage, itemsPerPage])
 
   return (
     <div className={clsx('relative flex min-h-screen gap-6', className)}>
@@ -75,9 +62,6 @@ const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, catego
             </div>
           ))}
         </div>
-        <div className="mt-16 flex items-center">
-          <PaginationComponent totalItems={totalItems} itemsPerPage={itemsPerPage} />
-        </div>
       </div>
 
       <MapFixedSection
@@ -95,7 +79,7 @@ const SectionGridHasMap: FC<Props> = ({ className, listings: allListings, catego
           return queryString ? `${baseUrl}?${queryString}#heading` : `${baseUrl}#heading`
         })()}
         currentHoverID={selectedListingId || currentHoverID}
-        listings={allListings}
+        listings={listings}
         listingType="Stays"
       />
     </div>

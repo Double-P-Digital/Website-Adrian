@@ -3,6 +3,9 @@
 import { redirect } from 'next/navigation'
 import { apiClient } from '@/api/client'
 import { API_ENDPOINTS } from '@/api/endpoints'
+import { getApartmentById } from '@/services/apartments'
+import { formatDateToYYYYMMDD } from '@/utils/dateUtils'
+import { checkRoomAvailability } from '@/services/availability'
 
 /**
  * Server Action pentru procesarea rezervării și crearea payment intent
@@ -21,10 +24,20 @@ export async function handleCheckoutSubmit(formData: FormData) {
     const guestAdults = Number(formData.get('guestAdults') || 1)
     const guestChildren = Number(formData.get('guestChildren') || 0)
     const guestRooms = Number(formData.get('guestRooms') || 1)
-    const guestsCount = guestAdults + guestChildren // Rooms are not included in total guests
+    const guestsCount = guestAdults + guestChildren 
     const totalPrice = Number(formData.get('totalPrice') || 0)
-    const currency = (formData.get('currency') as string) || 'RON' // Default RON
-
+    const currency = (formData.get('currency') as string) || 'RON'
+    const guestName = `${firstName} ${lastName}`
+    const checkIn = new Date(checkInDate)
+    const checkOut = new Date(checkOutDate)
+    const diffTime = checkOut.getTime() - checkIn.getTime()
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+    const nights = diffDays >= 1 ? diffDays : 1
+    const pricePerNight = totalPrice / nights
+    const pricePerDay = Array(nights).fill(pricePerNight)
+    const formattedCheckIn = formatDateToYYYYMMDD(checkIn)
+    const formattedCheckOut = formatDateToYYYYMMDD(checkOut)
+    const currencyLower = currency.toLowerCase()
 
     // Validare câmpuri obligatorii
     if (!apartmentId || !firstName || !lastName || !email || !phoneNumber || !checkInDate || !checkOutDate) {
@@ -37,38 +50,103 @@ export async function handleCheckoutSubmit(formData: FormData) {
       throw new Error('ID-ul apartamentului este invalid. Vă rugăm să selectați un apartament valid.')
     }
 
-    // Validare prețuri
     if (totalPrice <= 0) {
       throw new Error('Prețul total trebuie să fie mai mare decât 0')
     }
 
-    // Construim numele complet
-    const guestName = `${firstName} ${lastName}`
+    const apartment = await getApartmentById(apartmentId)
+    if (!apartment) {
+      throw new Error('Apartamentul nu a fost găsit')
+    }
+
+    if (!apartment.hotelId) {
+      throw new Error('Apartamentul nu are hotelId configurat')
+    }
+
+    if (!apartment.roomId) {
+      throw new Error('Apartamentul nu are roomId configurat (ID-ul apartamentului din Pynbooking)')
+    }
+
+    // Verifică disponibilitatea înainte de a crea PaymentIntent
+    const availabilityCheck = await checkRoomAvailability({
+      hotelId: Number(apartment.hotelId),
+      roomId: apartment.roomId,
+      checkInDate: formattedCheckIn,
+      checkOutDate: formattedCheckOut,
+      currency: currency.toUpperCase(),
+    })
+
+    if (!availabilityCheck.available) {
+      throw new Error(
+        availabilityCheck.message || 
+        'Camera nu este disponibilă pentru datele selectate. Vă rugăm să selectați alte date.'
+      )
+    }
 
     // Pregătim datele pentru backend pentru payment intent
-    // IMPORTANT: Payment Intent conține doar datele de bază (fără rooms)
-    // rooms se va trimite doar în rezervare, după plata reușită
+    const roomsArray = [
+      {
+        roomId: apartment.roomId, 
+        planId: 1,
+        quantity: 1,
+        price: totalPrice,
+        pricePerDay: pricePerDay, 
+        noGuests: guestsCount,
+      },
+    ]
+
     const paymentIntentRequest: {
       apartment: string
+      hotelId: string
       guestName: string
       guestEmail: string
+      guestPhone: string
       checkInDate: string
       checkOutDate: string
       guestsCount: number
       amount: number
+      currency: string
+      rooms: string // Backend așteaptă rooms ca JSON string
+      metadata: {
+        apartment: string
+        hotelId: string
+        guestName: string
+        guestEmail: string
+        guestPhone: string
+        checkInDate: string
+        checkOutDate: string
+        guestsCount: string
+        totalPrice: string
+        planId: string
+      }
     } = {
       apartment: apartmentId,
+      hotelId: apartment.hotelId,
       guestName,
       guestEmail: email,
-      checkInDate: new Date(checkInDate).toISOString(),
-      checkOutDate: new Date(checkOutDate).toISOString(),
+      guestPhone: phoneNumber,
+      checkInDate: formattedCheckIn, 
+      checkOutDate: formattedCheckOut, 
       guestsCount,
       amount: totalPrice,
+      currency: currencyLower, 
+      rooms: JSON.stringify(roomsArray), // Convertim array-ul la JSON string
+      metadata: {
+        apartment: apartmentId,
+        hotelId: apartment.hotelId,
+        guestName,
+        guestEmail: email,
+        guestPhone: phoneNumber,
+        checkInDate: formattedCheckIn,
+        checkOutDate: formattedCheckOut,
+        guestsCount: guestsCount.toString(),
+        totalPrice: totalPrice.toString(),
+        planId: "1",
+      },
     }
 
 
     try {
-      // Creăm payment intent prin API client
       const response = await apiClient.post<{ clientSecret: string; paymentIntentId?: string }>(
         API_ENDPOINTS.PAYMENTS.CREATE_INTENT,
         paymentIntentRequest
@@ -81,11 +159,6 @@ export async function handleCheckoutSubmit(formData: FormData) {
         throw new Error('Nu s-a primit clientSecret de la backend')
       }
 
-      // IMPORTANT: Rezervarea NU se salvează aici!
-      // Rezervarea se va crea DUPĂ plata reușită în StripePaymentForm.tsx
-      // cu status "confirmed" și cu toate datele, inclusiv rooms
-
-      // Returnăm clientSecret pentru a afișa formularul Stripe
       return { success: true, clientSecret }
     } catch (error: any) {
       console.error('[Checkout] Error creating payment intent:', error)

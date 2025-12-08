@@ -23,6 +23,26 @@ const StaySearchFormMobile = () => {
   const [guestAdults, setGuestAdults] = useState<number>(0)
   const [guestChildren, setGuestChildren] = useState<number>(0)
   const [guestRooms, setGuestRooms] = useState<number>(0)
+  
+  // State pentru texte traduse (pentru a evita hydration mismatch)
+  const [whereText, setWhereText] = useState("Where")
+  const [locationText, setLocationText] = useState("Location")
+  const [whenText, setWhenText] = useState("When")
+  const [whoText, setWhoText] = useState("Who")
+  const [guestsText, setGuestsText] = useState("Guests")
+  const [addGuestsText, setAddGuestsText] = useState("Add guests")
+  const [addDatesText, setAddDatesText] = useState("Add dates")
+
+  // Update translated texts only on client side to avoid hydration mismatch
+  useEffect(() => {
+    setWhereText(T['HeroSearchForm']['Where'] || "Where")
+    setLocationText(T['HeroSearchForm']['Location'] || "Location")
+    setWhenText(T['HeroSearchForm']['When'] || "When")
+    setWhoText(T['HeroSearchForm']['Who'] || "Who")
+    setGuestsText(T['HeroSearchForm']['Guests'] || "Guests")
+    setAddGuestsText(T['HeroSearchForm']['Add guests'] || "Add guests")
+    setAddDatesText(T['HeroSearchForm']['Add dates'] || "Add dates")
+  }, [T])
 
   // Citește valorile din formular când se schimbă
   useEffect(() => {
@@ -109,8 +129,8 @@ const StaySearchFormMobile = () => {
 
   const totalGuests = guestAdults + guestChildren
   const guestStringConverted = totalGuests
-    ? `${totalGuests} ${T['HeroSearchForm']['Guests']}`
-    : T['HeroSearchForm']['Add guests']
+    ? `${totalGuests} ${guestsText}`
+    : addGuestsText
 
   return (
     <Form id="form-hero-search-form-mobile" action={handleFormSubmit} className="flex w-full flex-col gap-y-3">
@@ -118,8 +138,8 @@ const StaySearchFormMobile = () => {
       <FieldPanelContainer
         isActive={fieldNameShow === 'location'}
         headingOnClick={() => setFieldNameShow('location')}
-        headingTitle={T['HeroSearchForm']['Where']}
-        headingValue={locationValue || T['HeroSearchForm']['Location']}
+        headingTitle={whereText}
+        headingValue={locationValue || locationText}
       >
         <div className="px-1.5 sm:px-4">
           <LocationInputField
@@ -134,8 +154,8 @@ const StaySearchFormMobile = () => {
       <FieldPanelContainer
         isActive={fieldNameShow === 'dates'}
         headingOnClick={() => setFieldNameShow('dates')}
-        headingTitle={T['HeroSearchForm']['When']}
-        headingValue={startDate ? converSelectedDateToString([startDate, endDate]) : T['HeroSearchForm']['Add dates']}
+        headingTitle={whenText}
+        headingValue={startDate ? converSelectedDateToString([startDate, endDate]) : addDatesText}
       >
         <DatesRangeInput 
           defaultStartDate={startDate} 
@@ -152,7 +172,7 @@ const StaySearchFormMobile = () => {
       <FieldPanelContainer
         isActive={fieldNameShow === 'guests'}
         headingOnClick={() => setFieldNameShow('guests')}
-        headingTitle={T['HeroSearchForm']['Who']}
+        headingTitle={whoText}
         headingValue={guestStringConverted}
       >
         <GuestsInput 

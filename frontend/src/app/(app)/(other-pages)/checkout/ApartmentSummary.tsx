@@ -50,7 +50,10 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
         const data = await getApartmentForCheckout(apartmentId)
         
         if (!data) {
-          throw new Error('Apartamentul nu a fost găsit')
+          // Nu aruncăm eroare - doar setăm error state pentru UI
+          setError('Apartamentul nu a fost găsit')
+          setLoading(false)
+          return
         }
         
         const mappedApartment: Apartment = {

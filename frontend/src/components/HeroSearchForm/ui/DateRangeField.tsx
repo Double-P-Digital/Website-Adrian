@@ -81,7 +81,13 @@ export const DateRangeField: FC<Props> = ({
   const [startDate, setStartDate] = useState<Date | null>(initialDates.startDate)
   const [endDate, setEndDate] = useState<Date | null>(initialDates.endDate)
   const T = useT();
+  const [checkInOutText, setCheckInOutText] = useState("Check in - Check out");
   
+  // Update check-in/check-out text only on client side to avoid hydration mismatch
+  useEffect(() => {
+    setCheckInOutText((T.HeroSearchForm.CheckIn || "Check in") + " - " + (T.HeroSearchForm.CheckOut || "Check out"))
+  }, [T])
+
   // Update dates when URL changes
   useEffect(() => {
     const checkin = searchParams.get('checkin')
@@ -298,7 +304,7 @@ export const DateRangeField: FC<Props> = ({
                     : ''}
                 </span>
                 <span className="mt-1 block text-sm leading-none font-light text-neutral-400">
-                  {T.HeroSearchForm.CheckIn +" - "+  T.HeroSearchForm.CheckOut|| T['HeroSearchForm']['Add dates']}
+                  {checkInOutText}
                 </span>
               </div>
             </PopoverButton>

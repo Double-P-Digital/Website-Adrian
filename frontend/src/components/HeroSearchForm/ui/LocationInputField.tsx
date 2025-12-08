@@ -52,7 +52,7 @@ interface Props {
 }
 
 export const LocationInputField: FC<Props> = ({
-  placeholder = "Where to?",
+  placeholder: placeholderProp,
   description = "Where are you going?",
   className = 'flex-1',
   inputName = 'location',
@@ -69,6 +69,21 @@ export const LocationInputField: FC<Props> = ({
   const [inputValue, setInputValue] = useState<string>('')
   const [cities, setCities] = useState<Suggest[]>([])
   const [isLoadingCities, setIsLoadingCities] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
+  
+  // Folosim placeholder tradus doar după mount pentru a evita hydration mismatch
+  const [placeholder, setPlaceholder] = useState(placeholderProp || "Where to?")
+  const [suggestedLocationsText, setSuggestedLocationsText] = useState("Suggested locations")
+  
+  useEffect(() => {
+    setIsMounted(true)
+    // Setează placeholder-ul tradus doar pe client
+    if (!placeholderProp) {
+      setPlaceholder(T.Aside["Where to?"] || "Where to?")
+    }
+    // Setează textul tradus pentru "Suggested locations" doar pe client
+    setSuggestedLocationsText(T['HeroSearchForm']['Suggested locations'] || "Suggested locations")
+  }, [T, placeholderProp])
   
   // Read city from URL on mount
   useEffect(() => {
@@ -261,7 +276,7 @@ export const LocationInputField: FC<Props> = ({
               ref={inputRef}
               aria-label="Search for a location"
               className={clsx(styles.input.base, styles.input[fieldStyle])}
-              placeholder={T.Aside["Where to?"]}
+              placeholder={placeholder}
               autoComplete="off"
               displayValue={(item?: Suggest) => item?.name || ''}
               onChange={handleInputChange}
@@ -275,7 +290,7 @@ export const LocationInputField: FC<Props> = ({
               onChange={() => {}} // Prevent React warning about uncontrolled input
             />
             <div className="mt-0.5 text-start text-sm font-light text-neutral-400">
-              <span className="line-clamp-1">{T.Aside["Where to?"]}</span>
+              <span className="line-clamp-1">{placeholder}</span>
             </div>
 
             <ClearDataButton
@@ -297,7 +312,7 @@ export const LocationInputField: FC<Props> = ({
           <div className={clsx(styles.panel.base, styles.panel[fieldStyle])}>
             {isShowInitSuggests && (
               <p className="mt-2 mb-3 px-4 text-xs/6 font-normal text-neutral-600 sm:mt-0 sm:px-8 dark:text-neutral-400">
-                {T['HeroSearchForm']['Suggested locations']}
+                {suggestedLocationsText}
               </p>
             )}
             {isShowInitSuggests && <Divider className="opacity-50" />}

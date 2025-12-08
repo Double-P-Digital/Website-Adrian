@@ -7,7 +7,7 @@ import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/d
 import { Divider } from '@/shared/divider'
 import Form from 'next/form'
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useState, useTransition, useEffect } from 'react'
+import { Suspense, useState, useTransition, useEffect, useRef } from 'react'
 import PayWith from './PayWith'
 import YourTrip from './YourTrip'
 import ApartmentSummary from './ApartmentSummary'
@@ -21,6 +21,7 @@ import Input from '@/shared/Input'
 import { Button } from '@/shared/Button'
 import { validateCheckoutForm, sanitizeString } from '@/utils/validation'
 import { formatDateToYYYYMMDD, parseYYYYMMDDToDate } from '@/utils/dateUtils'
+import { checkRoomAvailability } from '@/services/availability'
 
 function CheckoutPageContent() {
   const searchParams = useSearchParams()
@@ -34,14 +35,12 @@ function CheckoutPageContent() {
   const basePrice = Number(searchParams.get('price') || 0)
   const apartmentId = searchParams.get('apartmentId') || ''
   
-  // Citește datele din URL
   const urlCheckin = searchParams.get('checkin')
   const urlCheckout = searchParams.get('checkout')
   const urlGuestAdults = searchParams.get('guestAdults')
   const urlGuestChildren = searchParams.get('guestChildren')
   const urlGuestRooms = searchParams.get('guestRooms')
 
-  // State pentru datele selectate - inițializează din URL
   const [startDate, setStartDate] = useState<Date | null>(() => {
     if (urlCheckin) {
       const date = new Date(urlCheckin)
@@ -57,7 +56,6 @@ function CheckoutPageContent() {
     return null
   })
   
-  // Sincronizează cu URL când se schimbă
   useEffect(() => {
     const checkin = searchParams.get('checkin')
     const checkout = searchParams.get('checkout')
@@ -69,7 +67,6 @@ function CheckoutPageContent() {
           setStartDate(newStart)
         }
       } catch {
-        // Ignoră date invalide
       }
     }
     
@@ -80,62 +77,142 @@ function CheckoutPageContent() {
           setEndDate(newEnd)
         }
       } catch {
-        // Ignoră date invalide
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
   
-  // State pentru promocode
   const [promoCode, setPromoCode] = useState<string>('')
   const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null)
   const [promoCodeError, setPromoCodeError] = useState<string | null>(null)
-  const [promoCodePrice, setPromoCodePrice] = useState<number | null>(null) // Prețul setat de promocode
+  const [promoCodePrice, setPromoCodePrice] = useState<number | null>(null)
   const [apartmentDiscountCode, setApartmentDiscountCode] = useState<string | null>(null)
   
-  // Încarcă discountCode-ul apartamentului
+  const [availability, setAvailability] = useState<{
+    available: boolean | null
+    message?: string
+  }>({ available: null })
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
+  const [apartmentData, setApartmentData] = useState<{ hotelId: string; roomId: number } | null>(null)
+  
   useEffect(() => {
-    const loadApartmentDiscountCode = async () => {
+    const loadApartmentData = async () => {
       if (apartmentId && /^[0-9a-fA-F]{24}$/.test(apartmentId)) {
         try {
           const apartment = await getApartmentById(apartmentId)
-          if (apartment?.discountCode) {
-            setApartmentDiscountCode(apartment.discountCode)
+          if (apartment) {
+            if (apartment.discountCode) {
+              setApartmentDiscountCode(apartment.discountCode)
+            }
+            if (apartment.hotelId && apartment.roomId) {
+              setApartmentData({
+                hotelId: apartment.hotelId,
+                roomId: apartment.roomId,
+              })
+            }
           }
         } catch (error) {
-          console.error('[Checkout] Error loading apartment discount code:', error)
+          console.error('[Checkout] Error loading apartment data:', error)
         }
       }
     }
-    loadApartmentDiscountCode()
+    loadApartmentData()
   }, [apartmentId])
+  
+  const availabilityControllerRef = useRef<AbortController | null>(null)
 
-  // Calculează numărul de nopți din datele selectate
+  useEffect(() => {
+    if (!startDate || !endDate) {
+      if (availabilityControllerRef.current) {
+        availabilityControllerRef.current.abort()
+        availabilityControllerRef.current = null
+      }
+      setAvailability({ available: null })
+      return
+    }
+    
+    if (!apartmentData) {
+      return
+    }
+    
+    if (availabilityControllerRef.current) {
+      availabilityControllerRef.current.abort()
+    }
+    
+    const controller = new AbortController()
+    availabilityControllerRef.current = controller
+    
+    const timeoutId = setTimeout(async () => {
+      if (controller.signal.aborted) {
+        return
+      }
+
+      setIsCheckingAvailability(true)
+      try {
+        const checkInDate = formatDateToYYYYMMDD(startDate)
+        const checkOutDate = formatDateToYYYYMMDD(endDate)
+        
+        const result = await checkRoomAvailability({
+          hotelId: Number(apartmentData.hotelId),
+          roomId: apartmentData.roomId,
+          checkInDate,
+          checkOutDate,
+          currency: currency.toUpperCase(),
+        }, controller.signal)
+        
+        if (!controller.signal.aborted) {
+          setAvailability(result)
+        }
+      } catch (error: any) {
+        if (error?.message === 'Request anulat' || controller.signal.aborted) {
+          return
+        }
+        
+        console.warn('[Checkout] Error checking availability:', error)
+        if (!controller.signal.aborted) {
+          setAvailability({
+            available: false,
+            message: 'Eroare la verificarea disponibilității. Vă rugăm să încercați din nou.',
+          })
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsCheckingAvailability(false)
+        }
+        if (availabilityControllerRef.current === controller) {
+          availabilityControllerRef.current = null
+        }
+      }
+    }, 500)
+    
+    return () => {
+      clearTimeout(timeoutId)
+      if (availabilityControllerRef.current) {
+        availabilityControllerRef.current.abort()
+        availabilityControllerRef.current = null
+      }
+    }
+  }, [startDate, endDate, apartmentData, currency])
+
   const calculateNights = (start: Date | null, end: Date | null): number => {
     if (!start || !end) {
-      // Dacă nu sunt date selectate, folosește valoarea din URL sau default 1
       return Number(searchParams.get('nights') || 1)
     }
     
-    // Calculează diferența în zile (fără ore/min/sec)
     const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate())
     const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate())
     
     const diffTime = endDate.getTime() - startDate.getTime()
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
     
-    // Asigură-te că există minim 1 noapte
     return diffDays >= 1 ? diffDays : 1
   }
 
   const nights = calculateNights(startDate, endDate)
   
-  // basePrice este prețul pe noapte în RON (original)
-  // Convertim în currency-ul selectat și calculăm totalul
-  // Dacă există un promocode aplicat, folosește prețul din promocode, altfel folosește prețul de bază
   const effectivePricePerNight = promoCodePrice !== null 
     ? convert(promoCodePrice, 'RON', currency) 
-    : convert(basePrice, 'RON', currency) // Convertim prețul din RON în currency-ul selectat
+    : convert(basePrice, 'RON', currency)
   
   const subtotal = effectivePricePerNight * nights
   const finalTotalPrice = subtotal
@@ -144,7 +221,6 @@ function CheckoutPageContent() {
   const fee = 0
   const tax = 0
   
-  // Funcție pentru aplicarea codului promoțional
   const handleApplyPromoCode = async () => {
     setPromoCodeError(null)
     
@@ -154,7 +230,6 @@ function CheckoutPageContent() {
     }
     
     try {
-      // Verifică direct în backend dacă codul există și este valid
       const promoPrice = await getPromoCodePrice(apartmentId, promoCode.trim().toUpperCase())
       
       if (promoPrice !== null && promoPrice > 0) {
@@ -174,76 +249,98 @@ function CheckoutPageContent() {
     }
   }
   
-  // Funcție helper pentru a obține prețul pentru promocode
   const getPromoCodePrice = async (aptId: string, code: string): Promise<number | null> => {
     try {
-      // Obține toate codurile promoționale
       const discountCodes = await apiClient.get<Array<{
         _id?: string
         id?: string
         code: string
-        price: number
+        price?: number
+        discount?: number
+        value?: number
+        discountType?: 'fixed' | 'percentage' | 'FIXED' | 'PERCENTAGE'
         expirationDate: string
-        apartmentIds?: string[] | any[] // Array de ID-uri ale apartamentelor la care funcționează codul
+        apartmentIds?: string[] | any[]
       }>>(API_ENDPOINTS.DISCOUNT_CODES.ALL)
       
-      console.log('[Checkout] All discount codes:', discountCodes)
-      console.log('[Checkout] Searching for code:', code, 'for apartment:', aptId)
-      
-      // Găsește codul după code (case-insensitive)
       const discountCode = discountCodes.find(
         (dc) => dc.code.toUpperCase() === code.toUpperCase()
       )
       
       if (!discountCode) {
-        console.log('[Checkout] Discount code not found:', code)
-        return null // Codul nu există
+        return null
       }
       
-      console.log('[Checkout] Found discount code:', discountCode)
-      
-      // Verifică dacă codul nu a expirat
       const expirationDate = new Date(discountCode.expirationDate)
       const now = new Date()
       
       if (expirationDate < now) {
-        console.log('[Checkout] Discount code expired:', expirationDate)
-        return null // Cod expirat
+        return null
       }
       
-      // Verifică dacă codul este aplicabil pentru acest apartament
-      // Dacă apartmentIds există și nu este gol, verifică dacă aptId este în listă
-      // Dacă apartmentIds este gol sau nu există, codul este aplicabil pentru toate apartamentele
       if (discountCode.apartmentIds && discountCode.apartmentIds.length > 0) {
-        // Convertim toate ID-urile la string pentru comparație
         const apartmentIdStrings = discountCode.apartmentIds.map((id: any) => {
-          // Dacă este ObjectId, convertim la string
           if (typeof id === 'object' && id.toString) {
             return id.toString()
           }
           return String(id)
         })
         
-        console.log('[Checkout] Apartment IDs in discount code:', apartmentIdStrings)
-        console.log('[Checkout] Current apartment ID:', aptId)
-        
         const isApplicable = apartmentIdStrings.includes(aptId)
         if (!isApplicable) {
-          console.log('[Checkout] Discount code not applicable for this apartment')
-          return null // Codul nu este aplicabil pentru acest apartament
+          return null
         }
       }
       
-      console.log('[Checkout] Discount code is valid, price:', discountCode.price)
-      // Returnează prețul redus
-      return discountCode.price
+      const rawDiscountType = discountCode.discountType || (discountCode.value || discountCode.price ? 'fixed' : 'percentage')
+      const discountType = rawDiscountType.toLowerCase() as 'fixed' | 'percentage'
+      
+      const discountValue = discountCode.discount || discountCode.value
+      
+      const nights = calculateNights(startDate, endDate)
+      const totalPrice = basePrice * nights
+      
+      if (discountType === 'fixed' && discountValue && discountValue > 0) {
+        return discountValue / nights
+      }
+      
+      if (discountType === 'percentage' && discountValue && discountValue > 0) {
+        const response = await apiClient.post<{
+          originalPrice: number
+          discountAmount: number
+          finalPrice: number
+          discountCode: {
+            code: string
+            discountType: string
+            value: number
+          }
+        }>(
+          API_ENDPOINTS.DISCOUNT_CODES.CALCULATE,
+          {
+            apartmentId: aptId,
+            discountCode: code,
+            originalPrice: totalPrice,
+            nights: nights,
+          }
+        )
+        
+        const finalPrice = response?.finalPrice
+        
+        if (typeof finalPrice !== 'number' || isNaN(finalPrice) || finalPrice <= 0) {
+          console.error('[Checkout] Invalid finalPrice returned from backend:', finalPrice)
+          throw new Error('Backend-ul nu a returnat un preț valid')
+        }
+        
+        return finalPrice / nights
+      }
+      
+      return null
     } catch (error) {
       console.error('[Checkout] Error getting promo code price:', error)
       return null
     }
   }
   
-  // Funcție pentru eliminarea codului promoțional
   const handleRemovePromoCode = () => {
     setPromoCode('')
     setAppliedPromoCode(null)
@@ -252,20 +349,37 @@ function CheckoutPageContent() {
   }
 
   async function handleFormSubmit(formData: FormData) {
+    if (isPending) {
+      return
+    }
+    
+    if (availability.available === false) {
+      setValidationErrors({
+        _general: availability.message || 'Camera nu este disponibilă pentru datele selectate. Vă rugăm să selectați alte date.',
+      })
+      return
+    }
+    
+    if (availability.available === null) {
+      setValidationErrors({
+        _general: 'Te rugăm să aștepți până se verifică disponibilitatea.',
+      })
+      return
+    }
+    
+    
     startTransition(() => {
-      // Folosim IIFE pentru a permite async/await în startTransition
       ;(async () => {
         try {
-        // Extrage și sanitizează datele din formular
         const firstName = sanitizeString(formData.get('firstName') as string || '')
         const lastName = sanitizeString(formData.get('lastName') as string || '')
         const email = sanitizeString(formData.get('email') as string || '')
-        const phoneNumber = sanitizeString(formData.get('phoneNumber') as string || '')
-        // Extrage datele din formData sau folosește datele din state
+        const countryCode = formData.get('countryCode') as string || '+40'
+        const phoneNumberRaw = sanitizeString(formData.get('phoneNumber') as string || '')
+        const phoneNumber = countryCode + phoneNumberRaw.replace(/\s+/g, '')
         let checkInDate = formData.get('startDate') as string || ''
         let checkOutDate = formData.get('endDate') as string || ''
         
-        // Dacă datele nu sunt în formData, folosește datele din state
         if (!checkInDate && startDate) {
           checkInDate = startDate.toISOString()
         }
@@ -273,8 +387,6 @@ function CheckoutPageContent() {
           checkOutDate = endDate.toISOString()
         }
         
-        // Convertim datele în format YYYY-MM-DD pentru validare (dacă sunt în format ISO)
-        // Validarea așteaptă format YYYY-MM-DD, nu ISO string
         if (checkInDate) {
           try {
             const date = new Date(checkInDate)
@@ -282,7 +394,6 @@ function CheckoutPageContent() {
               checkInDate = formatDateToYYYYMMDD(date)
             }
           } catch (e) {
-            // Dacă nu poate fi convertit, lasă-l așa (poate e deja în format YYYY-MM-DD)
           }
         }
         if (checkOutDate) {
@@ -292,21 +403,8 @@ function CheckoutPageContent() {
               checkOutDate = formatDateToYYYYMMDD(date)
             }
           } catch (e) {
-            // Dacă nu poate fi convertit, lasă-l așa (poate e deja în format YYYY-MM-DD)
           }
         }
-        
-        // Validare pe client înainte de trimitere
-        console.log('[Checkout] Validating form data:', {
-          firstName,
-          lastName,
-          email,
-          phoneNumber,
-          apartmentId,
-          checkInDate,
-          checkOutDate,
-          totalPrice: finalTotalPrice,
-        })
         
         const validation = validateCheckoutForm({
           firstName,
@@ -319,12 +417,8 @@ function CheckoutPageContent() {
           totalPrice: finalTotalPrice,
         })
         
-        console.log('[Checkout] Validation result:', validation)
-        
         if (!validation.isValid) {
-          console.error('[Checkout] Validation failed:', validation.errors)
           setValidationErrors(validation.errors)
-          // Scroll la primul câmp cu eroare
           const firstErrorField = Object.keys(validation.errors)[0]
           const errorElement = document.querySelector(`[name="${firstErrorField}"]`)
           if (errorElement) {
@@ -334,18 +428,26 @@ function CheckoutPageContent() {
           return
         }
         
-        console.log('[Checkout] Validation passed, proceeding with payment...')
-        
-        // Șterge erorile de validare dacă totul este valid
         setValidationErrors({})
         
-        // Salvează datele rezervării în sessionStorage înainte de plată
-        // IMPORTANT: Salvăm prețurile în RON (original) pentru a face conversia corectă în pay-done
+        const apartment = await getApartmentById(apartmentId)
+        if (!apartment) {
+          throw new Error('Apartamentul nu a fost găsit')
+        }
+        if (!apartment.hotelId) {
+          throw new Error('Apartamentul nu are hotelId configurat')
+        }
+        if (!apartment.roomId) {
+          throw new Error('Apartamentul nu are roomId configurat')
+        }
+
         const pricePerNightInRON = promoCodePrice !== null ? promoCodePrice : basePrice
         const totalPriceInRON = pricePerNightInRON * nights
         
         const reservationData: {
           apartmentId: string
+          hotelId: string
+          roomId: number
           price: number
           pricePerNight: number
           nights: number
@@ -364,6 +466,8 @@ function CheckoutPageContent() {
           currency: string
         } = {
           apartmentId,
+          hotelId: apartment.hotelId, // ID-ul proprietății
+          roomId: apartment.roomId, // ID-ul apartamentului din Pynbooking
           price: basePrice, // Prețul original în RON
           pricePerNight: pricePerNightInRON, // Prețul pe noapte în RON (cu sau fără promocode)
           nights,
@@ -384,17 +488,7 @@ function CheckoutPageContent() {
         
         sessionStorage.setItem('reservationData', JSON.stringify(reservationData))
         
-        // Trimite la backend prețul convertit în currency-ul selectat (pentru Stripe)
-        // Actualizează formData cu prețul convertit
         formData.set('totalPrice', finalTotalPrice.toString())
-
-        // Debug: verifică datele trimise
-        console.log('[Checkout] Submitting form with data:', {
-          checkInDate,
-          checkOutDate,
-          apartmentId,
-          totalPrice: finalTotalPrice,
-        })
 
         const result = await handleCheckoutSubmit(formData)
         if (result?.success && result?.clientSecret) {
@@ -457,6 +551,34 @@ function CheckoutPageContent() {
               </div>
             )}
             
+            {/* Availability Status */}
+            {startDate && endDate && (
+              <div className="mb-6">
+                {isCheckingAvailability ? (
+                  <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/50">
+                    <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>{Booking['Checking availability'] || 'Se verifică disponibilitatea...'}</span>
+                    </div>
+                  </div>
+                ) : availability.available === false ? (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-red-800 dark:text-red-200">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>{availability.message || (Booking['Room is not available'] || 'Camera nu este disponibilă pentru datele selectate')}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+            
             {/* Promocode Section - Mobile (deasupra butonului) */}
             <div className="mb-6 lg:hidden">
               <label className="mb-2 block text-sm font-medium text-neutral-950 dark:text-white">
@@ -510,8 +632,22 @@ function CheckoutPageContent() {
             </div>
             
             <div>
-              <ButtonPrimary type="submit" disabled={isPending} className="mt-10 w-full text-base/6!">
-                {isPending ? (Booking['Processing'] || 'Se procesează...') : T.Booking['Reserve and pay']}
+              <ButtonPrimary 
+                type="submit" 
+                disabled={isPending || isCheckingAvailability || availability.available === false || availability.available === null}
+                className="mt-10 w-full text-base/6!"
+              >
+                {isPending ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {Booking['Processing'] || 'Se procesează...'}
+                  </span>
+                ) : (
+                  T.Booking['Reserve and pay']
+                )}
               </ButtonPrimary>
             </div>
           </Form>

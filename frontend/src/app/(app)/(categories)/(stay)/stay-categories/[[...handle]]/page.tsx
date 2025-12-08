@@ -4,7 +4,6 @@ import ListingFilterTabs from '@/components/ListingFilterTabs'
 import StayCard2 from '@/components/StayCard2'
 import { getCategoryByHandle } from '@/services/categories'
 import { getListingFilterOptions, getListingsByCategory } from '@/services/listings'
-import PaginationComponent from '@/components/PaginationComponent'
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -29,9 +28,6 @@ const Page = async ({ params, searchParams }: {
 }) => {
   const { handle } = await params
   const urlSearchParams = await searchParams
-  
-  const currentPage = Number(urlSearchParams.page) || 1
-  const itemsPerPage = 12
 
   // Extract filter parameters from URL
   const city = typeof urlSearchParams.city === 'string' ? urlSearchParams.city : undefined
@@ -45,7 +41,7 @@ const Page = async ({ params, searchParams }: {
   const query = typeof urlSearchParams.q === 'string' ? urlSearchParams.q : undefined
 
   const category = await getCategoryByHandle(handle?.[0])
-  const allListings = await getListingsByCategory(handle?.[0], {
+  const listings = await getListingsByCategory(handle?.[0], {
     city,
     checkin,
     checkout,
@@ -58,12 +54,6 @@ const Page = async ({ params, searchParams }: {
   })
   
   const filterOptions = await getListingFilterOptions()
-
-  // Paginare
-  const totalItems = allListings.length
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const listings = allListings.slice(startIndex, endIndex)
 
 
   if (!category?.id) {
@@ -117,9 +107,6 @@ const Page = async ({ params, searchParams }: {
           {listings.map((listing) => (
             <StayCard2 key={listing.id} data={listing} />
           ))}
-        </div>
-        <div className="mt-16 flex items-center justify-center">
-          <PaginationComponent totalItems={totalItems} itemsPerPage={itemsPerPage} />
         </div>
       </div>
     </div>

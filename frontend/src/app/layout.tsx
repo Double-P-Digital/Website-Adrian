@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   },
   description: 'Booking online & rental online Next.js Template',
   keywords: ['Chisfis', 'Booking online', 'Rental online', 'React Next.js template'],
+  icons: {
+    icon: '/logos.svg',
+    shortcut: '/logos.svg',
+    apple: '/logos.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

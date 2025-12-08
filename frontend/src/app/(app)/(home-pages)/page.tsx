@@ -8,7 +8,7 @@ import SectionTopBooked from '@/components/SectionTopBooked'
 // import SectionVideos from '@/components/SectionVideos'
 import { getAllCategories } from '@/services/categories'
 import { getTopBookedApartments } from '@/services/apartments'
-import { getAllListings } from '@/services/listings'
+import { getAllListings, mapApartmentToListing } from '@/services/listings'
 import heroImage from '@/images/img-site.png'
 import { Divider } from '@/shared/divider'
 import { Metadata } from 'next'
@@ -22,11 +22,17 @@ export const metadata: Metadata = {
 async function Page() {
   const categories = await getAllCategories()
   const topBookedApartments = await getTopBookedApartments(5)
-  // Convert apartments to listings format for display
-  const allListings = await getAllListings()
-  const topBookedListings = allListings.filter((listing) => 
-    topBookedApartments.some((apt) => apt.id === listing.id)
-  ).slice(0, 5)
+  
+  // Convert top booked apartments directly to listings format
+  // This is more efficient than fetching all listings and filtering
+  let topBookedListings = topBookedApartments.map(apartment => mapApartmentToListing(apartment))
+  
+  // Fallback: dacă nu avem top booked apartments, folosim primele N listings
+  if (topBookedListings.length === 0) {
+    console.warn('[Home Page] No top booked apartments found, using first 5 listings as fallback')
+    const allListings = await getAllListings()
+    topBookedListings = allListings.slice(0, 5)
+  }
   
   return (
     <main className="relative overflow-hidden">

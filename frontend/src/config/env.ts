@@ -7,6 +7,7 @@ interface EnvConfig {
   apiUrl: string
   apiKey: string
   stripePublishableKey?: string
+  pynBookingApiKey?: string
   nodeEnv: 'development' | 'production' | 'test'
 }
 
@@ -17,6 +18,7 @@ export function getEnvConfig(): EnvConfig {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
   const apiKey = process.env.NEXT_PUBLIC_API_KEY || ''
   const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  const pynBookingApiKey = process.env.NEXT_PUBLIC_PYNBOOKING_API_KEY
   const nodeEnv = (process.env.NODE_ENV || 'development') as EnvConfig['nodeEnv']
 
   if (!apiUrl) {
@@ -27,6 +29,7 @@ export function getEnvConfig(): EnvConfig {
     apiUrl,
     apiKey,
     stripePublishableKey,
+    pynBookingApiKey,
     nodeEnv,
   }
 }
@@ -43,6 +46,13 @@ export function getApiBaseUrl(): string {
  */
 export function getApiKey(): string {
   return getEnvConfig().apiKey
+}
+
+/**
+ * Get PynBooking API key
+ */
+export function getPynBookingApiKey(): string | undefined {
+  return getEnvConfig().pynBookingApiKey
 }
 
 /**
