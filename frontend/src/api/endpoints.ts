@@ -1,8 +1,3 @@
-/**
- * frontend/src/api/endpoints.ts
- * Constante pentru endpoint-urile API
- */
-
 export const API_ENDPOINTS = {
   APARTMENTS: {
     ALL: '/api/apartment-service/all',
