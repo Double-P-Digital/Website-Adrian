@@ -471,7 +471,7 @@ function CheckoutPageContent() {
           price: basePrice, // Prețul original în RON
           pricePerNight: pricePerNightInRON, // Prețul pe noapte în RON (cu sau fără promocode)
           nights,
-          totalPrice: totalPriceInRON, // Prețul total în RON
+          totalPrice: totalPriceInRON, // Prețul total în RON (referință internă)
           promoCode: appliedPromoCode,
           promoCodePrice: promoCodePrice, // Prețul din promocode în RON
           checkInDate,
@@ -488,7 +488,9 @@ function CheckoutPageContent() {
         
         sessionStorage.setItem('reservationData', JSON.stringify(reservationData))
         
-        formData.set('totalPrice', finalTotalPrice.toString())
+        // IMPORTANT: Backend primește tot timpul RON pentru amount; currency este fix 'RON'
+        formData.set('totalPrice', totalPriceInRON.toString())
+        formData.set('currency', 'RON')
 
         const result = await handleCheckoutSubmit(formData)
         if (result?.success && result?.clientSecret) {

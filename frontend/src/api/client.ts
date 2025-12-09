@@ -33,6 +33,29 @@ class ApiClient {
   }
 
   /**
+   * Alege baza URL corectă în funcție de runtime (SSR vs browser).
+   * - SSR în Docker: dacă baza e localhost => folosește serviciul backend.
+   * - Browser: dacă baza e backend => folosește origin cu port 3000.
+   */
+  private getRuntimeBaseUrl(): string {
+    const isServer = typeof window === 'undefined'
+
+    if (isServer) {
+      if (this.baseURL.includes('localhost')) {
+        return this.baseURL.replace('localhost', 'backend')
+      }
+      return this.baseURL
+    }
+
+    // Browser
+    if (this.baseURL.includes('backend')) {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001'
+      return origin.replace(':3001', ':3000')
+    }
+    return this.baseURL
+  }
+
+  /**
    * Obține header-urile standard pentru request-uri
    */
   private getHeaders(customHeaders?: HeadersInit): HeadersInit {
@@ -81,6 +104,8 @@ class ApiClient {
     }
   ): Promise<T> {
     try {
+      const apiUrl = this.getRuntimeBaseUrl()
+
       // Pentru client-side, next options nu funcționează
       // Construim fetch options compatibile cu ambele medii
       const fetchOptions: RequestInit & { next?: { revalidate?: number } } = {
@@ -106,7 +131,7 @@ class ApiClient {
         fetchOptions.cache = 'no-store'
       }
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, fetchOptions)
+      const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`)
@@ -140,13 +165,15 @@ class ApiClient {
     }
   ): Promise<T> {
     try {
+      const apiUrl = this.getRuntimeBaseUrl()
+
       const fetchOptions: RequestInit = {
         method: 'POST',
         headers: this.getHeaders(options?.headers),
         body: body ? JSON.stringify(body) : undefined,
       }
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, fetchOptions)
+      const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => '')
@@ -172,13 +199,15 @@ class ApiClient {
     }
   ): Promise<T> {
     try {
+      const apiUrl = this.getRuntimeBaseUrl()
+
       const fetchOptions: RequestInit = {
         method: 'PUT',
         headers: this.getHeaders(options?.headers),
         body: body ? JSON.stringify(body) : undefined,
       }
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, fetchOptions)
+      const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`)
@@ -202,12 +231,14 @@ class ApiClient {
     }
   ): Promise<T> {
     try {
+      const apiUrl = this.getRuntimeBaseUrl()
+
       const fetchOptions: RequestInit = {
         method: 'DELETE',
         headers: this.getHeaders(options?.headers),
       }
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, fetchOptions)
+      const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`)

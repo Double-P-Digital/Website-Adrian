@@ -5,7 +5,6 @@
 
 import { getAllApartments, type Apartment } from './apartments'
 import { extractCategoryHandleFromLocation } from '@/utils/extractCategoryHandle'
-import stayCategoryCoverImage from '@/images/hero-right-2.png'
 import stayCategoryCoverImageBM from '@/images/img-siteBM.png'
 import stayCategoryCoverImageCJ from '@/images/img-siteCJ.png'
 import stayCategoryCoverImageOR from '@/images/img-siteOR.png'
@@ -74,9 +73,9 @@ export async function getAllCategories(): Promise<Category[]> {
         description: 'Explore all stays in Romania',
         thumbnail: 'https://res.cloudinary.com/dcbzjspdt/image/upload/Cluj-Napoca.jpg',
         coverImage: {
-          src: stayCategoryCoverImage.src,
-          width: stayCategoryCoverImage.width,
-          height: stayCategoryCoverImage.height,
+          src: stayCategoryCoverImageCJ.src,
+          width: stayCategoryCoverImageCJ.width,
+          height: stayCategoryCoverImageCJ.height,
         },
       },
       {
