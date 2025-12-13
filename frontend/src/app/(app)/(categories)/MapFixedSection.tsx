@@ -46,6 +46,7 @@ const MapController = ({ selectedListingId, listings }: { selectedListingId: str
 const MapFixedSection = ({ closeButtonHref, currentHoverID: selectedID, listings, listingType }: Props) => {
   const [currentHoverID, setCurrentHoverID] = useState<string>('')
   const [selectedListingId, setSelectedListingId] = useState<string>('')
+  const [openCardId, setOpenCardId] = useState<string>('')
 
   useEffect(() => {
     setCurrentHoverID(selectedID)
@@ -55,8 +56,22 @@ const MapFixedSection = ({ closeButtonHref, currentHoverID: selectedID, listings
   useEffect(() => {
     if (selectedID) {
       setSelectedListingId(selectedID)
+      setOpenCardId(selectedID)
     }
   }, [selectedID])
+
+  // Handle card open - close other cards
+  const handleCardOpen = (listingId: string) => {
+    setOpenCardId(listingId)
+    setCurrentHoverID(listingId)
+    setSelectedListingId(listingId)
+  }
+
+  // Close card when clicking on map (not on a marker)
+  const handleMapClick = () => {
+    setOpenCardId('')
+    setCurrentHoverID('')
+  }
 
   return (
     <div className="fixed inset-0 top-0 z-40 flex-1/2 xl:static xl:z-0">
@@ -70,6 +85,7 @@ const MapFixedSection = ({ closeButtonHref, currentHoverID: selectedID, listings
           defaultCenter={listings[0]?.map || { lat: 46.7712, lng: 23.6236 }}
           gestureHandling={'greedy'}
           mapId={process.env.NEXT_PUBLIC_GOOGLE_MAP_ID || undefined}
+          onClick={handleMapClick}
         >
           <MapController selectedListingId={selectedListingId} listings={listings} />
           <MapControl position={ControlPosition.TOP_CENTER}>
@@ -87,7 +103,7 @@ const MapFixedSection = ({ closeButtonHref, currentHoverID: selectedID, listings
                 lat: item.map.lat,
                 lng: item.map.lng,
               }}
-              zIndex={currentHoverID === item.id ? 1000 : 1}
+              zIndex={currentHoverID === item.id || openCardId === item.id ? 1000 : 1}
               onMouseEnter={() => {
                 if (currentHoverID !== item.id) {
                   // to avoid unnecessary re-renders.
@@ -95,17 +111,20 @@ const MapFixedSection = ({ closeButtonHref, currentHoverID: selectedID, listings
                 }
               }}
               onMouseLeave={() => {
-                // Reset the hover ID when the mouse leaves the marker.
-                setCurrentHoverID('')
+                // Reset the hover ID when the mouse leaves the marker (only on desktop)
+                if (openCardId !== item.id) {
+                  setCurrentHoverID('')
+                }
               }}
             >
               <AdvancedMarkerCard
-                isSelected={!!currentHoverID && currentHoverID === item.id}
+                isSelected={(!!currentHoverID && currentHoverID === item.id) || openCardId === item.id}
                 key={item.id}
                 lat={item.map.lat}
                 lng={item.map.lng}
                 listing={item}
                 listingType={listingType}
+                onCardOpen={handleCardOpen}
               />
             </AdvancedMarker>
           ))}
@@ -130,20 +149,50 @@ const AdvancedMarkerCard = ({
   listing,
   listingType,
   isSelected,
+  onCardOpen,
 }: {
   listing: Listing 
   listingType: ListingType
   isSelected?: boolean
   lat: number
   lng: number
+  onCardOpen?: (listingId: string) => void
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
+  // Handle click/touch for mobile
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    const newIsOpen = !isOpen
+    setIsOpen(newIsOpen)
+    if (newIsOpen && onCardOpen) {
+      onCardOpen(listing.id)
+    }
+  }
+
+  // Close when another card is selected
+  useEffect(() => {
+    if (!isSelected) {
+      setIsOpen(false)
+    }
+  }, [isSelected])
+
   return (
-    <div className="relative" onMouseEnter={() => setIsOpen(true)} onMouseLeave={() => setIsOpen(false)}>
+    <div 
+      className="relative cursor-pointer" 
+      onMouseEnter={() => setIsOpen(true)} 
+      onMouseLeave={() => {
+        // Only close on mouse leave if not explicitly opened by click
+        if (!isSelected) {
+          setIsOpen(false)
+        }
+      }}
+      onClick={handleClick}
+    >
       <p
         className={`flex min-w-max items-center justify-center rounded-lg px-2 py-1 text-sm font-semibold shadow-lg transition-colors ${
-          isSelected
+          isSelected || isOpen
             ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
             : 'bg-white hover:bg-neutral-900 hover:text-white dark:bg-neutral-900 dark:hover:bg-white dark:hover:text-neutral-900'
         }`}
@@ -151,7 +200,7 @@ const AdvancedMarkerCard = ({
         {listing.price}
       </p>
       <Transition
-        show={isOpen}
+        show={isOpen || isSelected}
         as={Fragment}
         enter="transition-opacity duration-75"
         enterFrom="opacity-0"
@@ -160,7 +209,7 @@ const AdvancedMarkerCard = ({
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
       >
-        <div className="absolute top-full -left-12 w-64 pt-3">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 w-64 pt-3 z-50">
           <StayCard size="small" data={listing} className="shadow-2xl" />
         </div>
       </Transition>

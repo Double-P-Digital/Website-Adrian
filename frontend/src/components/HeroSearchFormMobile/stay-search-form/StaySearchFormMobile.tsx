@@ -6,7 +6,7 @@ import Form from 'next/form'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import FieldPanelContainer from '../FieldPanelContainer'
-import { LocationInputField } from '@/components/HeroSearchForm/ui'
+import LocationInput from '../LocationInput'
 import DatesRangeInput from '../DatesRangeInput'
 import GuestsInput from '../GuestsInput'
 
@@ -134,20 +134,19 @@ const StaySearchFormMobile = () => {
 
   return (
     <Form id="form-hero-search-form-mobile" action={handleFormSubmit} className="flex w-full flex-col gap-y-3">
-      {/* LOCATION - folosește componenta dinamică */}
+      {/* LOCATION - folosește componenta mobilă cu listă de orașe */}
       <FieldPanelContainer
         isActive={fieldNameShow === 'location'}
         headingOnClick={() => setFieldNameShow('location')}
         headingTitle={whereText}
         headingValue={locationValue || locationText}
       >
-        <div className="px-1.5 sm:px-4">
-          <LocationInputField
-            fieldStyle="default"
-            inputName="location"
-            className="w-full"
-          />
-        </div>
+        <LocationInput
+          defaultValue={locationValue}
+          imputName="location"
+          className="w-full"
+          onChange={(value) => setLocationValue(value)}
+        />
       </FieldPanelContainer>
 
       {/* DATE RANGE - folosește componenta mobilă (fără Popover) */}

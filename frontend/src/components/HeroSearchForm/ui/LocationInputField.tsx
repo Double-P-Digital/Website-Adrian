@@ -98,8 +98,14 @@ export const LocationInputField: FC<Props> = ({
         })
         setInputValue(city)
       }
+    } else {
+      // Reset state when there's no city in URL (e.g., navigating to a page without filters)
+      // Only reset if we have a selected value to avoid clearing user input
+      if (selected?.name && !showPopover) {
+        setSelected(null)
+        setInputValue('')
+      }
     }
-    // Don't reset if no city in URL - user might be typing a new value
   }, [searchParams]) // Removed inputValue from deps to avoid infinite loop
 
   // Load cities from apartments
@@ -268,6 +274,14 @@ export const LocationInputField: FC<Props> = ({
           if (value) {
             setSelected(value)
             setInputValue(value.name)
+            // Also update the hidden input directly to ensure form submission works
+            const form = inputRef.current?.closest('form')
+            if (form) {
+              const hiddenInput = form.querySelector(`input[name="${inputName}"]`) as HTMLInputElement
+              if (hiddenInput) {
+                hiddenInput.value = value.name
+              }
+            }
           } else {
             setSelected({ id: '', name: '' })
             setInputValue('')
@@ -297,7 +311,7 @@ export const LocationInputField: FC<Props> = ({
               className={clsx(styles.input.base, styles.input[fieldStyle])}
               placeholder={placeholder}
               autoComplete="off"
-              displayValue={(item?: Suggest) => item?.name || ''}
+              value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}

@@ -584,6 +584,15 @@ export const en = {
     'Top Booked Apartments': 'Top Booked Apartments',
     'Discover our most popular apartments, chosen by travelers like you.': 'Discover our most popular apartments, chosen by travelers like you.',
   },
+  NoApartments: {
+    'No apartments available': 'No apartments available',
+    'for the selected dates': 'for the selected dates',
+    'Try selecting different dates': 'Try selecting different dates',
+    'or': 'or',
+    'View all apartments': 'View all apartments',
+    'No apartments found': 'No apartments found',
+    'Try adjusting your filters': 'Try adjusting your filters',
+  },
   aboutPage: {
     title: 'About Us',
     metaDescription: 'Our apartment booking platform provides a simple and secure experience for finding and booking the perfect accommodations.',

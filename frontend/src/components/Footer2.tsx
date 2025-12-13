@@ -41,71 +41,41 @@ export default function Footer2() {
   
   return (
     <footer className="border-t border-neutral-200 dark:border-neutral-700">
-      <div className="container pt-16 pb-8 sm:pt-24 lg:pt-32">
-        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
-          <div className="space-y-8">
-            <Logo className="w-20" />
-            <p className="text-sm/6 text-balance text-gray-600 dark:text-neutral-400">
+      <div className="container py-8 lg:py-10">
+        {/* Desktop: Single row layout */}
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          {/* Logo and description */}
+          <div className="flex items-center gap-4 lg:gap-6">
+            <Logo className="w-16 shrink-0" />
+            <p className="hidden text-sm text-gray-600 lg:block dark:text-neutral-400">
               {T.Footer['Making the world a better place']}
             </p>
           </div>
-          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
-            {/* <div className="md:grid md:grid-cols-2 md:gap-8"> */}
-            {/* <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-neutral-300">Solutions</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.solutions.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-neutral-400">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div> */}
-            {/* <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-neutral-300">Support</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.support.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-neutral-400">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div> */}
-            {/* </div> */}
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-neutral-300">{T.Footer.Company}</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.company.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-neutral-400">
-                        {T.Footer[item.name as keyof typeof T.Footer] || item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-neutral-300">{T.Footer.Legal}</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.legal.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-neutral-400">
-                        {T.Footer[item.name as keyof typeof T.Footer] || item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          
+          {/* Links - horizontal on desktop */}
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">{T.Footer.Company}:</span>
+              {navigation.company.map((item) => (
+                <a key={item.name} href={item.href} className="text-sm text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white">
+                  {T.Footer[item.name as keyof typeof T.Footer] || item.name}
+                </a>
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">{T.Footer.Legal}:</span>
+              {navigation.legal.map((item) => (
+                <a key={item.name} href={item.href} className="text-sm text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white">
+                  {T.Footer[item.name as keyof typeof T.Footer] || item.name}
+                </a>
+              ))}
             </div>
           </div>
         </div>
-        <div className="mt-16 border-t border-gray-900/10 pt-8 sm:mt-20 lg:mt-24 dark:border-gray-700">
-          <p className="text-sm/6 text-gray-600 dark:text-neutral-400">
+        
+        {/* Copyright */}
+        <div className="mt-6 border-t border-gray-200 pt-6 lg:mt-8 dark:border-gray-700">
+          <p className="text-xs text-center text-gray-500 lg:text-left dark:text-neutral-500">
             {T.Footer.Copyright} {T.Footer['All rights reserved']}
           </p>
         </div>

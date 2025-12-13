@@ -585,6 +585,15 @@ export const ro = {
         'Top Booked Apartments': 'Cele mai rezervate apartamente',
         'Discover our most popular apartments, chosen by travelers like you.': 'Descoperă cele mai populare apartamente ale noastre, alese de călători ca tine.',
     },
+    NoApartments: {
+        'No apartments available': 'Nu sunt apartamente disponibile',
+        'for the selected dates': 'pentru datele selectate',
+        'Try selecting different dates': 'Încercați să selectați alte date',
+        'or': 'sau',
+        'View all apartments': 'Vedeți toate apartamentele',
+        'No apartments found': 'Nu au fost găsite apartamente',
+        'Try adjusting your filters': 'Încercați să ajustați filtrele',
+    },
     aboutPage: {
         title: 'Despre Noi',
         metaDescription: 'Platforma noastră de rezervare apartamente oferă o experiență simplă și sigură pentru găsirea și rezervarea cazărilor perfecte.',

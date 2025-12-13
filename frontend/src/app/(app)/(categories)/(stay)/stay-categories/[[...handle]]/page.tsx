@@ -1,9 +1,11 @@
 import HeroSectionWithSearchForm1 from '@/components/hero-sections/HeroSectionWithSearchForm1'
 import { StaySearchForm } from '@/components/HeroSearchForm/StaySearchForm'
 import ListingFilterTabs from '@/components/ListingFilterTabs'
+import NoApartmentsAvailable from '@/components/NoApartmentsAvailable'
 import StayCard2 from '@/components/StayCard2'
-import { getCategoryByHandle } from '@/services/categories'
+import { getAllCategories, getCategoryByHandle } from '@/services/categories'
 import { getListingFilterOptions, getListingsByCategory } from '@/services/listings'
+import { extractCategoryHandleFromLocation } from '@/utils/extractCategoryHandle'
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -60,14 +62,26 @@ const Page = async ({ params, searchParams }: {
     return redirect('/stay-categories/all')
   }
 
+  // Determine which category to display based on city filter
+  // If there's a city filter, show that city's image and name
+  let displayCategory = category
+  if (city) {
+    const cityHandle = extractCategoryHandleFromLocation(city)
+    const allCategories = await getAllCategories()
+    const cityCategory = allCategories.find(c => c.handle === cityHandle)
+    if (cityCategory) {
+      displayCategory = cityCategory
+    }
+  }
+
   return (
     <div className="pb-28">
       {/* Hero section */}
       <div className="container">
         <HeroSectionWithSearchForm1
-          heading={category.name}
-          image={category.coverImage}
-          imageAlt={category.name}
+          heading={displayCategory.name}
+          image={displayCategory.coverImage}
+          imageAlt={displayCategory.name}
           searchForm={
             <Suspense fallback={<div className="h-20 w-full" />}>
               <StaySearchForm formStyle="default" />
@@ -104,9 +118,18 @@ const Page = async ({ params, searchParams }: {
 
         <ListingFilterTabs filterOptions={filterOptions} />
         <div className="mt-8 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 md:gap-x-8 md:gap-y-12 lg:mt-10 lg:grid-cols-3 xl:grid-cols-4">
-          {listings.map((listing) => (
-            <StayCard2 key={listing.id} data={listing} />
-          ))}
+          {listings.length > 0 ? (
+            listings.map((listing) => (
+              <StayCard2 key={listing.id} data={listing} />
+            ))
+          ) : (
+            <Suspense fallback={null}>
+              <NoApartmentsAvailable 
+                hasDateFilter={!!(checkin || checkout)} 
+                categoryHandle={category.handle} 
+              />
+            </Suspense>
+          )}
         </div>
       </div>
     </div>
