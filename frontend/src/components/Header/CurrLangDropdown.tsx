@@ -93,6 +93,7 @@ interface Props {
   className?: string
   currencies: Awaited<ReturnType<typeof getCurrencies>>
   languages: Awaited<ReturnType<typeof getLanguages>>
+  compact?: boolean
 }
 
 const CurrLangDropdown: FC<Props> = ({
@@ -104,14 +105,19 @@ const CurrLangDropdown: FC<Props> = ({
   languages,
   currencies,
   panelClassName = 'w-sm',
+  compact = false,
 }) => {
+  const iconSize = compact ? 'size-4' : 'size-5'
+  const chevronSize = compact ? 'size-3' : 'size-4'
+  const padding = compact ? '-m-1.5 p-1.5' : '-m-2.5 p-2.5'
+  
   return (
     <Popover className={clsx('group', className)}>
-      <PopoverButton className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-neutral-600 group-hover:text-neutral-950 focus:outline-hidden focus-visible:outline-hidden dark:text-neutral-200 dark:group-hover:text-neutral-100">
-        <GlobeAltIcon className="size-5" />
-        <SlashIcon className="size-5 opacity-60" />
-        <BanknotesIcon className="size-5" />
-        <ChevronDownIcon className="ms-1 size-4 group-data-open:rotate-180" aria-hidden="true" />
+      <PopoverButton className={clsx(padding, "flex items-center text-sm font-medium text-neutral-600 group-hover:text-neutral-950 focus:outline-hidden focus-visible:outline-hidden dark:text-neutral-200 dark:group-hover:text-neutral-100")}>
+        <GlobeAltIcon className={iconSize} />
+        <SlashIcon className={clsx(iconSize, "opacity-60")} />
+        <BanknotesIcon className={iconSize} />
+        <ChevronDownIcon className={clsx("ms-1 group-data-open:rotate-180", chevronSize)} aria-hidden="true" />
       </PopoverButton>
 
       <PopoverPanel

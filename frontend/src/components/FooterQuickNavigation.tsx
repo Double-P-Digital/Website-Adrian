@@ -76,16 +76,24 @@ const FooterQuickNavigation = () => {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 bg-white/90 px-4 py-3 shadow ring-1 shadow-slate-200/80 ring-slate-900/5 backdrop-blur-sm transition-transform lg:hidden dark:bg-neutral-950/90"
+      className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-2 bg-white/95 px-3 py-1.5 shadow-sm ring-1 ring-slate-900/5 backdrop-blur-sm transition-transform lg:hidden dark:bg-neutral-950/95"
     >
-      <div className="container mx-auto flex w-full max-w-lg items-center justify-between">
-        {/* Logo on the left */}
+      <div className="mx-auto flex w-full max-w-lg items-center justify-between">
+        {/* Logo on the left - smaller for mobile bottom nav */}
         <div className="shrink-0">
-          <Logo />
+          <Logo className="w-16" />
         </div>
         
-        {/* Language & Currency Selection on the right */}
-        <CurrLangDropdown currencies={currencies} languages={languages} />
+        {/* Language & Currency Selection on the right - compact size */}
+        <CurrLangDropdown 
+          currencies={currencies} 
+          languages={languages} 
+          compact
+          panelAnchor={{
+            to: 'top end',
+            gap: 8,
+          }}
+        />
       </div>
     </div>
   )
