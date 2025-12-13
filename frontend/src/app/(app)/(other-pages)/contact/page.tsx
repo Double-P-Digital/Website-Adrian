@@ -2,22 +2,17 @@ import ButtonPrimary from '@/shared/ButtonPrimary'
 import { Divider } from '@/shared/divider'
 import { Field, Label } from '@/shared/fieldset'
 import Input from '@/shared/Input'
-import SocialsList from '@/shared/SocialsList'
 import Textarea from '@/shared/Textarea'
 import { Metadata } from 'next'
 
 const info = [
   {
-    title: '🗺 ADDRESS',
-    description: 'Photo booth tattooed prism, portland taiyaki hoodie neutra typewriter',
-  },
-  {
     title: '💌 EMAIL',
-    description: 'example@example.com',
+    description: 'adrian.tandea@yahoo.com',
   },
   {
     title: '☎ PHONE',
-    description: '000-123-456-7890',
+    description: '0722617413',
   },
 ]
 
@@ -40,10 +35,6 @@ const PageContact = () => {
                   <span className="mt-2 block text-neutral-500 dark:text-neutral-400">{item.description}</span>
                 </div>
               ))}
-              <div>
-                <h3 className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">🌏 SOCIALS</h3>
-                <SocialsList className="mt-2" />
-              </div>
             </div>
           </div>
           <form className="grid grid-cols-1 gap-6" action="#" method="post">
