@@ -64,7 +64,6 @@ export function safeHtml(html: string): string {
         ALLOW_DATA_ATTR: false,
       })
     } catch (error) {
-      console.error('[Sanitize] DOMPurify error:', error)
       // Fallback to basic sanitization if DOMPurify fails
       return sanitizeHtmlBasic(html)
     }

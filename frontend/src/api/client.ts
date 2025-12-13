@@ -34,14 +34,16 @@ class ApiClient {
 
   /**
    * Alege baza URL corectă în funcție de runtime (SSR vs browser).
-   * - SSR în Docker: dacă baza e localhost => folosește serviciul backend.
+   * - SSR în Docker: dacă DOCKER_ENV=true și baza e localhost => folosește serviciul backend.
    * - Browser: dacă baza e backend => folosește origin cu port 3000.
    */
   private getRuntimeBaseUrl(): string {
     const isServer = typeof window === 'undefined'
+    const isDocker = process.env.DOCKER_ENV === 'true' || process.env.NEXT_PUBLIC_DOCKER_ENV === 'true'
 
     if (isServer) {
-      if (this.baseURL.includes('localhost')) {
+      // Doar în Docker înlocuim localhost cu backend
+      if (isDocker && this.baseURL.includes('localhost')) {
         return this.baseURL.replace('localhost', 'backend')
       }
       return this.baseURL
@@ -148,7 +150,7 @@ class ApiClient {
       // Nu logăm eroarea aici - lasă serviciile să gestioneze erorile
       // Doar pentru "Failed to fetch" (network errors) logăm un warning
       if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
-        console.warn(`[API Client] Network error for GET ${endpoint}. Backend might not be accessible.`)
+        // Network error - backend might not be accessible
       }
       throw this.handleError(error)
     }
@@ -183,7 +185,6 @@ class ApiClient {
       const result = await this.handleResponse<T>(response)
       return result.data
     } catch (error) {
-      console.error(`[API Client] POST ${endpoint} error:`, error)
       throw this.handleError(error)
     }
   }
@@ -216,7 +217,6 @@ class ApiClient {
       const result = await this.handleResponse<T>(response)
       return result.data
     } catch (error) {
-      console.error(`[API Client] PUT ${endpoint} error:`, error)
       throw this.handleError(error)
     }
   }
@@ -247,7 +247,6 @@ class ApiClient {
       const result = await this.handleResponse<T>(response)
       return result.data
     } catch (error) {
-      console.error(`[API Client] DELETE ${endpoint} error:`, error)
       throw this.handleError(error)
     }
   }

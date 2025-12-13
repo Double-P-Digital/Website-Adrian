@@ -4,7 +4,7 @@ import { useT } from '@/hooks/useT'
 import clsx from 'clsx'
 import Form from 'next/form'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { ButtonSubmit, DateRangeField, GuestNumberField, LocationInputField, VerticalDividerLine } from './ui'
 
 interface Props {
@@ -15,6 +15,56 @@ interface Props {
 export const StaySearchForm = ({ className, formStyle = 'default' }: Props) => {
   const router = useRouter()
   const T = useT()
+  const formRef = useRef<HTMLFormElement>(null)
+  const [isFormValid, setIsFormValid] = useState(false)
+
+  // Check if all required fields are filled
+  const checkFormValidity = useCallback(() => {
+    if (!formRef.current) return false
+    
+    const formData = new FormData(formRef.current)
+    const location = formData.get('location') as string
+    const checkin = formData.get('checkin') as string
+    const checkout = formData.get('checkout') as string
+    
+    // All fields must be filled
+    const isValid = !!(location?.trim() && checkin?.trim() && checkout?.trim())
+    return isValid
+  }, [])
+
+  // Update validity when form changes
+  useEffect(() => {
+    const form = formRef.current
+    if (!form) return
+
+    const handleChange = () => {
+      // Use setTimeout to ensure hidden inputs are updated
+      setTimeout(() => {
+        setIsFormValid(checkFormValidity())
+      }, 50)
+    }
+
+    // Listen for all input changes
+    form.addEventListener('input', handleChange)
+    form.addEventListener('change', handleChange)
+    
+    // Also check on click (for date picker selections)
+    const handleClick = () => {
+      setTimeout(() => {
+        setIsFormValid(checkFormValidity())
+      }, 100)
+    }
+    form.addEventListener('click', handleClick)
+
+    // Initial check
+    handleChange()
+
+    return () => {
+      form.removeEventListener('input', handleChange)
+      form.removeEventListener('change', handleChange)
+      form.removeEventListener('click', handleClick)
+    }
+  }, [checkFormValidity])
 
   // Prefetch the stay categories page to improve performance
   useEffect(() => {
@@ -73,6 +123,7 @@ export const StaySearchForm = ({ className, formStyle = 'default' }: Props) => {
   // @ts-ignore
   return (
     <Form
+      ref={formRef}
       className={clsx(
         'relative z-10 flex w-full rounded-full bg-white [--form-bg:var(--color-white)] dark:bg-neutral-800 dark:[--form-bg:var(--color-neutral-800)]',
         className,
@@ -100,7 +151,7 @@ export const StaySearchForm = ({ className, formStyle = 'default' }: Props) => {
           fieldStyle={formStyle}
           // label={T['HeroSearchForm']['Guests']}
       />
-      <ButtonSubmit fieldStyle={formStyle} className="z-10">
+      <ButtonSubmit fieldStyle={formStyle} className="z-10" disabled={!isFormValid}>
 
       </ButtonSubmit>
       {/*<LocationInputField className="hero-search-form__field-after flex-5/12" fieldStyle={formStyle} />*/}

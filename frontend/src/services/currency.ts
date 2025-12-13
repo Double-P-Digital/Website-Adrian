@@ -40,7 +40,6 @@ async function fetchExchangeRates(): Promise<ExchangeRates> {
       lastUpdated: Date.now(),
     }
   } catch (error) {
-    console.error('[Currency Service] Error fetching exchange rates:', error)
     
     // Fallback la rate-uri hardcodate dacă API-ul eșuează
     return {

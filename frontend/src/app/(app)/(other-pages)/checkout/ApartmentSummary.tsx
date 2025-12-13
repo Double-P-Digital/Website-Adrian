@@ -68,7 +68,6 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
         setApartment(mappedApartment)
         setError(null)
       } catch (error) {
-        console.error('[ApartmentSummary] Error:', error)
         setError(error instanceof Error ? error.message : 'Eroare la încărcarea apartamentului')
       } finally {
         setLoading(false)

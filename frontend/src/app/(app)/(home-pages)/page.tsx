@@ -29,7 +29,6 @@ async function Page() {
   
   // Fallback: dacă nu avem top booked apartments, folosim primele N listings
   if (topBookedListings.length === 0) {
-    console.warn('[Home Page] No top booked apartments found, using first 5 listings as fallback')
     const allListings = await getAllListings()
     topBookedListings = allListings.slice(0, 5)
   }

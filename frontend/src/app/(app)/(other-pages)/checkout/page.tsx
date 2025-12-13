@@ -6,8 +6,8 @@ import ButtonPrimary from '@/shared/ButtonPrimary'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Divider } from '@/shared/divider'
 import Form from 'next/form'
-import { useSearchParams } from 'next/navigation'
-import { Suspense, useState, useTransition, useEffect, useRef } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense, useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import PayWith from './PayWith'
 import YourTrip from './YourTrip'
 import ApartmentSummary from './ApartmentSummary'
@@ -23,14 +23,110 @@ import { validateCheckoutForm, sanitizeString } from '@/utils/validation'
 import { formatDateToYYYYMMDD, parseYYYYMMDDToDate } from '@/utils/dateUtils'
 import { checkRoomAvailability } from '@/services/availability'
 
+// Session expiration time in seconds (15 minutes = lock TTL)
+const SESSION_EXPIRATION_SECONDS = 15 * 60
+// Auto-redirect delay after expiration (5 minutes)
+const AUTO_REDIRECT_DELAY_SECONDS = 5 * 60
+
 function CheckoutPageContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { currency, convert } = useCurrency()
   const T = useT()
   const Booking = T.Booking as Record<string, string>
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  
+  // Session expiration state
+  const [sessionTimeRemaining, setSessionTimeRemaining] = useState<number>(SESSION_EXPIRATION_SECONDS)
+  const [isSessionExpired, setIsSessionExpired] = useState<boolean>(false)
+  const [redirectCountdown, setRedirectCountdown] = useState<number>(AUTO_REDIRECT_DELAY_SECONDS)
+  const sessionStartTimeRef = useRef<number | null>(null)
+
+  // Session timer - starts when clientSecret is set (payment form shown)
+  // Uses sessionStorage to persist across page navigation
+  useEffect(() => {
+    if (!clientSecret) {
+      // No clientSecret means new checkout - clear any old session data
+      // This prevents "session expired" from showing immediately on new checkouts
+      sessionStorage.removeItem('checkoutSessionExpiry')
+      setSessionTimeRemaining(SESSION_EXPIRATION_SECONDS)
+      setIsSessionExpired(false)
+      setRedirectCountdown(AUTO_REDIRECT_DELAY_SECONDS)
+      sessionStartTimeRef.current = null
+      return
+    }
+
+    // Start or restore session timer
+    let expiryTime: number
+    const storedExpiry = sessionStorage.getItem('checkoutSessionExpiry')
+    
+    if (storedExpiry) {
+      // Restore from sessionStorage
+      expiryTime = parseInt(storedExpiry, 10)
+    } else {
+      // New session - set expiry time
+      expiryTime = Date.now() + (SESSION_EXPIRATION_SECONDS * 1000)
+      sessionStorage.setItem('checkoutSessionExpiry', expiryTime.toString())
+    }
+    
+    sessionStartTimeRef.current = expiryTime - (SESSION_EXPIRATION_SECONDS * 1000)
+
+    const interval = setInterval(() => {
+      const now = Date.now()
+      const remaining = Math.floor((expiryTime - now) / 1000)
+
+      if (remaining <= 0) {
+        setSessionTimeRemaining(0)
+        setIsSessionExpired(true)
+        sessionStorage.removeItem('checkoutSessionExpiry')
+      } else {
+        setSessionTimeRemaining(remaining)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [clientSecret])
+  
+  // Clear session storage when leaving checkout (successful payment or manual navigation)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Don't clear on refresh, only on actual navigation away
+    }
+    
+    return () => {
+      // Component unmount - if session expired, clear storage
+      if (isSessionExpired) {
+        sessionStorage.removeItem('checkoutSessionExpiry')
+      }
+    }
+  }, [isSessionExpired])
+
+  // Redirect countdown after session expires
+  useEffect(() => {
+    if (!isSessionExpired) return
+
+    const interval = setInterval(() => {
+      setRedirectCountdown((prev) => {
+        if (prev <= 1) {
+          // Redirect to homepage
+          router.push('/')
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [isSessionExpired, router])
+
+  // Format time as MM:SS
+  const formatTime = useCallback((seconds: number): string => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }, [])
 
   const basePrice = Number(searchParams.get('price') || 0)
   const apartmentId = searchParams.get('apartmentId') || ''
@@ -93,7 +189,7 @@ function CheckoutPageContent() {
     message?: string
   }>({ available: null })
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
-  const [apartmentData, setApartmentData] = useState<{ hotelId: string; roomId: number } | null>(null)
+  const [apartmentData, setApartmentData] = useState<{ hotelId?: string; roomType: string } | null>(null)
   
   useEffect(() => {
     const loadApartmentData = async () => {
@@ -104,15 +200,15 @@ function CheckoutPageContent() {
             if (apartment.discountCode) {
               setApartmentDiscountCode(apartment.discountCode)
             }
-            if (apartment.hotelId && apartment.roomId) {
+            if (apartment.roomType || apartment.roomId) {
               setApartmentData({
                 hotelId: apartment.hotelId,
-                roomId: apartment.roomId,
+                roomType: apartment.roomType ?? apartment.roomId?.toString() ?? '',
               })
             }
           }
         } catch (error) {
-          console.error('[Checkout] Error loading apartment data:', error)
+          // Error loading apartment data
         }
       }
     }
@@ -153,8 +249,8 @@ function CheckoutPageContent() {
         const checkOutDate = formatDateToYYYYMMDD(endDate)
         
         const result = await checkRoomAvailability({
-          hotelId: Number(apartmentData.hotelId),
-          roomId: apartmentData.roomId,
+          hotelId: apartmentData.hotelId ? Number(apartmentData.hotelId) : undefined,
+          roomType: apartmentData.roomType,
           checkInDate,
           checkOutDate,
           currency: currency.toUpperCase(),
@@ -168,7 +264,6 @@ function CheckoutPageContent() {
           return
         }
         
-        console.warn('[Checkout] Error checking availability:', error)
         if (!controller.signal.aborted) {
           setAvailability({
             available: false,
@@ -242,7 +337,6 @@ function CheckoutPageContent() {
         setAppliedPromoCode(null)
       }
     } catch (error) {
-      console.error('[Checkout] Error applying promo code:', error)
       setPromoCodeError('Eroare la aplicarea codului promoțional')
       setPromoCodePrice(null)
       setAppliedPromoCode(null)
@@ -327,7 +421,6 @@ function CheckoutPageContent() {
         const finalPrice = response?.finalPrice
         
         if (typeof finalPrice !== 'number' || isNaN(finalPrice) || finalPrice <= 0) {
-          console.error('[Checkout] Invalid finalPrice returned from backend:', finalPrice)
           throw new Error('Backend-ul nu a returnat un preț valid')
         }
         
@@ -336,7 +429,6 @@ function CheckoutPageContent() {
       
       return null
     } catch (error) {
-      console.error('[Checkout] Error getting promo code price:', error)
       return null
     }
   }
@@ -496,13 +588,11 @@ function CheckoutPageContent() {
         if (result?.success && result?.clientSecret) {
           setClientSecret(result.clientSecret)
         } else {
-          console.error('[Checkout] Failed to get clientSecret:', result)
           setValidationErrors({
             _general: 'Nu s-a putut inițializa procesarea plății. Vă rugăm să încercați din nou.',
           })
         }
       } catch (error) {
-        console.error('[Checkout] Error submitting form:', error)
         setValidationErrors({
           _general: error instanceof Error ? error.message : 'A apărut o eroare. Vă rugăm să încercați din nou.',
         })
@@ -653,9 +743,73 @@ function CheckoutPageContent() {
               </ButtonPrimary>
             </div>
           </Form>
+        ) : isSessionExpired ? (
+          // Session expired - show error and redirect countdown
+          <div className="flex flex-col gap-y-8 border-neutral-200 px-0 sm:rounded-4xl sm:border sm:p-6 xl:p-8 dark:border-neutral-700">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              {/* Error Icon */}
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                <svg className="h-10 w-10 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              
+              <h2 className="mb-4 text-2xl font-semibold text-red-600 dark:text-red-400">
+                {Booking['Session expired'] || 'Sesiunea a expirat!'}
+              </h2>
+              
+              <p className="mb-6 max-w-md text-neutral-600 dark:text-neutral-400">
+                {Booking['Session expired message'] || 'Timpul alocat pentru finalizarea plății a expirat. Camera poate fi rezervată de alt utilizator. Vă rugăm să încercați din nou.'}
+              </p>
+              
+              {/* Redirect countdown */}
+              <div className="mb-8 rounded-lg bg-neutral-100 px-6 py-3 dark:bg-neutral-800">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  {Booking['Redirect in'] || 'Redirecționare în'}: <span className="font-semibold text-neutral-900 dark:text-white">{formatTime(redirectCountdown)}</span>
+                </p>
+              </div>
+              
+              {/* Back to homepage button */}
+              <ButtonPrimary
+                onClick={() => router.push('/')}
+                className="w-full max-w-xs"
+              >
+                {Booking['Back to homepage'] || 'Înapoi la pagina principală'}
+              </ButtonPrimary>
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col gap-y-8 border-neutral-200 px-0 sm:rounded-4xl sm:border sm:p-6 xl:p-8 dark:border-neutral-700">
-            <h1 className="text-3xl font-semibold lg:text-4xl">{T.Booking['Complete payment']}</h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl font-semibold lg:text-4xl">{T.Booking['Complete payment']}</h1>
+              
+              {/* Session timer */}
+              <div className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
+                sessionTimeRemaining <= 60 
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' 
+                  : sessionTimeRemaining <= 300 
+                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                    : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+              }`}>
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-medium">{formatTime(sessionTimeRemaining)}</span>
+              </div>
+            </div>
+            
+            {/* Warning when time is running low */}
+            {sessionTimeRemaining <= 120 && sessionTimeRemaining > 0 && (
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+                <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{Booking['Time running out'] || 'Timp rămas limitat! Vă rugăm să finalizați plata rapid.'}</span>
+                </div>
+              </div>
+            )}
+            
             <Divider />
             <StripeProvider clientSecret={clientSecret}>
               <StripePaymentForm />

@@ -58,6 +58,7 @@ const DatesRangeInputPopover: FC<Props> = ({ className = 'flex-1', defaultStartD
       return tomorrow
     }
     
+    // Setează startDate din URL sau props sau default
     if (urlCheckin) {
       setStartDate(parseYYYYMMDDToDate(urlCheckin))
     } else if (defaultStartDate) {
@@ -66,19 +67,17 @@ const DatesRangeInputPopover: FC<Props> = ({ className = 'flex-1', defaultStartD
       setStartDate(getToday())
     }
     
+    // Setează endDate din URL sau props sau default
+    // Nu forțăm endDate = startDate + 1 zi dacă utilizatorul încă selectează
     if (urlCheckout) {
       setEndDate(parseYYYYMMDDToDate(urlCheckout))
     } else if (defaultEndDate) {
       setEndDate(defaultEndDate)
-    } else if (urlCheckin || defaultStartDate) {
-      // Dacă există check-in dar nu check-out, setează check-out la check-in + 1 zi
-      const currentStart = urlCheckin ? parseYYYYMMDDToDate(urlCheckin) : (defaultStartDate || getToday())
-      const nextDay = new Date(currentStart)
-      nextDay.setDate(nextDay.getDate() + 1)
-      setEndDate(nextDay)
-    } else {
+    } else if (!urlCheckin && !defaultStartDate) {
+      // Doar dacă nu avem nici check-in setat, folosim default tomorrow
       setEndDate(getTomorrow())
     }
+    // Altfel lăsăm endDate null pentru a permite selecția liberă
   }, [searchParams, defaultStartDate, defaultEndDate]) // Eliminat today și tomorrow din dependențe
   //
 
@@ -87,7 +86,7 @@ const DatesRangeInputPopover: FC<Props> = ({ className = 'flex-1', defaultStartD
     setStartDate(start)
     setEndDate(end)
     
-    // Actualizează URL-ul pentru sincronizare cu calendarul mare
+    // Actualizează URL-ul doar când ambele date sunt selectate (intervalul complet)
     if (start && end) {
       const params = new URLSearchParams(searchParams.toString())
       const startStr = formatDateToYYYYMMDD(start)
@@ -99,17 +98,8 @@ const DatesRangeInputPopover: FC<Props> = ({ className = 'flex-1', defaultStartD
         params.set('checkout', endStr)
         router.push(`?${params.toString()}`, { scroll: false })
       }
-    } else if (start) {
-      // Dacă doar check-in este selectat, actualizează doar check-in
-      const params = new URLSearchParams(searchParams.toString())
-      const startStr = formatDateToYYYYMMDD(start)
-      
-      if (params.get('checkin') !== startStr) {
-        params.set('checkin', startStr)
-        params.delete('checkout')
-        router.push(`?${params.toString()}`, { scroll: false })
-      }
     }
+    // Nu actualizăm URL-ul când doar check-in este selectat - așteptăm selecția check-out
   }
 
   const renderInput = () => {

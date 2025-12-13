@@ -14,15 +14,21 @@ import {
   HairDryerIcon,
   House04Icon,
   ImageAdd02Icon,
+  IronIcon,
   MeetingRoomIcon,
+  MicrowaveIcon,
   RealEstate02Icon,
-  Setup02Icon,
+  RefrigeratorIcon,
   Settings03Icon,
+  Setup02Icon,
   ShampooIcon,
+  ShowerIcon,
   Speaker01Icon,
   Task01Icon,
   Timer02Icon,
+  TowelIcon,
   TvSmartIcon,
+  WashingMachineIcon,
   WaterEnergyIcon,
   Wifi01Icon,
 } from '@/components/Icons'
@@ -38,6 +44,9 @@ interface SectionAmenitiesProps {
 export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
   const T = useT()
   const ListingPage = T.ListingPage as Record<string, string>
+  
+  // Remove duplicate amenities
+  const uniqueAmenities = [...new Set(amenities)]
 
   // ✅ Funcție helper pentru normalizare (case-insensitive, trim, lowercase)
   const normalizeAmenity = (amenity: string): string => {
@@ -148,19 +157,19 @@ export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
     'sistem audio': Speaker01Icon,
     'difuzoare': Speaker01Icon,
     
-    // Washing machine variants (icon diferit de AC/Heating)
-    'washing machine': Setup02Icon,
-    'washer': Setup02Icon,
-    'laundry': Setup02Icon,
-    'washing': Setup02Icon,
-    'mașină de spălat': Setup02Icon,
-    'masina de spalat': Setup02Icon,
-    'maşină de spălat': Setup02Icon,
+    // Washing machine variants
+    'washing machine': WashingMachineIcon,
+    'washer': WashingMachineIcon,
+    'laundry': WashingMachineIcon,
+    'washing': WashingMachineIcon,
+    'mașină de spălat': WashingMachineIcon,
+    'masina de spalat': WashingMachineIcon,
+    'maşină de spălat': WashingMachineIcon,
     
     // Dryer variants
-    'dryer': Setup02Icon,
-    'clothes dryer': Setup02Icon,
-    'uscător de rufe': Setup02Icon,
+    'dryer': WashingMachineIcon,
+    'clothes dryer': WashingMachineIcon,
+    'uscător de rufe': WashingMachineIcon,
     
     // Balcony/Terrace variants
     'balcony': RealEstate02Icon,
@@ -176,14 +185,14 @@ export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
     'family accommodation': BedBunkIcon,
     
     // Shower variants
-    'shower': Bathtub02Icon,
-    'duş': Bathtub02Icon,
-    'dus': Bathtub02Icon,
-    'shower cabin': Bathtub02Icon,
-    'cabină de duș': Bathtub02Icon,
-    'cabina de dus': Bathtub02Icon,
-    'duș cabină': Bathtub02Icon,
-    'dus cabina': Bathtub02Icon,
+    'shower': ShowerIcon,
+    'duş': ShowerIcon,
+    'dus': ShowerIcon,
+    'shower cabin': ShowerIcon,
+    'cabină de duș': ShowerIcon,
+    'cabina de dus': ShowerIcon,
+    'duș cabină': ShowerIcon,
+    'dus cabina': ShowerIcon,
     
     // View variants
     'view': CropIcon,
@@ -216,21 +225,21 @@ export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
     'camere nefumători': Task01Icon,
     
     // Microwave
-    'microwave': Setup02Icon,
-    'cuptor cu microunde': Setup02Icon,
-    'microwave oven': Setup02Icon,
-    'cuptor microunde': Setup02Icon,
-    'microunde': Setup02Icon,
+    'microwave': MicrowaveIcon,
+    'cuptor cu microunde': MicrowaveIcon,
+    'microwave oven': MicrowaveIcon,
+    'cuptor microunde': MicrowaveIcon,
+    'microunde': MicrowaveIcon,
     
     // Refrigerator
-    'refrigerator': Setup02Icon,
-    'frigider': Setup02Icon,
-    'fridge': Setup02Icon,
-    'refrigerator/freezer': Setup02Icon,
-    'frigider/congelator': Setup02Icon,
-    'frigider congelator': Setup02Icon,
-    'freezer': Setup02Icon,
-    'congelator': Setup02Icon,
+    'refrigerator': RefrigeratorIcon,
+    'frigider': RefrigeratorIcon,
+    'fridge': RefrigeratorIcon,
+    'refrigerator/freezer': RefrigeratorIcon,
+    'frigider/congelator': RefrigeratorIcon,
+    'frigider congelator': RefrigeratorIcon,
+    'freezer': RefrigeratorIcon,
+    'congelator': RefrigeratorIcon,
     
     // Bed linens
     'bed linens': BedSingle01Icon,
@@ -254,11 +263,11 @@ export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
     'hartie igienică': BodySoapIcon,
     
     // Towels
-    'towels': ShampooIcon,
-    'prosoape': ShampooIcon,
-    'bath towels': ShampooIcon,
-    'prosoape de baie': ShampooIcon,
-    'bath towel': ShampooIcon,
+    'towels': TowelIcon,
+    'prosoape': TowelIcon,
+    'bath towels': TowelIcon,
+    'prosoape de baie': TowelIcon,
+    'bath towel': TowelIcon,
     
     // Toilet
     'toilet': Bathtub01Icon,
@@ -271,15 +280,15 @@ export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
     'private toilet': Bathtub01Icon,
     
     // Iron
-    'iron': Setup02Icon,
-    'fier de călcat': Setup02Icon,
-    'ironing board': Setup02Icon,
-    'iron and ironing board': Setup02Icon,
-    'fier de calcat': Setup02Icon,
-    'masă de călcat': Setup02Icon,
-    'masa de calcat': Setup02Icon,
-    'fier și masă de călcat': Setup02Icon,
-    'fier si masa de calcat': Setup02Icon,
+    'iron': IronIcon,
+    'fier de călcat': IronIcon,
+    'ironing board': IronIcon,
+    'iron and ironing board': IronIcon,
+    'fier de calcat': IronIcon,
+    'masă de călcat': IronIcon,
+    'masa de calcat': IronIcon,
+    'fier și masă de călcat': IronIcon,
+    'fier si masa de calcat': IronIcon,
     
     // Coffee/Tea maker
     'coffee maker': Setup02Icon,
@@ -414,14 +423,14 @@ export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
       </div>
       <Divider className="w-14!" />
 
-      {amenities.length > 0 ? (
+      {uniqueAmenities.length > 0 ? (
         <>
           <div className="grid grid-cols-1 gap-6 text-sm text-neutral-700 xl:grid-cols-3 dark:text-neutral-300">
-            {amenities.slice(0, 12).map((amenity: string) => {
+            {uniqueAmenities.slice(0, 12).map((amenity: string, index: number) => {
               const Icon = getAmenityIcon(amenity)
               const translatedAmenity = getTranslatedAmenity(amenity)
               return (
-                <div key={amenity} className="flex items-center gap-x-3">
+                <div key={`${amenity}-${index}`} className="flex items-center gap-x-3">
                   <Icon className="h-6 w-6" />
                   <span>{translatedAmenity}</span>
                 </div>
@@ -429,12 +438,12 @@ export default function SectionAmenities({ amenities }: SectionAmenitiesProps) {
             })}
           </div>
 
-          {amenities.length > 12 && (
+          {uniqueAmenities.length > 12 && (
             <>
               <div className="w-14 border-b border-neutral-200"></div>
               <div>
                 <ButtonSecondary>
-                  {ListingPage['View'] || 'View'} {amenities.length - 12} {ListingPage['more amenities'] || 'more amenities'}
+                  {ListingPage['View'] || 'View'} {uniqueAmenities.length - 12} {ListingPage['more amenities'] || 'more amenities'}
                 </ButtonSecondary>
               </div>
             </>

@@ -1661,3 +1661,172 @@ export const Timer02Icon = (props: React.SVGProps<SVGSVGElement>) => (
 		/>
 	</svg>
 )
+
+// Refrigerator/Fridge Icon
+export const RefrigeratorIcon = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width={24}
+		height={24}
+		color={'currentColor'}
+		fill={'none'}
+		{...props}
+	>
+		<path
+			d="M5 21V3C5 2.44772 5.44772 2 6 2H18C18.5523 2 19 2.44772 19 3V21C19 21.5523 18.5523 22 18 22H6C5.44772 22 5 21.5523 5 21Z"
+			stroke="currentColor"
+			strokeWidth="1.5"
+		/>
+		<path d="M5 9H19" stroke="currentColor" strokeWidth="1.5" />
+		<path d="M8 5.5V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+		<path d="M8 12V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+	</svg>
+)
+
+// Iron Icon
+export const IronIcon = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width={24}
+		height={24}
+		color={'currentColor'}
+		fill={'none'}
+		{...props}
+	>
+		<path
+			d="M3 17H21L19 12H9L3 17Z"
+			stroke="currentColor"
+			strokeWidth="1.5"
+			strokeLinejoin="round"
+		/>
+		<path
+			d="M9 12V8C9 6.89543 9.89543 6 11 6H17C18.1046 6 19 6.89543 19 8V12"
+			stroke="currentColor"
+			strokeWidth="1.5"
+		/>
+		<path d="M3 17V19H21V17" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+		<path d="M14 9H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+	</svg>
+)
+
+// Washing Machine Icon
+export const WashingMachineIcon = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width={24}
+		height={24}
+		color={'currentColor'}
+		fill={'none'}
+		{...props}
+	>
+		<rect
+			x="4"
+			y="2"
+			width="16"
+			height="20"
+			rx="2"
+			stroke="currentColor"
+			strokeWidth="1.5"
+		/>
+		<circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5" />
+		<path d="M4 7H20" stroke="currentColor" strokeWidth="1.5" />
+		<circle cx="7" cy="4.5" r="0.5" fill="currentColor" stroke="currentColor" />
+		<circle cx="10" cy="4.5" r="0.5" fill="currentColor" stroke="currentColor" />
+		<path
+			d="M10 11.5C10.5 12 11 13 12 13C13 13 13.5 12 14 11.5"
+			stroke="currentColor"
+			strokeWidth="1.5"
+			strokeLinecap="round"
+		/>
+	</svg>
+)
+
+// Shower Icon
+export const ShowerIcon = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width={24}
+		height={24}
+		color={'currentColor'}
+		fill={'none'}
+		{...props}
+	>
+		<path
+			d="M4 8C4 5.79086 5.79086 4 8 4H10"
+			stroke="currentColor"
+			strokeWidth="1.5"
+			strokeLinecap="round"
+		/>
+		<circle cx="12" cy="4" r="2" stroke="currentColor" strokeWidth="1.5" />
+		<path d="M12 6V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+		<path d="M8 10H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+		<path d="M8 14V20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 2" />
+		<path d="M12 14V20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 2" />
+		<path d="M16 14V20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 2" />
+	</svg>
+)
+
+// Towel Icon
+export const TowelIcon = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width={24}
+		height={24}
+		color={'currentColor'}
+		fill={'none'}
+		{...props}
+	>
+		<path
+			d="M3 5H21"
+			stroke="currentColor"
+			strokeWidth="1.5"
+			strokeLinecap="round"
+		/>
+		<path
+			d="M6 5V19C6 20.1046 6.89543 21 8 21H16C17.1046 21 18 20.1046 18 19V5"
+			stroke="currentColor"
+			strokeWidth="1.5"
+		/>
+		<path d="M10 9V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+		<path d="M14 9V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+	</svg>
+)
+
+// Microwave Icon
+export const MicrowaveIcon = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width={24}
+		height={24}
+		color={'currentColor'}
+		fill={'none'}
+		{...props}
+	>
+		<rect
+			x="2"
+			y="5"
+			width="20"
+			height="14"
+			rx="2"
+			stroke="currentColor"
+			strokeWidth="1.5"
+		/>
+		<rect
+			x="4"
+			y="7"
+			width="11"
+			height="10"
+			rx="1"
+			stroke="currentColor"
+			strokeWidth="1.5"
+		/>
+		<circle cx="18" cy="10" r="1" fill="currentColor" />
+		<circle cx="18" cy="14" r="1" fill="currentColor" />
+	</svg>
+)

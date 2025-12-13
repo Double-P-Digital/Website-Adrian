@@ -14,6 +14,7 @@ import React, { useState, useEffect } from 'react'
 import { getApartmentForCheckout } from '@/services/apartments'
 import { useSearchParams } from 'next/navigation'
 import { sanitizeImageUrl } from '@/utils/imageUtils'
+import { useRouter } from 'next/navigation'
 
 interface ReservationData {
   apartmentId: string
@@ -50,6 +51,7 @@ interface PayDoneClientProps {
 
 function PayDoneClient({ initialTranslations }: PayDoneClientProps) {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { currency, convert } = useCurrency()
   const { language } = useLanguage()
   const T = useT() // Folosim hook-ul care funcționează corect
@@ -106,7 +108,6 @@ function PayDoneClient({ initialTranslations }: PayDoneClientProps) {
           setLoading(false)
         }
       } catch (error) {
-        console.error('Error parsing reservation data:', error)
         setPaymentStatus('failed')
         setLoading(false)
       }
@@ -116,6 +117,14 @@ function PayDoneClient({ initialTranslations }: PayDoneClientProps) {
       setLoading(false)
     }
   }, [searchParams])
+
+  // Auto-redirect to homepage after 5 minutes (regardless of status)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.push('/')
+    }, 5 * 60 * 1000) // 5 minutes
+    return () => clearTimeout(timer)
+  }, [router])
 
   const formatDate = (dateString: string) => {
     if (!dateString) return ''

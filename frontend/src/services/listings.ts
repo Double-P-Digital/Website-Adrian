@@ -35,7 +35,8 @@ export interface Listing {
   discountCode?: string 
   status?: string 
   hotelId?: string // ID-ul hotelului (necesar pentru verificare disponibilitate)
-  roomId?: number // ID-ul camerei din PynBooking (necesar pentru verificare disponibilitate)
+  roomId?: number // ID-ul camerei din PynBooking (legacy)
+  roomType?: string // nou: tipul camerei folosit pentru disponibilitate
   map: {
     lat: number
     lng: number
@@ -119,7 +120,8 @@ export function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'r
     discountCode: apartment.discountCode ?? undefined, // Convert null to undefined
     status: apartment.status,
     hotelId: apartment.hotelId, // Păstrăm hotelId pentru verificare disponibilitate
-    roomId: apartment.roomId, // Păstrăm roomId pentru verificare disponibilitate
+    roomId: apartment.roomId, // Legacy
+    roomType: apartment.roomType, // Nou pentru verificare disponibilitate
     map: getCoordinates(apartment),
   }
 }
@@ -129,6 +131,7 @@ export function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'r
  */
 export async function getAllListings(): Promise<Listing[]> {
   try {
+    // Force no-cache pentru development
     const apartments = await getAllApartments()
     const listings = apartments.map((apartment) => mapApartmentToListing(apartment))
     return listings
@@ -353,17 +356,16 @@ export async function getListingsByCategory(
           }
         }
         
-        // Verifică câte apartamente au hotelId și roomId
-        const listingsWithIds = listings.filter(listing => listing.hotelId && listing.roomId)
+        // Verifică câte apartamente au roomType (sau roomId ca fallback)
+        const listingsWithIds = listings.filter(listing => (listing.roomType || listing.roomId))
         
-        // Pregătește request-urile pentru apartamentele care au hotelId și roomId
+        // Pregătește request-urile pentru apartamentele care au roomType/roomId
         const availabilityRequests = listingsWithIds.map(listing => ({
           apartmentId: listing.id,
-          hotelId: Number(listing.hotelId!),
-          roomId: listing.roomId!,
+          roomType: listing.roomType ?? listing.roomId?.toString() ?? '',
           checkInDate: checkInDate,
           checkOutDate: checkOutDate,
-          currency: 'RON', // Default currency - poți adăuga currency în filters dacă este necesar
+          currency: 'RON',
         }))
         
         // Verifică disponibilitatea pentru toate apartamentele în paralel
@@ -379,19 +381,17 @@ export async function getListingsByCategory(
           
           // Filtrează doar apartamentele disponibile
           listings = listings.filter(listing => {
-            // Dacă listing-ul nu are hotelId/roomId, îl păstrăm (nu putem verifica disponibilitatea)
-            if (!listing.hotelId || !listing.roomId) {
-              return true // Păstrăm listing-ul dacă nu putem verifica disponibilitatea
+            // Dacă listing-ul nu are roomType/roomId, îl păstrăm (nu putem verifica disponibilitatea)
+            if (!listing.roomType && !listing.roomId) {
+              return true
             }
             
             // Verifică disponibilitatea din map
-            const isAvailable = availabilityMap[listing.id] === true
-            return isAvailable
+            return availabilityMap[listing.id] === true
           })
         }
       } catch (error) {
         // În caz de eroare, nu filtrează după dată (afișează toate apartamentele)
-        // Utilizatorul va vedea disponibilitatea reală în checkout
       }
     }
   }

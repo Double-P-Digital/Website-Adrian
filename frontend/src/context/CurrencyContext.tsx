@@ -109,7 +109,6 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           setRates(exchangeRates)
         }
       } catch (error) {
-        console.error('[CurrencyContext] Error loading exchange rates:', error)
         // Folosește rate-urile din cache sau default
         if (mounted) {
           setRates(getExchangeRatesSync())

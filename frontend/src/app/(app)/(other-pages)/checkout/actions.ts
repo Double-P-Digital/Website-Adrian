@@ -46,7 +46,6 @@ export async function handleCheckoutSubmit(formData: FormData) {
 
     // Validare apartmentId - verificăm dacă este MongoDB ObjectId valid
     if (!/^[0-9a-fA-F]{24}$/.test(apartmentId)) {
-      console.error('Invalid apartment ID format:', apartmentId)
       throw new Error('ID-ul apartamentului este invalid. Vă rugăm să selectați un apartament valid.')
     }
 
@@ -59,18 +58,14 @@ export async function handleCheckoutSubmit(formData: FormData) {
       throw new Error('Apartamentul nu a fost găsit')
     }
 
-    if (!apartment.hotelId) {
-      throw new Error('Apartamentul nu are hotelId configurat')
-    }
-
-    if (!apartment.roomId) {
-      throw new Error('Apartamentul nu are roomId configurat (ID-ul apartamentului din Pynbooking)')
+    if (!apartment.roomType && !apartment.roomId) {
+      throw new Error('Apartamentul nu are roomType configurat')
     }
 
     // Verifică disponibilitatea înainte de a crea PaymentIntent
     const availabilityCheck = await checkRoomAvailability({
-      hotelId: Number(apartment.hotelId),
-      roomId: apartment.roomId,
+      hotelId: apartment.hotelId ? Number(apartment.hotelId) : undefined,
+      roomType: apartment.roomType ?? apartment.roomId?.toString() ?? '',
       checkInDate: formattedCheckIn,
       checkOutDate: formattedCheckOut,
       currency: currency.toUpperCase(),
@@ -161,7 +156,6 @@ export async function handleCheckoutSubmit(formData: FormData) {
 
       return { success: true, clientSecret }
     } catch (error: any) {
-      console.error('[Checkout] Error creating payment intent:', error)
       
       // Parse error message from response
       let errorMessage = 'Eroare la procesarea plății'
@@ -176,8 +170,6 @@ export async function handleCheckoutSubmit(formData: FormData) {
       throw new Error(errorMessage)
     }
   } catch (error) {
-    console.error('=== ERROR IN CHECKOUT ===')
-    console.error('Error:', error)
     
     // Re-throw cu mesaj user-friendly
     if (error instanceof Error) {

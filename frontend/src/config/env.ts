@@ -22,7 +22,7 @@ export function getEnvConfig(): EnvConfig {
   const nodeEnv = (process.env.NODE_ENV || 'development') as EnvConfig['nodeEnv']
 
   if (!apiUrl) {
-    console.warn('NEXT_PUBLIC_API_URL is not set, using default: http://localhost:3000')
+    // Using default API URL
   }
 
   return {

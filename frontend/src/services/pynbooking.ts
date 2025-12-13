@@ -82,7 +82,6 @@ export async function searchReservations(
     const reservations: PynBookingReservation[] = await response.json()
     return reservations
   } catch (error: any) {
-    console.error('[PynBooking] Error searching reservations:', error)
     throw error
   }
 }
@@ -135,7 +134,6 @@ export async function isRoomAvailable(
     // Camera este disponibilă dacă nu există suprapuneri
     return !hasOverlap
   } catch (error: any) {
-    console.error('[PynBooking] Error checking room availability:', error)
     // În caz de eroare, considerăm că camera nu este disponibilă (fail-safe)
     return false
   }
@@ -199,7 +197,6 @@ export async function checkMultipleRoomsAvailability(
 
     return availabilityMap
   } catch (error: any) {
-    console.error('[PynBooking] Error checking multiple rooms availability:', error)
     // În caz de eroare, considerăm că toate camerele nu sunt disponibile (fail-safe)
     const availabilityMap: Record<string, boolean> = {}
     roomNames.forEach(roomName => {

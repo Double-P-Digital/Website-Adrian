@@ -36,7 +36,7 @@ export default function StripePaymentForm() {
         }
       }
     } catch (error) {
-      console.error('[StripePaymentForm] Error reading reservation data:', error)
+      // Error reading reservation data
     }
   }, [])
 
@@ -67,7 +67,7 @@ export default function StripePaymentForm() {
           checkInDate = data.startDate || null
           checkOutDate = data.endDate || null
         } catch (e) {
-          console.error('[StripePaymentForm] Error parsing reservation data:', e)
+          // Error parsing reservation data
         }
       }
 

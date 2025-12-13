@@ -127,7 +127,6 @@ export async function getAllCategories(): Promise<Category[]> {
 
     return categories
   } catch (error) {
-    console.error('[Categories Service] Error fetching categories:', error)
     return []
   }
 }

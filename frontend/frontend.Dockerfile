@@ -1,51 +1,63 @@
-# Dockerfile pentru Next.js Frontend
-FROM node:20-alpine AS base
+# Dockerfile pentru Next.js Frontend - OPTIMIZED
+# syntax=docker/dockerfile:1
 
-# Install dependencies only when needed
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# ============================================
+# Stage 1: Install dependencies with cache
+# ============================================
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
-WORKDIR /app
 
 # Copy package files from frontend directory
 COPY Website-Adrian/frontend/package*.json ./
-RUN npm ci
 
-# Rebuild the source code only when needed
+# Install with cache mount (MUCH faster rebuilds)
+RUN --mount=type=cache,id=npm-frontend,target=/root/.npm \
+    npm ci --prefer-offline
+
+# ============================================
+# Stage 2: Build the application
+# ============================================
 FROM base AS builder
-WORKDIR /app
+
+# Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy frontend source code (including .env.production.local if it exists)
+# Copy source code (excluding node_modules via .dockerignore)
 COPY Website-Adrian/frontend/ .
 
-RUN if [ -f .env.production.local ]; then \
-      cp .env.production.local .env.local; \
-    else \
-      echo "# No .env.production.local found" > .env.local; \
-    fi
+# Next.js will automatically read .env.production.local during build
+ENV NEXT_TELEMETRY_DISABLED=1
 
+# Build Next.js
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM base AS runner
+# ============================================
+# Stage 3: Production runner (minimal)
+# ============================================
+FROM node:20-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    DOCKER_ENV=true \
+    NEXT_PUBLIC_DOCKER_ENV=true \
+    NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy necessary files from builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# Copy only necessary files from builder (standalone mode)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3001
-
-ENV PORT=3001
-ENV HOSTNAME="0.0.0.0"
+ENV PORT=3001 \
+    HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
-

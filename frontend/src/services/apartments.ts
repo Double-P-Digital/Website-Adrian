@@ -5,6 +5,7 @@ export interface Apartment {
   id: string 
   hotelId: string
   roomId: number
+  roomType?: string
   name: string
   price?: number
   maxGuests?: number
@@ -35,11 +36,7 @@ export async function getAllApartments(): Promise<Apartment[]> {
       next: { revalidate: 60 }, 
     })
   } catch (error: any) {
-    if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
-      console.warn('[Apartments Service] Backend not accessible, returning empty array')
-    } else {
-      console.warn('[Apartments Service] Error fetching all apartments:', error?.message || error)
-    }
+    // Error fetching apartments - return empty array
     return []
   }
 }
@@ -50,13 +47,7 @@ export async function getApartmentById(id: string): Promise<Apartment | null> {
       next: { revalidate: 3600 },
     })
   } catch (error: any) {
-    if (error?.status === 404) {
-      console.warn(`[Apartments Service] Apartment ${id} not found (404)`)
-    } else if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
-      console.warn(`[Apartments Service] Backend not accessible for apartment ${id}`)
-    } else {
-      console.warn(`[Apartments Service] Error fetching apartment ${id}:`, error?.message || error)
-    }
+    // Error fetching apartment - return null
     return null
   }
 }
@@ -76,13 +67,11 @@ export async function getTopBookedApartments(limit: number = 10): Promise<Apartm
     
     return apartmentsWithBookings.slice(0, limit)
   } catch (error) {
-    console.warn('[Apartments Service] Top booked apartments endpoint error, using fallback:', error)
     
     try {
       const allApartments = await getAllApartments()
       return allApartments.slice(0, limit)
     } catch (fallbackError) {
-      console.error('[Apartments Service] Error in fallback for top booked apartments:', fallbackError)
       return []
     }
   }
@@ -124,7 +113,6 @@ export async function getApartmentForCheckout(id: string): Promise<ApartmentForC
       handle: generateHandle(apartment.name, apartment.id),
     }
   } catch (error) {
-    console.error(`[Apartments Service] Error fetching apartment for checkout ${id}:`, error)
     return null
   }
 }

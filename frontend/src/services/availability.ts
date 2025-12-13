@@ -21,8 +21,8 @@ const activeControllers = new Map<string, AbortController>()
  * Interfață pentru request-ul de verificare disponibilitate
  */
 export interface AvailabilityCheckRequest {
-  hotelId: number
-  roomId: number // roomId este de fapt roomName (numărul camerei, ex: 104, 401)
+  hotelId?: number
+  roomType: string // nou: identifică tipul camerei (ex: Deluxe, 104, etc.)
   checkInDate: string // Format: YYYY-MM-DD
   checkOutDate: string // Format: YYYY-MM-DD
   currency: string // Format: RON, EUR, USD, etc. (nu este folosit pentru PynBooking, dar păstrat pentru compatibilitate)
@@ -51,7 +51,7 @@ export async function checkRoomAvailability(
   signal?: AbortSignal
 ): Promise<AvailabilityCheckResponse> {
   // Creează cheia de cache pentru request-uri identice
-  const cacheKey = `${request.hotelId}-${request.roomId}-${request.checkInDate}-${request.checkOutDate}`
+  const cacheKey = `${request.roomType}-${request.checkInDate}-${request.checkOutDate}`
   
   // Verifică dacă există un request activ pentru aceleași date
   const existingController = activeControllers.get(cacheKey)
@@ -88,8 +88,8 @@ export async function checkRoomAvailability(
         // Apelează backend-ul pentru verificare disponibilitate
         const response = await apiClient.get<AvailabilityCheckResponse>(
           `${API_ENDPOINTS.RESERVATIONS.CHECK_AVAILABILITY}?` +
-          `hotelId=${request.hotelId}&` +
-          `roomId=${request.roomId}&` +
+          (request.hotelId !== undefined ? `hotelId=${request.hotelId}&` : '') +
+          `roomType=${encodeURIComponent(request.roomType)}&` +
           `checkInDate=${request.checkInDate}&` +
           `checkOutDate=${request.checkOutDate}&` +
           `currency=${request.currency}`,
@@ -122,15 +122,12 @@ export async function checkRoomAvailability(
             error?.message?.includes('NetworkError') || 
             error?.status === 500 ||
             error?.status === 404) {
-          console.warn('[Availability] Backend error, using fail-safe:', errorMessage)
           // Returnează disponibil pentru a nu bloca utilizatorul (fail-safe)
           return {
             available: true,
             message: 'Nu s-a putut verifica disponibilitatea. Vă rugăm să continuați cu rezervarea.',
           }
         }
-        
-        console.warn('[Availability] Error checking room availability:', errorMessage)
 
         return {
           available: false,
@@ -205,7 +202,6 @@ export async function checkMultipleRoomAvailability(
         if (result.status === 'fulfilled') {
           return result.value
         } else {
-          console.warn(`[Availability] Error checking room ${requests[index].roomId}:`, result.reason)
           return {
             available: false,
             message: 'Eroare la verificarea disponibilității',
@@ -224,7 +220,6 @@ export async function checkMultipleRoomAvailability(
       if (result.status === 'fulfilled') {
         return result.value
       } else {
-        console.warn(`[Availability] Error checking room ${requests[index].roomId}:`, result.reason)
         return {
           available: false,
           message: 'Eroare la verificarea disponibilității',
@@ -232,7 +227,6 @@ export async function checkMultipleRoomAvailability(
       }
     })
   } catch (error: any) {
-    console.error('[Availability] Error checking multiple room availability:', error)
     
     // Returnează răspunsuri cu eroare pentru toate camerele
     return requests.map(() => ({

@@ -14,7 +14,7 @@ const SectionMap = ({ className, address, lat, lng }: Props) => {
   
   // Verifică dacă API key-ul este setat
   if (!apiKey) {
-    console.error('[SectionMap] Google Maps API key is not set in environment variables')
+    // Google Maps API key not set
   }
   
   const googleMapsEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${lat},${lng}&zoom=15`

@@ -85,18 +85,22 @@ export const LocationInputField: FC<Props> = ({
     setSuggestedLocationsText(T['HeroSearchForm']['Suggested locations'] || "Suggested locations")
   }, [T, placeholderProp])
   
-  // Read city from URL on mount
+  // Read city from URL and sync with state
   useEffect(() => {
     const city = searchParams.get('city')
     if (city) {
-      setSelected({
-        id: `city-${city}`,
-        name: city,
-        icon: Location01Icon,
-      })
-      setInputValue(city)
+      // Only update if different from current value to avoid unnecessary re-renders
+      if (inputValue !== city) {
+        setSelected({
+          id: `city-${city}`,
+          name: city,
+          icon: Location01Icon,
+        })
+        setInputValue(city)
+      }
     }
-  }, [searchParams])
+    // Don't reset if no city in URL - user might be typing a new value
+  }, [searchParams]) // Removed inputValue from deps to avoid infinite loop
 
   // Load cities from apartments
   useEffect(() => {
@@ -134,7 +138,6 @@ export const LocationInputField: FC<Props> = ({
         
         setCities(citySuggests)
       } catch (error) {
-        console.error('[LocationInputField] Error loading cities:', error)
         setCities([])
       } finally {
         setIsLoadingCities(false)
@@ -208,6 +211,22 @@ export const LocationInputField: FC<Props> = ({
       }
     }
   }, [])
+
+  // Handle blur - immediately set selected value to ensure it's captured before form submit
+  const handleBlur = useCallback(() => {
+    // Cancel any pending debounce
+    handleInputChangeDebounced.cancel()
+    
+    // If there's input value but no selected, set it immediately
+    const currentValue = inputRef.current?.value?.trim() || inputValue.trim()
+    if (currentValue && (!selected?.name || selected.name !== currentValue)) {
+      setSelected({
+        id: `custom-${Date.now()}`,
+        name: currentValue,
+      })
+      setInputValue(currentValue)
+    }
+  }, [handleInputChangeDebounced, inputValue, selected])
   useEffect(() => {
     return () => {
       handleInputChangeDebounced.cancel() // Cancel debounce when component unmounts
@@ -281,12 +300,13 @@ export const LocationInputField: FC<Props> = ({
               displayValue={(item?: Suggest) => item?.name || ''}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
             />
-            {/* Hidden input for form submission - uses the actual input value */}
+            {/* Hidden input for form submission - prioritize inputValue for immediate user input */}
             <input
               type="hidden"
               name={inputName}
-              value={selected?.name || inputValue || ''}
+              value={inputValue || selected?.name || ''}
               onChange={() => {}} // Prevent React warning about uncontrolled input
             />
             <div className="mt-0.5 text-start text-sm font-light text-neutral-400">
