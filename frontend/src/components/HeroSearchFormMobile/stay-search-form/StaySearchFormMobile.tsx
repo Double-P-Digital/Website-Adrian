@@ -20,9 +20,9 @@ const StaySearchFormMobile = () => {
   const [locationValue, setLocationValue] = useState<string>('')
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
-  const [guestAdults, setGuestAdults] = useState<number>(0)
+  const [guestAdults, setGuestAdults] = useState<number>(1)
   const [guestChildren, setGuestChildren] = useState<number>(0)
-  const [guestRooms, setGuestRooms] = useState<number>(0)
+  const [guestRooms, setGuestRooms] = useState<number>(1)
   
   // State pentru texte traduse (pentru a evita hydration mismatch)
   const [whereText, setWhereText] = useState("Where")

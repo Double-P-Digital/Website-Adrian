@@ -53,17 +53,17 @@ export const GuestNumberField: FC<Props> = ({
     // If we have individual values, use them
     if (guestAdults || guestChildren || guestRooms) {
       return {
-        adults: guestAdults ? Number(guestAdults) : 2,
-        children: guestChildren ? Number(guestChildren) : 1,
+        adults: guestAdults ? Number(guestAdults) : 1,
+        children: guestChildren ? Number(guestChildren) : 0,
         rooms: guestRooms ? Number(guestRooms) : 1,
       }
     }
     
-    // If we only have total guests, split it (default: 2 adults, 0 children)
+    // If we only have total guests, split it (default: 1 adult, 0 children)
     if (guests) {
       const totalGuests = Number(guests)
       return {
-        adults: totalGuests > 0 ? totalGuests : 2,
+        adults: totalGuests > 0 ? totalGuests : 1,
         children: 0,
         rooms: 1,
       }
@@ -71,8 +71,8 @@ export const GuestNumberField: FC<Props> = ({
     
     // Default values
     return {
-      adults: 2,
-      children: 1,
+      adults: 1,
+      children: 0,
       rooms: 1,
     }
   }

@@ -61,8 +61,8 @@ const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
     return tomorrow
   })
   const [guests, setGuests] = useState<GuestsObject>({
-    guestAdults: urlGuestAdults ? Number(urlGuestAdults) : 2,
-    guestChildren: urlGuestChildren ? Number(urlGuestChildren) : 1,
+    guestAdults: urlGuestAdults ? Number(urlGuestAdults) : 1,
+    guestChildren: urlGuestChildren ? Number(urlGuestChildren) : 0,
     guestRooms: urlGuestRooms ? Number(urlGuestRooms) : 1,
   })
   

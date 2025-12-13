@@ -23,8 +23,8 @@ const GuestsInputPopover: FC<Props> = ({ className = 'flex-1', defaultGuests }) 
   const urlGuestChildren = searchParams.get('guestChildren')
   const urlGuestRooms = searchParams.get('guestRooms')
   
-  const initialAdults = defaultGuests?.guestAdults ?? (urlGuestAdults ? Number(urlGuestAdults) : 2)
-  const initialChildren = defaultGuests?.guestChildren ?? (urlGuestChildren ? Number(urlGuestChildren) : 1)
+  const initialAdults = defaultGuests?.guestAdults ?? (urlGuestAdults ? Number(urlGuestAdults) : 1)
+  const initialChildren = defaultGuests?.guestChildren ?? (urlGuestChildren ? Number(urlGuestChildren) : 0)
   const initialRooms = defaultGuests?.guestRooms ?? (urlGuestRooms ? Number(urlGuestRooms) : 1)
   
   const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(initialAdults)

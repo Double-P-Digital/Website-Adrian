@@ -16,8 +16,8 @@ interface Props {
 const ModalSelectGuests: FC<Props> = ({ triggerButton, onChangeGuests }) => {
   const [showModal, setShowModal] = useState(false)
   const [guests, setGuests] = useState({
-    guestAdults: 2,
-    guestChildren: 1,
+    guestAdults: 1,
+    guestChildren: 0,
     guestRooms: 1,
   })
   const T = useT()
