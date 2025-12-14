@@ -52,18 +52,20 @@ export default function Footer2() {
             </p>
           </div>
           
-          {/* Links - horizontal on desktop */}
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-            <div className="flex items-center gap-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">{T.Footer.Company}:</span>
+          {/* Links - labels on top, links below */}
+          <div className="flex gap-12">
+            {/* Company column */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">{T.Footer.Company}</span>
               {navigation.company.map((item) => (
                 <a key={item.name} href={item.href} className="text-sm text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white">
                   {T.Footer[item.name as keyof typeof T.Footer] || item.name}
                 </a>
               ))}
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">{T.Footer.Legal}:</span>
+            {/* Legal column */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">{T.Footer.Legal}</span>
               {navigation.legal.map((item) => (
                 <a key={item.name} href={item.href} className="text-sm text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white">
                   {T.Footer[item.name as keyof typeof T.Footer] || item.name}

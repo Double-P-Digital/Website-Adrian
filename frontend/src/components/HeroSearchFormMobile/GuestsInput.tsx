@@ -13,18 +13,18 @@ interface Props {
 }
 
 const GuestsInput: FC<Props> = ({ defaultValue, onChange, className }) => {
-  const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(defaultValue?.guestAdults ?? 1)
-  const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(defaultValue?.guestChildren ?? 0)
-  const [guestRoomsInputValue, setGuestRoomsInputValue] = useState(defaultValue?.guestRooms ?? 1)
+  const [guestAdultsInputValue, setGuestAdultsInputValue] = useState(defaultValue?.guestAdults || 0)
+  const [guestChildrenInputValue, setGuestChildrenInputValue] = useState(defaultValue?.guestChildren || 0)
+  const [guestRoomsInputValue, setGuestRoomsInputValue] = useState(defaultValue?.guestRooms || 1)
 
   useEffect(() => {
-    setGuestAdultsInputValue(defaultValue?.guestAdults ?? 1)
+    setGuestAdultsInputValue(defaultValue?.guestAdults || 0)
   }, [defaultValue?.guestAdults])
   useEffect(() => {
-    setGuestChildrenInputValue(defaultValue?.guestChildren ?? 0)
+    setGuestChildrenInputValue(defaultValue?.guestChildren || 0)
   }, [defaultValue?.guestChildren])
   useEffect(() => {
-    setGuestRoomsInputValue(defaultValue?.guestRooms ?? 1)
+    setGuestRoomsInputValue(defaultValue?.guestRooms || 1)
   }, [defaultValue?.guestRooms])
 
   const handleChangeData = (value: number, type: keyof GuestsObject) => {

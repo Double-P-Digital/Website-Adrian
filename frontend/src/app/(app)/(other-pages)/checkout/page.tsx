@@ -133,9 +133,6 @@ function CheckoutPageContent() {
   
   const urlCheckin = searchParams.get('checkin')
   const urlCheckout = searchParams.get('checkout')
-  const urlGuestAdults = searchParams.get('guestAdults')
-  const urlGuestChildren = searchParams.get('guestChildren')
-  const urlGuestRooms = searchParams.get('guestRooms')
 
   const [startDate, setStartDate] = useState<Date | null>(() => {
     if (urlCheckin) {
@@ -189,7 +186,7 @@ function CheckoutPageContent() {
     message?: string
   }>({ available: null })
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
-  const [apartmentData, setApartmentData] = useState<{ hotelId?: string; roomType: string } | null>(null)
+  const [apartmentData, setApartmentData] = useState<{ hotelId?: string; roomType: string; maxGuests?: number } | null>(null)
   
   useEffect(() => {
     const loadApartmentData = async () => {
@@ -204,6 +201,7 @@ function CheckoutPageContent() {
               setApartmentData({
                 hotelId: apartment.hotelId,
                 roomType: apartment.roomType ?? apartment.roomId?.toString() ?? '',
+                maxGuests: apartment.maxGuests,
               })
             }
           }
@@ -616,6 +614,7 @@ function CheckoutPageContent() {
                 setStartDate(start)
                 setEndDate(end)
               }}
+              maxGuests={apartmentData?.maxGuests}
             />
             <Divider />
             

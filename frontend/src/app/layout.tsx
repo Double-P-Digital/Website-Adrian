@@ -13,22 +13,37 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://dailyguest.online'),
   title: {
-    template: '%s - Chisfis',
-    default: 'Chisfis - Booking online React Next.js template',
+    template: '%s - DailyGuest',
+    default: 'DailyGuest - Rezervări apartamente Cluj-Napoca, Baia Mare, Oradea',
   },
-  description: 'Booking online & rental online Next.js Template',
-  keywords: ['Chisfis', 'Booking online', 'Rental online', 'React Next.js template'],
+  description: 'Rezervă apartamente de vacanță în Cluj-Napoca, Baia Mare și Oradea. Prețuri accesibile, rezervare rapidă și sigură. Peste 50 de apartamente disponibile.',
+  keywords: ['rezervari apartamente', 'cazare Cluj-Napoca', 'apartamente Baia Mare', 'cazare Oradea', 'inchiriere apartamente Romania', 'booking apartamente', 'cazare ieftina Cluj', 'apartamente vacanta'],
+  authors: [{ name: 'DailyGuest' }],
   icons: {
     icon: '/logos.svg',
     shortcut: '/logos.svg',
     apple: '/logos.svg',
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: 'https://dailyguest.online',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={poppins.className} suppressHydrationWarning>
+    <html lang="ro" className={poppins.className} suppressHydrationWarning>
       <body className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
         <LanguageProvider>
           <CurrencyProvider>

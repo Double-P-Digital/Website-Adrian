@@ -1,0 +1,10 @@
+# DailyGuest Robots.txt
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /checkout
+Disallow: /pay-done
+
+Sitemap: https://dailyguest.online/sitemap.xml
+

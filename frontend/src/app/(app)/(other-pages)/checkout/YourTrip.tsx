@@ -1,12 +1,11 @@
 'use client'
 
 import ModalSelectDate from '@/components/ModalSelectDate'
-import ModalSelectGuests from '@/components/ModalSelectGuests'
 import { useLanguage } from '@/context/LanguageContext'
 import { useT } from '@/hooks/useT'
 import { GuestsObject } from '@/type'
 import converSelectedDateToString from '@/utils/converSelectedDateToString'
-import { PencilSquareIcon } from '@heroicons/react/24/outline'
+import { PencilSquareIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { formatDateToYYYYMMDD, parseYYYYMMDDToDate } from '@/utils/dateUtils'
@@ -14,9 +13,10 @@ import { formatDateToYYYYMMDD, parseYYYYMMDDToDate } from '@/utils/dateUtils'
 interface YourTripProps {
   onDatesChange?: (startDate: Date | null, endDate: Date | null) => void
   onGuestsChange?: (guests: GuestsObject) => void
+  maxGuests?: number // Capacitatea maximă a apartamentului
 }
 
-const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
+const YourTrip = ({ onDatesChange, onGuestsChange, maxGuests }: YourTripProps) => {
   const T = useT()
   const { language } = useLanguage()
   const searchParams = useSearchParams()
@@ -165,36 +165,30 @@ const YourTrip = ({ onDatesChange, onGuestsChange }: YourTripProps) => {
           )}
         />
 
-        <ModalSelectGuests
-          onChangeGuests={setGuests}
-          triggerButton={({ openModal }) => (
-            <button
-              type="button"
-              onClick={openModal}
-              className="flex flex-1 justify-between gap-x-5 p-5 text-start hover:bg-neutral-50 focus-visible:outline-hidden dark:hover:bg-neutral-800"
-            >
-              <div className="flex flex-col">
-                <span className="text-sm text-neutral-400">{T['HeroSearchForm']['Guests']}</span>
-                <span className="mt-1.5 text-lg font-semibold">
-                  <span className="line-clamp-1">
-                    {`${formatGuests((guests.guestAdults || 0) + (guests.guestChildren || 0))}, ${formatRooms(
-                      guests.guestRooms || 1
-                    )}`}
-                  </span>
-                </span>
-              </div>
-              <PencilSquareIcon className="h-6 w-6 text-neutral-600 dark:text-neutral-400" />
-            </button>
-          )}
-        />
+        {/* Oaspeți - read-only, afișează capacitatea maximă a apartamentului */}
+        <div className="flex flex-1 justify-between gap-x-5 p-5 text-start">
+          <div className="flex flex-col">
+            <span className="text-sm text-neutral-400">{T['HeroSearchForm']['Guests']}</span>
+            <span className="mt-1.5 text-lg font-semibold">
+              <span className="line-clamp-1">
+                {maxGuests 
+                  ? `${formatGuests(maxGuests)}, ${formatRooms(guests.guestRooms || 1)}`
+                  : `${formatGuests((guests.guestAdults || 0) + (guests.guestChildren || 0))}, ${formatRooms(guests.guestRooms || 1)}`
+                }
+              </span>
+            </span>
+          </div>
+          <UsersIcon className="h-6 w-6 text-neutral-400" />
+        </div>
       </div>
 
       <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-        {T.Booking['Click on the pencil icon to change your trip details.']}
+        {T.Booking['Click on the pencil icon to change your dates.']}
       </p>
 
-      <input type="hidden" name="guestAdults" value={guests.guestAdults} />
-      <input type="hidden" name="guestChildren" value={guests.guestChildren} />
+      {/* Dacă avem maxGuests, îl trimitem ca număr total de adulți; altfel păstrăm valorile din URL */}
+      <input type="hidden" name="guestAdults" value={maxGuests || guests.guestAdults} />
+      <input type="hidden" name="guestChildren" value={maxGuests ? 0 : guests.guestChildren} />
       <input type="hidden" name="guestRooms" value={guests.guestRooms} />
       <input type="hidden" name="startDate" value={startDate ? startDate.toISOString() : ''} />
       <input type="hidden" name="endDate" value={endDate ? endDate.toISOString() : ''} />

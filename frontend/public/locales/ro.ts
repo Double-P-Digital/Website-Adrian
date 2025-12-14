@@ -57,6 +57,7 @@ export const ro = {
         'Tax': 'Impozit',
         'Your trip': 'Călătoria ta',
         'Click on the pencil icon to change your trip details.': 'Faceți clic pe creion pentru a schimba detaliile călătoriei.',
+        'Click on the pencil icon to change your dates.': 'Faceți clic pe creion pentru a schimba datele.',
         'per_night_x_nights': '{price} {currency} x {nights} nopți',
         'First Name': 'Prenume',
         'Last Name': 'Nume',
@@ -354,7 +355,7 @@ export const ro = {
         sectionHero: {
             title: 'Bine ați venit la DailyGuest!',
             description:
-                'Alături de noi, ai o călătorie plină de experiențe. Cu Chisfis, rezervi cazare, vile de resort, hoteluri',
+                'Alături de noi, ai o călătorie plină de experiențe. Cu DailyGuest, rezervi cazare în Cluj-Napoca, Baia Mare și Oradea',
             'Start your search': 'Începe căutarea',
             button: 'Începe căutarea',
             slogan: 'Cu noi, experiența bookingului e mai ușoară'
@@ -465,6 +466,7 @@ export const ro = {
         'bedrooms': 'dormitoare',
         'beds': 'paturi',
         'guests': 'oaspeți',
+        'Max capacity': 'Capacitate maximă',
         'Stay information': 'Informații despre cazare',
         'No description available': 'Nu există descriere disponibilă pentru această proprietate.',
         'Entire apartment': 'Întregul apartament',

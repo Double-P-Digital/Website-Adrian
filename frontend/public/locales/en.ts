@@ -57,6 +57,7 @@ export const en = {
     'Tax': 'Tax',
     'Your trip': 'Your trip',
     'Click on the pencil icon to change your trip details.': 'Click on the pencil icon to change your trip details.',
+    'Click on the pencil icon to change your dates.': 'Click on the pencil icon to change your dates.',
     'per_night_x_nights': '{price} {currency} x {nights} night(s)',
     'First Name': 'First Name',
     'Last Name': 'Last Name',
@@ -353,7 +354,7 @@ export const en = {
     sectionHero: {
       title: 'Welcome to DailyGuest!',
       description:
-        'Accompanying us, you have a trip full of experiences. With Chisfis, booking accommodation, resort villas, hotels',
+        'Accompanying us, you have a trip full of experiences. With DailyGuest, book accommodation in Cluj-Napoca, Baia Mare and Oradea',
       'Start your search': 'Start your search',
       button: 'Start your search',
       slogan: 'With us, your trip is filled with amazing experiences.'
@@ -464,6 +465,7 @@ export const en = {
     'bedrooms': 'bedrooms',
     'beds': 'beds',
     'guests': 'guests',
+    'Max capacity': 'Max capacity',
     'Stay information': 'Stay information',
     'No description available': 'No description available for this property.',
     'Entire apartment': 'Entire apartment',

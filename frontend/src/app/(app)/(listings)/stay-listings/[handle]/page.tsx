@@ -1,21 +1,11 @@
-import {
-  BedSingle01Icon,
-  BodySoapIcon,
-  CctvCameraIcon,
-  ShampooIcon,
-  VirtualRealityVr01Icon,
-  WaterPoloIcon,
-} from '@/components/Icons'
 import { getListingByHandle } from '@/services/listings'
 import ReserveButton from './ReserveButton'
-
-import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Divider } from '@/shared/divider'
 import { Metadata } from 'next'
 import Form from 'next/form'
 import { redirect } from 'next/navigation'
 import DatesRangeInputPopover from '../../components/DatesRangeInputPopover'
-import GuestsInputPopover from '../../components/GuestsInputPopover'
+import GuestsDisplay from '../../components/GuestsDisplay'
 import HeaderGallery from '../../components/HeaderGallery'
 import SectionDateRange from '../../components/SectionDateRange'
 import SidebarPriceAndFormWrapper from './SidebarPriceAndFormWrapper'
@@ -53,12 +43,9 @@ const Page = async ({
   const urlSearchParams = await searchParams
   const listing = await getListingByHandle(handle)
   
-  // Extract dates and guests from URL if available
+  // Extract dates from URL if available
   const checkin = typeof urlSearchParams.checkin === 'string' ? urlSearchParams.checkin : undefined
   const checkout = typeof urlSearchParams.checkout === 'string' ? urlSearchParams.checkout : undefined
-  const guestAdults = urlSearchParams.guestAdults ? Number(urlSearchParams.guestAdults) : undefined
-  const guestChildren = urlSearchParams.guestChildren ? Number(urlSearchParams.guestChildren) : undefined
-  const guestRooms = urlSearchParams.guestRooms ? Number(urlSearchParams.guestRooms) : undefined
 
   if (!listing?.id) {
     return redirect('/stay-categories/all')
@@ -125,13 +112,9 @@ const Page = async ({
             defaultEndDate={checkout ? new Date(checkout) : null}
           />
           <div className="w-full border-b border-neutral-200 dark:border-neutral-700"></div>
-          <GuestsInputPopover 
+          <GuestsDisplay 
             className="flex-1"
-            defaultGuests={{
-              guestAdults,
-              guestChildren,
-              guestRooms,
-            }}
+            maxGuests={maxGuests}
           />
         </Form>
 
