@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let apartmentPages: MetadataRoute.Sitemap = []
   try {
     const apartments = await getAllApartments()
-    apartmentPages = apartments.map((apt) => ({
+    apartmentPages = apartments.map((apt: any) => ({
       url: `${siteUrl}/stay-listings/${apt.handle || apt.id}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
