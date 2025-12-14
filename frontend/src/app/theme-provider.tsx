@@ -70,9 +70,26 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     }
   }, [])
 
-  //
+  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY
+
+  // Dacă nu avem Google Maps API key, nu folosim APIProvider
+  if (!googleMapsApiKey) {
+    return (
+      <ThemeContext.Provider
+        value={{
+          isDarkMode,
+          toggleDarkMode,
+          themeDir,
+          setThemeDir,
+        }}
+      >
+        {children}
+      </ThemeContext.Provider>
+    )
+  }
+
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || ''}>
+    <APIProvider apiKey={googleMapsApiKey}>
       <ThemeContext.Provider
         value={{
           isDarkMode,
