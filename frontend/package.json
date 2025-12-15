@@ -35,7 +35,7 @@
     "eslint-config-next": "15.3.2",
     "framer-motion": "^12.10.4",
     "lodash": "^4.17.21",
-    "next": "15.3.2",
+    "next": "^15.5.9",
     "next-cloudinary": "^6.16.0",
     "rc-slider": "^11.1.8",
     "react": "19.1.0",
