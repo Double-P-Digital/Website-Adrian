@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { apiClient } from '@/api/client'
 import { API_ENDPOINTS } from '@/api/endpoints'
 import { getApartmentById } from '@/services/apartments'
-import { formatDateToYYYYMMDD } from '@/utils/dateUtils'
+import { formatDateToYYYYMMDD, parseYYYYMMDDToDate } from '@/utils/dateUtils'
 import { checkRoomAvailability } from '@/services/availability'
 
 /**
@@ -29,8 +29,9 @@ export async function handleCheckoutSubmit(formData: FormData) {
     const currency = (formData.get('currency') as string) || 'RON'
     const guestAddress = formData.get('guestAddress') as string || ''
     const guestName = `${firstName} ${lastName}`
-    const checkIn = new Date(checkInDate)
-    const checkOut = new Date(checkOutDate)
+    // Folosim parseYYYYMMDDToDate pentru a evita probleme de timezone
+    const checkIn = parseYYYYMMDDToDate(checkInDate)
+    const checkOut = parseYYYYMMDDToDate(checkOutDate)
     const diffTime = checkOut.getTime() - checkIn.getTime()
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
     const nights = diffDays >= 1 ? diffDays : 1
