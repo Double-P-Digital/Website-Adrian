@@ -15,6 +15,7 @@ import { getApartmentForCheckout } from '@/services/apartments'
 import { useSearchParams } from 'next/navigation'
 import { sanitizeImageUrl } from '@/utils/imageUtils'
 import { useRouter } from 'next/navigation'
+import { parseYYYYMMDDToDate } from '@/utils/dateUtils'
 
 interface ReservationData {
   apartmentId: string
@@ -128,7 +129,7 @@ function PayDoneClient({ initialTranslations }: PayDoneClientProps) {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return ''
-    const date = new Date(dateString)
+    const date = parseYYYYMMDDToDate(dateString)
     const locale = language === 'ro' ? 'ro-RO' : 'en-US'
     return date.toLocaleDateString(locale, {
       day: 'numeric',
@@ -139,8 +140,8 @@ function PayDoneClient({ initialTranslations }: PayDoneClientProps) {
 
   const formatDateRange = (startDate: string, endDate: string) => {
     if (!startDate || !endDate) return ''
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    const start = parseYYYYMMDDToDate(startDate)
+    const end = parseYYYYMMDDToDate(endDate)
     const locale = language === 'ro' ? 'ro-RO' : 'en-US'
     
     const startFormatted = start.toLocaleDateString(locale, {
@@ -158,8 +159,8 @@ function PayDoneClient({ initialTranslations }: PayDoneClientProps) {
 
   const formatDateRangeFull = (startDate: string, endDate: string) => {
     if (!startDate || !endDate) return ''
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    const start = parseYYYYMMDDToDate(startDate)
+    const end = parseYYYYMMDDToDate(endDate)
     const locale = language === 'ro' ? 'ro-RO' : 'en-US'
     
     const startFormatted = start.toLocaleDateString(locale, {
