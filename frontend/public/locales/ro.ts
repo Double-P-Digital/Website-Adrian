@@ -67,6 +67,8 @@ export const ro = {
         'Enter last name': 'Introduceți numele',
         'We will send the booking confirmation to this email': 'Vom trimite confirmarea rezervării la acest email',
         'We may contact you regarding your booking': 'Vă putem contacta în legătură cu rezervarea',
+        'Address': 'Adresă',
+        'Enter your address': 'Introduceți adresa (ex: Str. Exemplu nr. 10, Cluj-Napoca)',
     },
     PayWith:{
         'Credit card': 'Card de credit',

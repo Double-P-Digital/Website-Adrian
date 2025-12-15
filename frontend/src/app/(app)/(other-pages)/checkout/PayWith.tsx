@@ -151,6 +151,22 @@ const PayWith = ({
             <Description>{Booking['We may contact you regarding your booking'] || 'Vă putem contacta în legătură cu rezervarea'}</Description>
           )}
         </Field>
+
+        {/* Adresa */}
+        <Field>
+          <Label>
+            {Booking['Address'] || 'Adresă'} <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            name="guestAddress"
+            className={`mt-1.5 ${validationErrors.guestAddress ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+            required
+            placeholder={Booking['Enter your address'] || 'Introduceți adresa (ex: Str. Exemplu nr. 10, Cluj-Napoca)'}
+          />
+          {validationErrors.guestAddress && (
+            <p className="mt-1 text-sm text-red-500">{validationErrors.guestAddress}</p>
+          )}
+        </Field>
       </div>
 
       {/* Metodă de plată */}

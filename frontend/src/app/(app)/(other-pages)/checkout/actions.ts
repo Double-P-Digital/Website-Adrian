@@ -27,6 +27,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
     const guestsCount = guestAdults + guestChildren 
     const totalPrice = Number(formData.get('totalPrice') || 0)
     const currency = (formData.get('currency') as string) || 'RON'
+    const guestAddress = formData.get('guestAddress') as string || ''
     const guestName = `${firstName} ${lastName}`
     const checkIn = new Date(checkInDate)
     const checkOut = new Date(checkOutDate)
@@ -40,7 +41,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
     const currencyLower = currency.toLowerCase()
 
     // Validare câmpuri obligatorii
-    if (!apartmentId || !firstName || !lastName || !email || !phoneNumber || !checkInDate || !checkOutDate) {
+    if (!apartmentId || !firstName || !lastName || !email || !phoneNumber || !checkInDate || !checkOutDate || !guestAddress) {
       throw new Error('Toate câmpurile obligatorii trebuie completate')
     }
 
@@ -82,7 +83,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
     const roomsArray = [
       {
         roomId: apartment.roomId, 
-        planId: 1,
+        planId: 11,
         quantity: 1,
         price: totalPrice,
         pricePerDay: pricePerDay, 
@@ -96,6 +97,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
       guestName: string
       guestEmail: string
       guestPhone: string
+      guestAddress: string
       checkInDate: string
       checkOutDate: string
       guestsCount: number
@@ -108,6 +110,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
         guestName: string
         guestEmail: string
         guestPhone: string
+        guestAddress: string
         checkInDate: string
         checkOutDate: string
         guestsCount: string
@@ -120,6 +123,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
       guestName,
       guestEmail: email,
       guestPhone: phoneNumber,
+      guestAddress,
       checkInDate: formattedCheckIn, 
       checkOutDate: formattedCheckOut, 
       guestsCount,
@@ -132,11 +136,12 @@ export async function handleCheckoutSubmit(formData: FormData) {
         guestName,
         guestEmail: email,
         guestPhone: phoneNumber,
+        guestAddress,
         checkInDate: formattedCheckIn,
         checkOutDate: formattedCheckOut,
         guestsCount: guestsCount.toString(),
         totalPrice: totalPrice.toString(),
-        planId: "1",
+        planId: "11",
       },
     }
 

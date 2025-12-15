@@ -67,6 +67,8 @@ export const en = {
     'Enter last name': 'Enter last name',
     'We will send the booking confirmation to this email': 'We will send the booking confirmation to this email',
     'We may contact you regarding your booking': 'We may contact you regarding your booking',
+    'Address': 'Address',
+    'Enter your address': 'Enter your address (e.g. 10 Example Street, City)',
   },
   PayWith: {
     'Pay with': 'Pay with',
