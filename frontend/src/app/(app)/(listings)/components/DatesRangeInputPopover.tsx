@@ -194,8 +194,8 @@ const DatesRangeInputPopover: FC<Props> = ({ className = 'flex-1', defaultStartD
       </Popover>
 
       {/* inputs */}
-      <input type="hidden" name="startDate" value={startDate ? startDate.toISOString() : ''} />
-      <input type="hidden" name="endDate" value={endDate ? endDate.toISOString() : ''} />
+      <input type="hidden" name="startDate" value={startDate ? formatDateToYYYYMMDD(startDate) : ''} />
+      <input type="hidden" name="endDate" value={endDate ? formatDateToYYYYMMDD(endDate) : ''} />
     </>
   )
 }

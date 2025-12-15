@@ -178,8 +178,23 @@ class ApiClient {
       const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => '')
-        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`)
+        // Încearcă să parseze JSON-ul pentru a extrage mesajul de eroare
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`
+        try {
+          const errorJson = await response.json()
+          if (errorJson.message) {
+            errorMessage = errorJson.message
+          } else if (errorJson.error) {
+            errorMessage = errorJson.error
+          }
+        } catch {
+          // Dacă nu e JSON, folosește text
+          const errorText = await response.text().catch(() => '')
+          if (errorText) {
+            errorMessage = errorText
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await this.handleResponse<T>(response)

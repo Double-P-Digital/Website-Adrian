@@ -174,8 +174,8 @@ const SectionDateRange = ({ defaultStartDate, defaultEndDate }: Props) => {
       />
 
       {/* inputs */}
-      <input type="hidden" name="startDate" value={startDate ? startDate.toISOString() : ''} />
-      <input type="hidden" name="endDate" value={endDate ? endDate.toISOString() : ''} />
+      <input type="hidden" name="startDate" value={startDate ? formatDateToYYYYMMDD(startDate) : ''} />
+      <input type="hidden" name="endDate" value={endDate ? formatDateToYYYYMMDD(endDate) : ''} />
     </div>
   )
 }

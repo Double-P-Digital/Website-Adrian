@@ -470,13 +470,16 @@ function CheckoutPageContent() {
         let checkInDate = formData.get('startDate') as string || ''
         let checkOutDate = formData.get('endDate') as string || ''
         
+        // Dacă nu avem date din formData, folosim datele din state (Date objects)
+        // IMPORTANT: folosim formatDateToYYYYMMDD în loc de toISOString() pentru a evita probleme de timezone
         if (!checkInDate && startDate) {
-          checkInDate = startDate.toISOString()
+          checkInDate = formatDateToYYYYMMDD(startDate)
         }
         if (!checkOutDate && endDate) {
-          checkOutDate = endDate.toISOString()
+          checkOutDate = formatDateToYYYYMMDD(endDate)
         }
         
+        // Normalizăm datele la format YYYY-MM-DD
         if (checkInDate) {
           try {
             const date = parseYYYYMMDDToDate(checkInDate)
@@ -484,6 +487,7 @@ function CheckoutPageContent() {
               checkInDate = formatDateToYYYYMMDD(date)
             }
           } catch (e) {
+            // Ignore parse errors
           }
         }
         if (checkOutDate) {
@@ -493,6 +497,7 @@ function CheckoutPageContent() {
               checkOutDate = formatDateToYYYYMMDD(date)
             }
           } catch (e) {
+            // Ignore parse errors
           }
         }
         
@@ -587,7 +592,7 @@ function CheckoutPageContent() {
           setClientSecret(result.clientSecret)
         } else {
           setValidationErrors({
-            _general: 'Nu s-a putut inițializa procesarea plății. Vă rugăm să încercați din nou.',
+            _general: result?.error || 'Nu s-a putut inițializa procesarea plății. Vă rugăm să încercați din nou.',
           })
         }
       } catch (error) {

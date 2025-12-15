@@ -190,8 +190,8 @@ const YourTrip = ({ onDatesChange, onGuestsChange, maxGuests }: YourTripProps) =
       <input type="hidden" name="guestAdults" value={maxGuests || guests.guestAdults} />
       <input type="hidden" name="guestChildren" value={maxGuests ? 0 : guests.guestChildren} />
       <input type="hidden" name="guestRooms" value={guests.guestRooms} />
-      <input type="hidden" name="startDate" value={startDate ? startDate.toISOString() : ''} />
-      <input type="hidden" name="endDate" value={endDate ? endDate.toISOString() : ''} />
+      <input type="hidden" name="startDate" value={startDate ? formatDateToYYYYMMDD(startDate) : ''} />
+      <input type="hidden" name="endDate" value={endDate ? formatDateToYYYYMMDD(endDate) : ''} />
     </div>
   )
 }

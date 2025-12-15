@@ -11,7 +11,7 @@ import { checkRoomAvailability } from '@/services/availability'
  * Server Action pentru procesarea rezervării și crearea payment intent
  */
 
-export async function handleCheckoutSubmit(formData: FormData) {
+export async function handleCheckoutSubmit(formData: FormData): Promise<{ success: boolean; clientSecret?: string; error?: string }> {
   try {
     // Extragem datele din formData
     const apartmentId = formData.get('apartmentId') as string
@@ -43,25 +43,25 @@ export async function handleCheckoutSubmit(formData: FormData) {
 
     // Validare câmpuri obligatorii
     if (!apartmentId || !firstName || !lastName || !email || !phoneNumber || !checkInDate || !checkOutDate || !guestAddress) {
-      throw new Error('Toate câmpurile obligatorii trebuie completate')
+      return { success: false, error: 'Toate câmpurile obligatorii trebuie completate' }
     }
 
     // Validare apartmentId - verificăm dacă este MongoDB ObjectId valid
     if (!/^[0-9a-fA-F]{24}$/.test(apartmentId)) {
-      throw new Error('ID-ul apartamentului este invalid. Vă rugăm să selectați un apartament valid.')
+      return { success: false, error: 'ID-ul apartamentului este invalid. Vă rugăm să selectați un apartament valid.' }
     }
 
     if (totalPrice <= 0) {
-      throw new Error('Prețul total trebuie să fie mai mare decât 0')
+      return { success: false, error: 'Prețul total trebuie să fie mai mare decât 0' }
     }
 
     const apartment = await getApartmentById(apartmentId)
     if (!apartment) {
-      throw new Error('Apartamentul nu a fost găsit')
+      return { success: false, error: 'Apartamentul nu a fost găsit' }
     }
 
     if (!apartment.roomType && !apartment.roomId) {
-      throw new Error('Apartamentul nu are roomType configurat')
+      return { success: false, error: 'Apartamentul nu are roomType configurat' }
     }
 
     // Verifică disponibilitatea înainte de a crea PaymentIntent
@@ -74,10 +74,10 @@ export async function handleCheckoutSubmit(formData: FormData) {
     })
 
     if (!availabilityCheck.available) {
-      throw new Error(
-        availabilityCheck.message || 
-        'Camera nu este disponibilă pentru datele selectate. Vă rugăm să selectați alte date.'
-      )
+      return { 
+        success: false, 
+        error: availabilityCheck.message || 'Camera nu este disponibilă pentru datele selectate. Vă rugăm să selectați alte date.' 
+      }
     }
 
     // Pregătim datele pentru backend pentru payment intent
@@ -152,36 +152,56 @@ export async function handleCheckoutSubmit(formData: FormData) {
         API_ENDPOINTS.PAYMENTS.CREATE_INTENT,
         paymentIntentRequest
       )
-      
 
       const { clientSecret, paymentIntentId } = response
 
       if (!clientSecret) {
-        throw new Error('Nu s-a primit clientSecret de la backend')
+        return { success: false, error: 'Nu s-a primit clientSecret de la backend' }
       }
 
       return { success: true, clientSecret }
     } catch (error: any) {
-      
       // Parse error message from response
       let errorMessage = 'Eroare la procesarea plății'
+      
+      // Extrage mesajul din diferite formate de eroare
       if (error?.message) {
-        if (Array.isArray(error.message)) {
-          errorMessage = error.message.join(', ')
+        const msg = error.message
+        
+        // Verifică dacă e eroare de la API cu JSON în mesaj
+        if (typeof msg === 'string' && msg.includes('API Error:')) {
+          // Încearcă să extragă mesajul din JSON
+          const jsonMatch = msg.match(/\{.*\}/)
+          if (jsonMatch) {
+            try {
+              const parsed = JSON.parse(jsonMatch[0])
+              if (parsed.message) {
+                errorMessage = parsed.message
+              }
+            } catch {
+              // Dacă nu e JSON valid, folosește mesajul original
+              errorMessage = msg.replace(/API Error: \d+ [^-]+ - /, '')
+            }
+          } else {
+            errorMessage = msg
+          }
+        } else if (Array.isArray(msg)) {
+          errorMessage = msg.join(', ')
         } else {
-          errorMessage = error.message
+          errorMessage = msg
         }
       }
       
-      throw new Error(errorMessage)
+      return { success: false, error: errorMessage }
     }
-  } catch (error) {
+  } catch (error: any) {
+    // Catch-all pentru erori neașteptate
+    let errorMessage = 'A apărut o eroare neașteptată. Vă rugăm să încercați din nou.'
     
-    // Re-throw cu mesaj user-friendly
-    if (error instanceof Error) {
-      throw new Error(error.message)
+    if (error instanceof Error && error.message) {
+      errorMessage = error.message
     }
     
-    throw new Error('A apărut o eroare neașteptată. Vă rugăm să încercați din nou.')
+    return { success: false, error: errorMessage }
   }
 }
