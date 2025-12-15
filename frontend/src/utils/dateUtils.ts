@@ -30,7 +30,6 @@ export function parseYYYYMMDDToDate(dateString: string | Date): Date {
   
   // Validare
   if (parts.length !== 3) {
-    console.warn('Invalid date format:', dateString)
     return new Date()
   }
   
@@ -40,7 +39,6 @@ export function parseYYYYMMDDToDate(dateString: string | Date): Date {
   
   // Verifică dacă sunt numere valide
   if (isNaN(year) || isNaN(month) || isNaN(day)) {
-    console.warn('Invalid date parts:', { year, month, day, original: dateString })
     return new Date()
   }
   

@@ -6,6 +6,7 @@ import { API_ENDPOINTS } from '@/api/endpoints'
 import { getApartmentById } from '@/services/apartments'
 import { formatDateToYYYYMMDD, parseYYYYMMDDToDate } from '@/utils/dateUtils'
 import { checkRoomAvailability } from '@/services/availability'
+import { getUserFriendlyError } from '@/utils/errorMessages'
 
 /**
  * Server Action pentru procesarea rezervării și crearea payment intent
@@ -161,47 +162,11 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
 
       return { success: true, clientSecret }
     } catch (error: any) {
-      // Parse error message from response
-      let errorMessage = 'Eroare la procesarea plății'
-      
-      // Extrage mesajul din diferite formate de eroare
-      if (error?.message) {
-        const msg = error.message
-        
-        // Verifică dacă e eroare de la API cu JSON în mesaj
-        if (typeof msg === 'string' && msg.includes('API Error:')) {
-          // Încearcă să extragă mesajul din JSON
-          const jsonMatch = msg.match(/\{.*\}/)
-          if (jsonMatch) {
-            try {
-              const parsed = JSON.parse(jsonMatch[0])
-              if (parsed.message) {
-                errorMessage = parsed.message
-              }
-            } catch {
-              // Dacă nu e JSON valid, folosește mesajul original
-              errorMessage = msg.replace(/API Error: \d+ [^-]+ - /, '')
-            }
-          } else {
-            errorMessage = msg
-          }
-        } else if (Array.isArray(msg)) {
-          errorMessage = msg.join(', ')
-        } else {
-          errorMessage = msg
-        }
-      }
-      
-      return { success: false, error: errorMessage }
+      // Folosește mesaje user-friendly pentru erori
+      return { success: false, error: getUserFriendlyError(error, 'Eroare la procesarea plății. Vă rugăm să încercați din nou.') }
     }
   } catch (error: any) {
-    // Catch-all pentru erori neașteptate
-    let errorMessage = 'A apărut o eroare neașteptată. Vă rugăm să încercați din nou.'
-    
-    if (error instanceof Error && error.message) {
-      errorMessage = error.message
-    }
-    
-    return { success: false, error: errorMessage }
+    // Catch-all pentru erori neașteptate - mesaj user-friendly
+    return { success: false, error: getUserFriendlyError(error) }
   }
 }

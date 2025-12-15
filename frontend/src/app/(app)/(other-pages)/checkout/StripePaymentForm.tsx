@@ -4,6 +4,7 @@ import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useState, FormEvent, useEffect } from 'react'
 import ButtonPrimary from '@/shared/ButtonPrimary'
 import { useT } from '@/hooks/useT'
+import { getStripeErrorMessage, getUserFriendlyError } from '@/utils/errorMessages'
 
 export default function StripePaymentForm() {
   const stripe = useStripe()
@@ -118,7 +119,13 @@ export default function StripePaymentForm() {
       })
 
       if (error) {
-        setErrorMessage(error.message || 'A apărut o eroare la procesarea plății')
+        // Folosește mesaje user-friendly pentru erorile Stripe
+        const friendlyMessage = getStripeErrorMessage({
+          code: error.code,
+          decline_code: (error as any).decline_code,
+          message: error.message
+        })
+        setErrorMessage(friendlyMessage)
         setIsProcessing(false)
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         // ✅ PLATA A REUȘIT
@@ -133,7 +140,7 @@ export default function StripePaymentForm() {
         setIsProcessing(false)
       }
     } catch (err) {
-      setErrorMessage('A apărut o eroare neașteptată. Vă rugăm să încercați din nou.')
+      setErrorMessage(getUserFriendlyError(err))
       setIsProcessing(false)
     }
   }

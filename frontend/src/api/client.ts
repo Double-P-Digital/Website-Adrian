@@ -4,6 +4,7 @@
  */
 
 import { getApiBaseUrl, getApiKey } from '@/config/env'
+import { getUserFriendlyError } from '@/utils/errorMessages'
 
 const API_BASE_URL = getApiBaseUrl()
 const API_KEY = getApiKey()
@@ -82,11 +83,14 @@ class ApiClient {
   }
 
   /**
-   * Procesează eroarea de la API
+   * Procesează eroarea de la API și returnează mesaj user-friendly
    */
   private handleError(error: any, status: number = 500): ApiError {
+    // Transformă eroarea într-un mesaj user-friendly
+    const friendlyMessage = getUserFriendlyError(error, 'A apărut o eroare la comunicarea cu serverul')
+    
     return {
-      message: error?.message || 'A apărut o eroare la comunicarea cu serverul',
+      message: friendlyMessage,
       status,
       error,
     }
@@ -136,7 +140,7 @@ class ApiClient {
       const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`)
+        throw new Error(getUserFriendlyError(`${response.status} ${response.statusText}`))
       }
 
       const result = await this.handleResponse<T>(response)
@@ -147,11 +151,6 @@ class ApiClient {
         throw error // Re-throw pentru a fi gestionat de caller
       }
       
-      // Nu logăm eroarea aici - lasă serviciile să gestioneze erorile
-      // Doar pentru "Failed to fetch" (network errors) logăm un warning
-      if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
-        // Network error - backend might not be accessible
-      }
       throw this.handleError(error)
     }
   }
@@ -179,7 +178,7 @@ class ApiClient {
 
       if (!response.ok) {
         // Încearcă să parseze JSON-ul pentru a extrage mesajul de eroare
-        let errorMessage = `API Error: ${response.status} ${response.statusText}`
+        let errorMessage = ''
         try {
           const errorJson = await response.json()
           if (errorJson.message) {
@@ -194,7 +193,8 @@ class ApiClient {
             errorMessage = errorText
           }
         }
-        throw new Error(errorMessage)
+        // Transformă în mesaj user-friendly
+        throw new Error(getUserFriendlyError(errorMessage || `${response.status} ${response.statusText}`))
       }
 
       const result = await this.handleResponse<T>(response)
@@ -226,7 +226,7 @@ class ApiClient {
       const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`)
+        throw new Error(getUserFriendlyError(`${response.status} ${response.statusText}`))
       }
 
       const result = await this.handleResponse<T>(response)
@@ -256,7 +256,7 @@ class ApiClient {
       const response = await fetch(`${apiUrl}${endpoint}`, fetchOptions)
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`)
+        throw new Error(getUserFriendlyError(`${response.status} ${response.statusText}`))
       }
 
       const result = await this.handleResponse<T>(response)
