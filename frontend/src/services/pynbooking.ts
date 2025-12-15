@@ -4,6 +4,7 @@
  */
 
 import { getPynBookingApiKey } from '@/config/env'
+import { parseYYYYMMDDToDate } from '@/utils/dateUtils'
 
 const PYNBOOKING_API_URL = 'https://api.pynbooking.com'
 
@@ -103,8 +104,8 @@ export async function isRoomAvailable(
     // Obține toate rezervările care încep de la checkInDate sau înainte
     // și se termină după checkInDate sau mai târziu
     // Folosim days pentru a acoperi intervalul complet
-    const checkIn = new Date(checkInDate)
-    const checkOut = new Date(checkOutDate)
+    const checkIn = parseYYYYMMDDToDate(checkInDate)
+    const checkOut = parseYYYYMMDDToDate(checkOutDate)
     const daysDiff = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
     const days = Math.min(daysDiff + 1, 31) // Maxim 31 zile conform API
 
@@ -116,8 +117,8 @@ export async function isRoomAvailable(
 
     // Verifică dacă există rezervări care se suprapun cu intervalul dorit
     const hasOverlap = reservations.some(reservation => {
-      const resCheckIn = new Date(reservation.checkInDate)
-      const resCheckOut = new Date(reservation.checkOutDate)
+      const resCheckIn = parseYYYYMMDDToDate(reservation.checkInDate)
+      const resCheckOut = parseYYYYMMDDToDate(reservation.checkOutDate)
       
       // Verifică suprapunerea: rezervarea existentă se suprapune dacă:
       // - checkInDate este înainte de resCheckOut ȘI
@@ -154,8 +155,8 @@ export async function checkMultipleRoomsAvailability(
 ): Promise<Record<string, boolean>> {
   try {
     // Calculează numărul de zile
-    const checkIn = new Date(checkInDate)
-    const checkOut = new Date(checkOutDate)
+    const checkIn = parseYYYYMMDDToDate(checkInDate)
+    const checkOut = parseYYYYMMDDToDate(checkOutDate)
     const daysDiff = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
     const days = Math.min(daysDiff + 1, 31)
 
@@ -184,8 +185,8 @@ export async function checkMultipleRoomsAvailability(
         return // Ignoră camerele care nu sunt în lista noastră
       }
 
-      const resCheckIn = new Date(reservation.checkInDate)
-      const resCheckOut = new Date(reservation.checkOutDate)
+      const resCheckIn = parseYYYYMMDDToDate(reservation.checkInDate)
+      const resCheckOut = parseYYYYMMDDToDate(reservation.checkOutDate)
       
       // Verifică suprapunerea
       const overlaps = checkIn < resCheckOut && checkOut > resCheckIn

@@ -136,14 +136,14 @@ function CheckoutPageContent() {
 
   const [startDate, setStartDate] = useState<Date | null>(() => {
     if (urlCheckin) {
-      const date = new Date(urlCheckin)
+      const date = parseYYYYMMDDToDate(urlCheckin)
       return isNaN(date.getTime()) ? null : date
     }
     return null
   })
   const [endDate, setEndDate] = useState<Date | null>(() => {
     if (urlCheckout) {
-      const date = new Date(urlCheckout)
+      const date = parseYYYYMMDDToDate(urlCheckout)
       return isNaN(date.getTime()) ? null : date
     }
     return null
@@ -479,7 +479,7 @@ function CheckoutPageContent() {
         
         if (checkInDate) {
           try {
-            const date = new Date(checkInDate)
+            const date = parseYYYYMMDDToDate(checkInDate)
             if (!isNaN(date.getTime())) {
               checkInDate = formatDateToYYYYMMDD(date)
             }
@@ -488,7 +488,7 @@ function CheckoutPageContent() {
         }
         if (checkOutDate) {
           try {
-            const date = new Date(checkOutDate)
+            const date = parseYYYYMMDDToDate(checkOutDate)
             if (!isNaN(date.getTime())) {
               checkOutDate = formatDateToYYYYMMDD(date)
             }

@@ -327,7 +327,7 @@ export async function getListingsByCategory(
       try {
         // Importăm funcția pentru verificare disponibilitate multiplă
         const { checkMultipleRoomAvailability } = await import('./availability')
-        const { formatDateToYYYYMMDD } = await import('@/utils/dateUtils')
+        const { formatDateToYYYYMMDD, parseYYYYMMDDToDate } = await import('@/utils/dateUtils')
         
         // Normalizează datele în format YYYY-MM-DD
         // Datele din URL pot fi în formate diferite, trebuie să le convertim
@@ -335,9 +335,9 @@ export async function getListingsByCategory(
         let checkOutDate: string
         
         try {
-          // Încearcă să parseze datele ca Date objects
-          const checkIn = new Date(filters.checkin)
-          const checkOut = new Date(filters.checkout)
+          // Încearcă să parseze datele folosind funcția robustă
+          const checkIn = parseYYYYMMDDToDate(filters.checkin)
+          const checkOut = parseYYYYMMDDToDate(filters.checkout)
           
           // Verifică dacă datele sunt valide
           if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {

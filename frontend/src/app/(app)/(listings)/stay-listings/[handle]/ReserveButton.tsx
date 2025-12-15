@@ -5,6 +5,7 @@ import ButtonPrimary from '@/shared/ButtonPrimary'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCurrency } from '@/context/CurrencyContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { parseYYYYMMDDToDate } from '@/utils/dateUtils'
 
 interface ReserveButtonProps {
   price: number // Price per night
@@ -26,8 +27,8 @@ export default function ReserveButton({ price, apartmentId }: ReserveButtonProps
     if (!checkin || !checkout) return 1
     
     try {
-      const startDate = new Date(checkin)
-      const endDate = new Date(checkout)
+      const startDate = parseYYYYMMDDToDate(checkin)
+      const endDate = parseYYYYMMDDToDate(checkout)
       const diffTime = endDate.getTime() - startDate.getTime()
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       return diffDays >= 1 ? diffDays : 1

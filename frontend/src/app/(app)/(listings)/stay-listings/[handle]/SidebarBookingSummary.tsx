@@ -5,6 +5,7 @@ import { useCurrency } from '@/context/CurrencyContext'
 import { useT } from '@/hooks/useT'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import SidebarPriceAndFormWrapper from './SidebarPriceAndFormWrapper'
+import { parseYYYYMMDDToDate } from '@/utils/dateUtils'
 
 interface SidebarBookingSummaryProps {
   pricePerNight: string
@@ -25,8 +26,8 @@ export default function SidebarBookingSummary({ pricePerNight }: SidebarBookingS
     if (!checkin || !checkout) return 1
     
     try {
-      const startDate = new Date(checkin)
-      const endDate = new Date(checkout)
+      const startDate = parseYYYYMMDDToDate(checkin)
+      const endDate = parseYYYYMMDDToDate(checkout)
       
       // Calculate difference in days
       const diffTime = endDate.getTime() - startDate.getTime()
