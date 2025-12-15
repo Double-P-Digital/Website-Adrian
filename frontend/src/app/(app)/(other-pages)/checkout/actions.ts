@@ -83,7 +83,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
     const roomsArray = [
       {
         roomId: apartment.roomId, 
-        planId: 11,
+        planId: 1,
         quantity: 1,
         price: totalPrice,
         pricePerDay: pricePerDay, 
@@ -141,7 +141,7 @@ export async function handleCheckoutSubmit(formData: FormData) {
         checkOutDate: formattedCheckOut,
         guestsCount: guestsCount.toString(),
         totalPrice: totalPrice.toString(),
-        planId: "11",
+        planId: "1",
       },
     }
 
