@@ -393,7 +393,9 @@ function CheckoutPageContent() {
       const totalPrice = basePrice * nights
       
       if (discountType === 'fixed' && discountValue && discountValue > 0) {
-        return discountValue / nights
+        // Pentru discount fix: scădem discount-ul din prețul total și împărțim la nopți
+        const finalPrice = Math.max(0, totalPrice - discountValue)
+        return finalPrice / nights
       }
       
       if (discountType === 'percentage' && discountValue && discountValue > 0) {
