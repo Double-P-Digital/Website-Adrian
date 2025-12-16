@@ -829,64 +829,57 @@ function CheckoutPageContent() {
         {/* Afișare apartament selectat */}
         {apartmentId && <ApartmentSummary apartmentId={apartmentId} />}
         
-        {/* Promocode Section - ascunde complet la plată dacă nu e cod aplicat */}
-        {(!clientSecret || appliedPromoCode) && (
-          <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-neutral-950 dark:text-white">
-              {Booking['Promo Code'] || 'Cod promoțional'}
-            </label>
-            {!appliedPromoCode ? (
-              // Doar afișat înainte de plată (când clientSecret nu există)
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  value={promoCode}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setPromoCode(e.target.value)
-                    setPromoCodeError(null)
-                  }}
-                  placeholder={Booking['Enter promo code'] || 'Introduceți codul'}
-                  className="flex-1"
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleApplyPromoCode()
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  onClick={handleApplyPromoCode}
-                  className="shrink-0"
-                >
-                  {Booking['Apply'] || 'Aplica'}
-                </Button>
+        {/* Promocode Section */}
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-medium text-neutral-950 dark:text-white">
+            {Booking['Promo Code'] || 'Cod promoțional'}
+          </label>
+          {!appliedPromoCode ? (
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={promoCode}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setPromoCode(e.target.value)
+                  setPromoCodeError(null)
+                }}
+                placeholder={Booking['Enter promo code'] || 'Introduceți codul'}
+                className="flex-1"
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleApplyPromoCode()
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                onClick={handleApplyPromoCode}
+                className="shrink-0"
+              >
+                {Booking['Apply'] || 'Aplica'}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                  ✓ {appliedPromoCode}
+                </span>
               </div>
-            ) : (
-              // Cod aplicat - read-only la plată (fără buton Elimină)
-              <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                    ✓ {appliedPromoCode}
-                  </span>
-                </div>
-                {/* Butonul Elimină apare doar înainte de plată */}
-                {!clientSecret && (
-                  <button
-                    type="button"
-                    onClick={handleRemovePromoCode}
-                    className="text-sm text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200"
-                  >
-                    {Booking['Remove'] || 'Elimină'}
-                  </button>
-                )}
-              </div>
-            )}
-            {promoCodeError && !clientSecret && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{promoCodeError}</p>
-            )}
-          </div>
-        )}
+              <button
+                type="button"
+                onClick={handleRemovePromoCode}
+                className="text-sm text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200"
+              >
+                {Booking['Remove'] || 'Elimină'}
+              </button>
+            </div>
+          )}
+          {promoCodeError && (
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{promoCodeError}</p>
+          )}
+        </div>
         
         <DescriptionList>
           <DescriptionTerm>
