@@ -13,6 +13,7 @@ export const en = {
     'Show me more': 'Show me more',
     'View all': 'View all',
     night: 'night',
+    nights: 'nights',
     'Enter your email': 'Enter your email',
     'Become a host': 'Become a host',
     'Become an author': 'Become an author',

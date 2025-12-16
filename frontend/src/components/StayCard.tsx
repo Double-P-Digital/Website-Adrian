@@ -54,7 +54,28 @@ const StayCard: FC<StayCardProps> = ({ size = 'default', className = '', data })
   }, [listingHandle, searchParams])
   
   const numericPrice = Number(String(price).replace(/[^0-9.]/g, ''))
-  const convertedPrice = convert(numericPrice, 'RON', currency)
+  
+  // Calculează numărul de nopți din datele selectate
+  const checkin = searchParams.get('checkin')
+  const checkout = searchParams.get('checkout')
+  
+  const nights = useMemo(() => {
+    if (!checkin || !checkout) return 0
+    try {
+      const startDate = new Date(checkin + 'T00:00:00')
+      const endDate = new Date(checkout + 'T00:00:00')
+      const diffTime = endDate.getTime() - startDate.getTime()
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      return diffDays >= 1 ? diffDays : 0
+    } catch {
+      return 0
+    }
+  }, [checkin, checkout])
+  
+  // Calculează prețul: total dacă sunt date selectate, sau per noapte
+  const hasDateRange = nights > 0
+  const displayPrice = hasDateRange ? numericPrice * nights : numericPrice
+  const convertedPrice = convert(displayPrice, 'RON', currency)
 
   // Limităm la primele 5 poze
   const limitedGalleryImgs = galleryImgs?.slice(0, 5) || []
@@ -98,10 +119,16 @@ const StayCard: FC<StayCardProps> = ({ size = 'default', className = '', data })
               {convertedPrice.toFixed(2)} {currency}
             </span>
             {size === 'default' && (
-              <>
-                <span className="mx-1 text-sm font-light text-neutral-400 dark:text-neutral-500">/</span>
-                <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400">{T.common.night}</span>
-              </>
+              hasDateRange ? (
+                <span className="ml-1 text-sm font-normal text-neutral-500 dark:text-neutral-400">
+                  ({nights} {nights === 1 ? T.common.night : (T.common.nights || 'nopți')})
+                </span>
+              ) : (
+                <>
+                  <span className="mx-1 text-sm font-light text-neutral-400 dark:text-neutral-500">/</span>
+                  <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400">{T.common.night}</span>
+                </>
+              )
             )}
           </div>
         </div>

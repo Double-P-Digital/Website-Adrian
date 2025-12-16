@@ -13,6 +13,7 @@ export const ro = {
         'Show me more': 'Arată-mi mai mult',
         'View all': 'Vezi toate',
         night: 'noapte',
+        nights: 'nopți',
         'Enter your email': 'Introdu emailul tău',
         'Become a host': 'Deveniți gazdă',
         'Become an author': 'Deveniți autor',
