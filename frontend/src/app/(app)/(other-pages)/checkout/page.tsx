@@ -393,9 +393,9 @@ function CheckoutPageContent() {
       const totalPrice = basePrice * nights
       
       if (discountType === 'fixed' && discountValue && discountValue > 0) {
-        // Pentru fixed: prețul total DEVINE această valoare (nu se scade)
-        // discountValue = prețul total dorit, împărțim la nopți pentru preț/noapte
-        return discountValue / nights
+        // Pentru fixed: prețul PE NOAPTE devine această valoare
+        // Ex: fixed 225 RON = 225 RON/noapte, deci 4 nopți = 900 RON total
+        return discountValue
       }
       
       if (discountType === 'percentage' && discountValue && discountValue > 0) {

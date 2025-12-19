@@ -57,6 +57,7 @@ export const ro = {
         'Fee': 'Taxă',
         'Tax': 'Impozit',
         'Your trip': 'Călătoria ta',
+        'Select checkout date': 'Selectează data de check-out pentru a continua',
         'Click on the pencil icon to change your trip details.': 'Faceți clic pe creion pentru a schimba detaliile călătoriei.',
         'Click on the pencil icon to change your dates.': 'Faceți clic pe creion pentru a schimba datele.',
         'per_night_x_nights': '{price} {currency} x {nights} nopți',

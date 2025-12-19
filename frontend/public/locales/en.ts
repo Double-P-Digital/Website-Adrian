@@ -57,6 +57,7 @@ export const en = {
     'Fee': 'Fee',
     'Tax': 'Tax',
     'Your trip': 'Your trip',
+    'Select checkout date': 'Please select a check-out date to continue',
     'Click on the pencil icon to change your trip details.': 'Click on the pencil icon to change your trip details.',
     'Click on the pencil icon to change your dates.': 'Click on the pencil icon to change your dates.',
     'per_night_x_nights': '{price} {currency} x {nights} night(s)',
