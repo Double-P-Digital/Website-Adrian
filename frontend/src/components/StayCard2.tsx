@@ -84,7 +84,7 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
     ? overrideTotalPrice
     : (hasDateRange ? numericPrice * nights : numericPrice)
   const sourceCurrency = hasOverride ? (overrideCurrency || 'RON') : (listingCurrency || 'RON')
-  const convertedPrice = convert(displayPrice, sourceCurrency, currency)
+  const convertedPrice = convert(displayPrice, sourceCurrency as 'RON' | 'EUR', currency)
 
   // Limităm la primele 5 poze
   const limitedGalleryImgs = galleryImgs?.slice(0, 5) || []

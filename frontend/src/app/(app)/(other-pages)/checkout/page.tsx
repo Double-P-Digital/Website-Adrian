@@ -601,6 +601,8 @@ function CheckoutPageContent() {
           totalPrice: number
           promoCode: string | null
           promoCodePrice: number | null
+          hasOverrides: boolean
+          nightlyPrices: { date: string; price: number; currency: string }[] | null
           checkInDate: string
           checkOutDate: string
           guestAdults: number
