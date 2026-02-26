@@ -64,11 +64,11 @@ export default function SidebarBookingSummary({
 
   // Calculăm prețul efectiv per noapte și totalul
   const effectivePricePerNight = hasOverride && overridePricePerNight
-    ? convert(overridePricePerNight, sourceCurrency, currency)
+    ? convert(overridePricePerNight, sourceCurrency as 'RON' | 'EUR', currency)
     : convert(numericBasePrice, listingCurrency as 'RON' | 'EUR', currency)
   
   const effectiveTotal = hasOverride && overrideTotalPrice
-    ? convert(overrideTotalPrice, sourceCurrency, currency)
+    ? convert(overrideTotalPrice, sourceCurrency as 'RON' | 'EUR', currency)
     : effectivePricePerNight * nights
 
   return (
