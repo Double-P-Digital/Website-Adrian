@@ -112,23 +112,27 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
     }
 
     // Re-validare preț cu overrides actuale (protecție împotriva modificărilor de preț în timpul checkout)
-    try {
-      const { calculatePriceWithOverrides } = await import('@/services/apartments')
-      const priceCalc = await calculatePriceWithOverrides(apartmentId, formattedCheckIn, formattedCheckOut)
-      
-      if (priceCalc && priceCalc.totalPrice > 0) {
-        const priceDiff = Math.abs(priceCalc.totalPrice - totalPrice)
-        const tolerance = priceCalc.totalPrice * 0.01 // 1% toleranță pentru rotunjiri
+    // Dacă avem cod promoțional aplicat, skip-uim validarea de preț (promo code-ul modifică prețul)
+    const appliedPromoCode = formData.get('promoCode') as string | null
+    if (!appliedPromoCode) {
+      try {
+        const { calculatePriceWithOverrides } = await import('@/services/apartments')
+        const priceCalc = await calculatePriceWithOverrides(apartmentId, formattedCheckIn, formattedCheckOut)
         
-        if (priceDiff > tolerance) {
-          return {
-            success: false,
-            error: `Prețul s-a modificat între timp. Prețul actual este ${priceCalc.totalPrice.toFixed(2)} ${priceCalc.currency}. Vă rugăm să reîncărcați pagina.`,
+        if (priceCalc && priceCalc.totalPrice > 0) {
+          const priceDiff = Math.abs(priceCalc.totalPrice - totalPrice)
+          const tolerance = priceCalc.totalPrice * 0.01 // 1% toleranță pentru rotunjiri
+          
+          if (priceDiff > tolerance) {
+            return {
+              success: false,
+              error: `Prețul s-a modificat între timp. Prețul actual este ${priceCalc.totalPrice.toFixed(2)} ${priceCalc.currency}. Vă rugăm să reîncărcați pagina.`,
+            }
           }
         }
+      } catch {
+        // Dacă nu putem verifica prețul, continuăm cu prețul existent (nu blocăm checkout-ul)
       }
-    } catch {
-      // Dacă nu putem verifica prețul, continuăm cu prețul existent (nu blocăm checkout-ul)
     }
 
     // Pregătim datele pentru backend pentru payment intent
