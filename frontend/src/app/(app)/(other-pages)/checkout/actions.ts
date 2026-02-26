@@ -172,6 +172,7 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
         guestsCount: string
         totalPrice: string
         planId: string
+        promoCode?: string
       }
     } = {
       apartment: apartmentId,
@@ -198,6 +199,7 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
         guestsCount: guestsCount.toString(),
         totalPrice: totalPrice.toString(),
         planId: "1",
+        ...(appliedPromoCode ? { promoCode: appliedPromoCode } : {}),
       },
     }
 
