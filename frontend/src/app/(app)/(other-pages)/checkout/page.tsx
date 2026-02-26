@@ -342,7 +342,7 @@ function CheckoutPageContent() {
   const effectivePricePerNight = promoCodePrice !== null 
     ? convert(promoCodePrice, 'RON', currency) 
     : hasOverrides 
-      ? convert(priceCalculation!.averagePrice, priceCalculation!.currency, currency)
+      ? convert(priceCalculation!.averagePrice, priceCalculation!.currency as 'RON' | 'EUR', currency)
       : convert(basePrice, 'RON', currency)
   
   // For the total: if overrides exist and no promo code, use the sum of per-night prices from backend
@@ -350,7 +350,7 @@ function CheckoutPageContent() {
   const subtotal = promoCodePrice !== null
     ? effectivePricePerNight * nights
     : hasOverrides
-      ? convert(priceCalculation!.totalPrice, priceCalculation!.currency, currency)
+      ? convert(priceCalculation!.totalPrice, priceCalculation!.currency as 'RON' | 'EUR', currency)
       : effectivePricePerNight * nights
   
   const finalTotalPrice = subtotal
