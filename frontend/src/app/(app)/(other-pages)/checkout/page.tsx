@@ -435,7 +435,10 @@ function CheckoutPageContent() {
       const discountValue = discountCode.discount || discountCode.value
       
       const nights = calculateNights(startDate, endDate)
-      const totalPrice = basePrice * nights
+      // Use overrides total if available, otherwise flat basePrice × nights
+      const totalPrice = (priceCalculation?.hasOverrides && priceCalculation?.totalPrice)
+        ? priceCalculation.totalPrice
+        : basePrice * nights
       
       if (discountType === 'fixed' && discountValue && discountValue > 0) {
         // Pentru fixed: prețul PE NOAPTE devine această valoare

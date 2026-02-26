@@ -172,7 +172,6 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
         guestsCount: string
         totalPrice: string
         planId: string
-        promoCode?: string
       }
     } = {
       apartment: apartmentId,
@@ -187,6 +186,7 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
       amount: totalPrice,
       currency: currencyLower, 
       rooms: JSON.stringify(roomsArray), // Convertim array-ul la JSON string
+      ...(appliedPromoCode ? { promoCode: appliedPromoCode } : {}),
       metadata: {
         apartment: apartmentId,
         hotelId: apartment.hotelId,
@@ -218,7 +218,8 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
 
       return { success: true, clientSecret }
     } catch (error: any) {
-      return { success: false, error: getUserFriendlyError(error, 'Eroare la procesarea plății. Vă rugăm să încercați din nou.') }
+      const rawMessage = error?.response?.data?.message || error?.message || ''
+      return { success: false, error: rawMessage || getUserFriendlyError(error, 'Eroare la procesarea plății. Vă rugăm să încercați din nou.') }
     }
   } catch (error: any) {
     return { success: false, error: getUserFriendlyError(error) }
