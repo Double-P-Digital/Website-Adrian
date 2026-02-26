@@ -1,4 +1,5 @@
 import { getListingByHandle } from '@/services/listings'
+import { calculatePriceWithOverrides } from '@/services/apartments'
 import ReserveButton from './ReserveButton'
 import { Divider } from '@/shared/divider'
 import { Metadata } from 'next'
@@ -68,6 +69,26 @@ const Page = async ({
 
   const numericPrice = Number(listing.price.replace(/[^0-9.-]+/g, ''))
 
+  // Calculăm prețul cu overrides dacă avem date selectate
+  let overridePricePerNight: number | undefined
+  let overrideTotalPrice: number | undefined
+  let overrideCurrency: string | undefined
+  let overrideNightlyPrices: { date: string; price: number; currency: string }[] | undefined
+
+  if (checkin && checkout) {
+    try {
+      const priceCalc = await calculatePriceWithOverrides(listing.id, checkin, checkout)
+      if (priceCalc && priceCalc.hasOverrides) {
+        overridePricePerNight = priceCalc.averagePrice
+        overrideTotalPrice = priceCalc.totalPrice
+        overrideCurrency = priceCalc.currency
+        overrideNightlyPrices = priceCalc.nightlyPrices
+      }
+    } catch {
+      // Dacă nu putem calcula, folosim prețul de bază
+    }
+  }
+
   // Server action to handle form submission
   const handleSubmitForm = async (formData: FormData) => {
     'use server'
@@ -97,7 +118,12 @@ const Page = async ({
       <div className="listingSection__wrap sm:shadow-xl">
         {/* PRICE */}
         <div className="flex items-end text-2xl font-semibold sm:text-3xl">
-          <SidebarPriceAndFormWrapper price={price} />
+          <SidebarPriceAndFormWrapper 
+            price={price} 
+            sourceCurrency={listing.sourceCurrency}
+            overridePricePerNight={overridePricePerNight}
+            overrideCurrency={overrideCurrency}
+          />
         </div>
 
         {/* FORM */}
@@ -119,9 +145,22 @@ const Page = async ({
         </Form>
 
         {/* Calculare dinamică pe baza datelor selectate */}
-        <SidebarBookingSummary pricePerNight={price} />
+        <SidebarBookingSummary 
+          pricePerNight={price} 
+          sourceCurrency={listing.sourceCurrency}
+          overrideTotalPrice={overrideTotalPrice}
+          overridePricePerNight={overridePricePerNight}
+          overrideCurrency={overrideCurrency}
+          overrideNightlyPrices={overrideNightlyPrices}
+        />
 
-        <ReserveButton price={numericPrice} apartmentId={listing.id} />
+        <ReserveButton 
+          price={numericPrice} 
+          apartmentId={listing.id}
+          overrideTotalPrice={overrideTotalPrice}
+          overridePricePerNight={overridePricePerNight}
+          overrideCurrency={overrideCurrency}
+        />
       </div>
     )
   }

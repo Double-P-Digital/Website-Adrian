@@ -8,6 +8,7 @@ export interface Apartment {
   roomType?: string
   name: string
   price?: number
+  currency?: string
   maxGuests?: number
   bedrooms?: number
   bathrooms?: number
@@ -117,3 +118,56 @@ export async function getApartmentForCheckout(id: string): Promise<ApartmentForC
   }
 }
 
+// Check if date range is blocked
+export interface BlockedDateCheck {
+  isBlocked: boolean
+  message?: string
+  blockedDates?: Array<{
+    startDate: string
+    endDate: string
+    reason?: string
+  }>
+}
+
+export async function checkIfBlocked(
+  apartmentId: string,
+  checkInDate: string,
+  checkOutDate: string
+): Promise<BlockedDateCheck> {
+  try {
+    return await apiClient.get<BlockedDateCheck>(
+      `${API_ENDPOINTS.APARTMENTS.BY_ID(apartmentId)}/check-blocked?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}`,
+      {
+        cache: 'no-store',
+      }
+    )
+  } catch (error) {
+    return { isBlocked: false }
+  }
+}
+
+// Calculate price with overrides
+export interface PriceCalculation {
+  totalPrice: number
+  nightlyPrices: Array<{ date: string; price: number; currency: string }>
+  averagePrice: number
+  hasOverrides: boolean
+  currency: string
+}
+
+export async function calculatePriceWithOverrides(
+  apartmentId: string,
+  checkInDate: string,
+  checkOutDate: string
+): Promise<PriceCalculation | null> {
+  try {
+    return await apiClient.get<PriceCalculation>(
+      `${API_ENDPOINTS.APARTMENTS.BY_ID(apartmentId)}/calculate-price?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}`,
+      {
+        cache: 'no-store',
+      }
+    )
+  } catch (error) {
+    return null
+  }
+}

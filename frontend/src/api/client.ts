@@ -193,7 +193,6 @@ class ApiClient {
             errorMessage = errorText
           }
         }
-        // Transformă în mesaj user-friendly
         throw new Error(getUserFriendlyError(errorMessage || `${response.status} ${response.statusText}`))
       }
 

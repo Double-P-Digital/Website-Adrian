@@ -14,7 +14,8 @@ import ApartmentSummary from './ApartmentSummary'
 import StripePaymentForm from './StripePaymentForm'
 import StripeProvider from '@/components/StripeProvider'
 import { handleCheckoutSubmit } from './actions'
-import { getApartmentById } from '@/services/apartments'
+import { getApartmentById, calculatePriceWithOverrides, checkIfBlocked } from '@/services/apartments'
+import type { PriceCalculation } from '@/services/apartments'
 import { apiClient } from '@/api/client'
 import { API_ENDPOINTS } from '@/api/endpoints'
 import Input from '@/shared/Input'
@@ -188,6 +189,10 @@ function CheckoutPageContent() {
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
   const [apartmentData, setApartmentData] = useState<{ hotelId?: string; roomType: string; maxGuests?: number } | null>(null)
   
+  // Price override state
+  const [priceCalculation, setPriceCalculation] = useState<PriceCalculation | null>(null)
+  const [isLoadingPrices, setIsLoadingPrices] = useState(false)
+  
   useEffect(() => {
     const loadApartmentData = async () => {
       if (apartmentId && /^[0-9a-fA-F]{24}$/.test(apartmentId)) {
@@ -287,6 +292,32 @@ function CheckoutPageContent() {
     }
   }, [startDate, endDate, apartmentData, currency])
 
+  // Load price overrides when dates change
+  useEffect(() => {
+    if (!startDate || !endDate || !apartmentId) {
+      setPriceCalculation(null)
+      return
+    }
+
+    const checkIn = formatDateToYYYYMMDD(startDate)
+    const checkOut = formatDateToYYYYMMDD(endDate)
+
+    setIsLoadingPrices(true)
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const result = await calculatePriceWithOverrides(apartmentId, checkIn, checkOut)
+        setPriceCalculation(result)
+      } catch (error) {
+        setPriceCalculation(null)
+      } finally {
+        setIsLoadingPrices(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [startDate, endDate, apartmentId])
+
   const calculateNights = (start: Date | null, end: Date | null): number => {
     if (!start || !end) {
       return Number(searchParams.get('nights') || 1)
@@ -303,11 +334,25 @@ function CheckoutPageContent() {
 
   const nights = calculateNights(startDate, endDate)
   
+  // Calculate effective price considering overrides
+  // If we have price overrides from the API, use the nightly breakdown
+  // Otherwise fall back to flat basePrice × nights
+  const hasOverrides = priceCalculation?.hasOverrides === true
+  
   const effectivePricePerNight = promoCodePrice !== null 
     ? convert(promoCodePrice, 'RON', currency) 
-    : convert(basePrice, 'RON', currency)
+    : hasOverrides 
+      ? convert(priceCalculation!.averagePrice, priceCalculation!.currency, currency)
+      : convert(basePrice, 'RON', currency)
   
-  const subtotal = effectivePricePerNight * nights
+  // For the total: if overrides exist and no promo code, use the sum of per-night prices from backend
+  // If promo code is applied, promo code takes priority (flat rate per night)
+  const subtotal = promoCodePrice !== null
+    ? effectivePricePerNight * nights
+    : hasOverrides
+      ? convert(priceCalculation!.totalPrice, priceCalculation!.currency, currency)
+      : effectivePricePerNight * nights
+  
   const finalTotalPrice = subtotal
 
   const serviceCharge = 0
@@ -539,7 +584,12 @@ function CheckoutPageContent() {
         }
 
         const pricePerNightInRON = promoCodePrice !== null ? promoCodePrice : basePrice
-        const totalPriceInRON = pricePerNightInRON * nights
+        // If we have price overrides and no promo code, use the API-calculated total
+        const totalPriceInRON = promoCodePrice !== null
+          ? pricePerNightInRON * nights
+          : (priceCalculation?.hasOverrides && priceCalculation?.totalPrice)
+            ? priceCalculation.totalPrice
+            : pricePerNightInRON * nights
         
         const reservationData: {
           apartmentId: string
@@ -571,6 +621,8 @@ function CheckoutPageContent() {
           totalPrice: totalPriceInRON, // Prețul total în RON (referință internă)
           promoCode: appliedPromoCode,
           promoCodePrice: promoCodePrice, // Prețul din promocode în RON
+          hasOverrides: priceCalculation?.hasOverrides || false, // Are prețuri modificate pe unele nopți
+          nightlyPrices: priceCalculation?.nightlyPrices || null, // Breakdown per noapte (dacă există overrides)
           checkInDate,
           checkOutDate,
           guestAdults: Number(formData.get('guestAdults') || 1),
@@ -588,6 +640,11 @@ function CheckoutPageContent() {
         // IMPORTANT: Backend primește tot timpul RON pentru amount; currency este fix 'RON'
         formData.set('totalPrice', totalPriceInRON.toString())
         formData.set('currency', 'RON')
+
+        // Trimitem nightlyPrices ca JSON string dacă există overrides
+        if (priceCalculation?.hasOverrides && priceCalculation?.nightlyPrices) {
+          formData.set('nightlyPrices', JSON.stringify(priceCalculation.nightlyPrices))
+        }
 
         const result = await handleCheckoutSubmit(formData)
         
@@ -830,7 +887,7 @@ function CheckoutPageContent() {
       {/* Summary pentru desktop - afișat în sidebar */}
       <div className="hidden lg:flex grow flex-col gap-y-6 border-neutral-200 px-0 sm:gap-y-8 sm:rounded-4xl sm:p-6 lg:border xl:p-8 dark:border-neutral-700">
         {/* Afișare apartament selectat */}
-        {apartmentId && <ApartmentSummary apartmentId={apartmentId} />}
+        {apartmentId && <ApartmentSummary apartmentId={apartmentId} overridePricePerNight={hasOverrides ? priceCalculation!.averagePrice : undefined} overrideCurrency={hasOverrides ? priceCalculation!.currency : undefined} />}
         
         {/* Promocode Section - ascunde complet la plată dacă nu e cod aplicat */}
         {(!clientSecret || appliedPromoCode) && (
@@ -899,6 +956,8 @@ function CheckoutPageContent() {
               .replace('{nights}', String(nights))}
           </DescriptionTerm>
           <DescriptionDetails className="sm:text-right">{`${subtotal.toFixed(2)} ${currency}`}</DescriptionDetails>
+
+
 
           {appliedPromoCode && promoCodePrice !== null && (
             <>

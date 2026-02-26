@@ -10,9 +10,12 @@ import { parseYYYYMMDDToDate } from '@/utils/dateUtils'
 interface ReserveButtonProps {
   price: number // Price per night
   apartmentId?: string
+  overrideTotalPrice?: number
+  overridePricePerNight?: number
+  overrideCurrency?: string
 }
 
-export default function ReserveButton({ price, apartmentId }: ReserveButtonProps) {
+export default function ReserveButton({ price, apartmentId, overrideTotalPrice, overridePricePerNight, overrideCurrency }: ReserveButtonProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { currency } = useCurrency()
@@ -39,13 +42,21 @@ export default function ReserveButton({ price, apartmentId }: ReserveButtonProps
 
   const nights = calculateNights()
   // Trimite prețul în RON (original), nu convertit - checkout-ul va converti în funcție de currency-ul selectat
-  // Prețul este PE NOAPTE, nu totalul
+  // Dacă avem override, trimitem prețul override (total și per noapte)
 
   const handleClick = () => {
+    const hasOverride = overrideTotalPrice !== undefined && overrideTotalPrice > 0
+    const effectivePrice = hasOverride ? (overridePricePerNight || price) : price
+    
     const params = new URLSearchParams({
-      price: price.toString(), // Trimite prețul PE NOAPTE în RON (original)
+      price: effectivePrice.toString(), // Prețul PE NOAPTE (cu override dacă există)
       nights: nights.toString(),
     })
+    
+    if (hasOverride) {
+      params.set('overrideTotalPrice', overrideTotalPrice!.toString())
+      if (overrideCurrency) params.set('overrideCurrency', overrideCurrency)
+    }
     
     // Add dates to URL if they exist
     const checkin = searchParams.get('checkin')

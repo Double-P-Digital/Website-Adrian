@@ -22,6 +22,7 @@ const activeControllers = new Map<string, AbortController>()
  */
 export interface AvailabilityCheckRequest {
   hotelId?: number
+  apartmentId?: string // ID-ul apartamentului pentru verificare date blocate
   roomType: string // nou: identifică tipul camerei (ex: Deluxe, 104, etc.)
   checkInDate: string // Format: YYYY-MM-DD
   checkOutDate: string // Format: YYYY-MM-DD
@@ -89,6 +90,7 @@ export async function checkRoomAvailability(
         const response = await apiClient.get<AvailabilityCheckResponse>(
           `${API_ENDPOINTS.RESERVATIONS.CHECK_AVAILABILITY}?` +
           (request.hotelId !== undefined ? `hotelId=${request.hotelId}&` : '') +
+          (request.apartmentId ? `apartmentId=${request.apartmentId}&` : '') +
           `roomType=${encodeURIComponent(request.roomType)}&` +
           `checkInDate=${request.checkInDate}&` +
           `checkOutDate=${request.checkOutDate}&` +

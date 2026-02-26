@@ -2,16 +2,28 @@
 import { useCurrency } from '@/context/CurrencyContext'
 import { useT } from '@/hooks/useT'
 
-export default function SidebarPriceAndFormClient({ price }: { price: string }) {
+interface Props {
+  price: string
+  sourceCurrency?: string
+  overridePricePerNight?: number
+  overrideCurrency?: string
+}
+
+export default function SidebarPriceAndFormClient({ price, sourceCurrency, overridePricePerNight, overrideCurrency }: Props) {
   const { currency, convert } = useCurrency()
   const T = useT()
-  const numericPrice = Number(String(price).replace(/[^0-9.]/g, ''))
-  const convertedPrice = convert(numericPrice, 'RON', currency)
+  const basePrice = Number(String(price).replace(/[^0-9.]/g, ''))
+  const baseCurrency = sourceCurrency || 'RON'
   const nightText = T['Booking']['/night'] || '/night'
+
+  // Dacă avem override, afișăm prețul override; altfel prețul de bază
+  const displayPrice = overridePricePerNight
+    ? convert(overridePricePerNight, (overrideCurrency || 'RON') as 'RON' | 'EUR', currency)
+    : convert(basePrice, baseCurrency as 'RON' | 'EUR', currency)
 
   return (
     <span className="mx-2">
-      {convertedPrice.toFixed(2)} {currency}
+      {displayPrice.toFixed(2)} {currency}
       <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400"> {nightText}</span>
     </span>
   )

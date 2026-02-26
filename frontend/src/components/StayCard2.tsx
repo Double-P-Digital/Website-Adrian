@@ -31,6 +31,9 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
     handle: listingHandle,
     price,
     id,
+    overrideTotalPrice,
+    overrideCurrency,
+    sourceCurrency: listingCurrency,
   } = data
 
   // Păstrează parametrii URL când navighează la detalii
@@ -74,10 +77,14 @@ const StayCard2: FC<StayCard2Props> = ({ size = 'default', className = '', data 
     }
   }, [checkin, checkout])
   
-  // Calculează prețul: total dacă sunt date selectate, sau per noapte
+  // Calculează prețul: dacă avem override total, folosim direct; altfel basePrice × nights
   const hasDateRange = nights > 0
-  const displayPrice = hasDateRange ? numericPrice * nights : numericPrice
-  const convertedPrice = convert(displayPrice, 'RON', currency)
+  const hasOverride = overrideTotalPrice !== undefined && overrideTotalPrice > 0 && hasDateRange
+  const displayPrice = hasOverride
+    ? overrideTotalPrice
+    : (hasDateRange ? numericPrice * nights : numericPrice)
+  const sourceCurrency = hasOverride ? (overrideCurrency || 'RON') : (listingCurrency || 'RON')
+  const convertedPrice = convert(displayPrice, sourceCurrency, currency)
 
   // Limităm la primele 5 poze
   const limitedGalleryImgs = galleryImgs?.slice(0, 5) || []

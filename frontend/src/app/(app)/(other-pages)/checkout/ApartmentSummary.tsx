@@ -18,9 +18,11 @@ interface Apartment {
 
 interface ApartmentSummaryProps {
   apartmentId: string
+  overridePricePerNight?: number
+  overrideCurrency?: string
 }
 
-export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps) {
+export default function ApartmentSummary({ apartmentId, overridePricePerNight, overrideCurrency }: ApartmentSummaryProps) {
   const { currency, convert } = useCurrency()
   const [apartment, setApartment] = useState<Apartment | null>(null)
   const [loading, setLoading] = useState(true)
@@ -148,7 +150,9 @@ export default function ApartmentSummary({ apartmentId }: ApartmentSummaryProps)
             )}
             
             <p className="mt-3 text-2xl font-bold text-neutral-900 dark:text-white">
-              {convert(apartment.price, 'RON', currency).toFixed(2)} {currency}{' '}
+              {overridePricePerNight
+                ? convert(overridePricePerNight, (overrideCurrency || 'RON') as 'RON' | 'EUR', currency).toFixed(2)
+                : convert(apartment.price, 'RON', currency).toFixed(2)} {currency}{' '}
               <span className="text-base font-normal text-neutral-500 dark:text-neutral-400">/noapte</span>
             </p>
           </div>

@@ -9,9 +9,21 @@ import { parseYYYYMMDDToDate } from '@/utils/dateUtils'
 
 interface SidebarBookingSummaryProps {
   pricePerNight: string
+  sourceCurrency?: string
+  overrideTotalPrice?: number
+  overridePricePerNight?: number
+  overrideCurrency?: string
+  overrideNightlyPrices?: { date: string; price: number; currency: string }[]
 }
 
-export default function SidebarBookingSummary({ pricePerNight }: SidebarBookingSummaryProps) {
+export default function SidebarBookingSummary({ 
+  pricePerNight, 
+  sourceCurrency: baseCurrency,
+  overrideTotalPrice,
+  overridePricePerNight,
+  overrideCurrency,
+  overrideNightlyPrices,
+}: SidebarBookingSummaryProps) {
   const searchParams = useSearchParams()
   const { currency, convert } = useCurrency()
   const T = useT()
@@ -41,29 +53,37 @@ export default function SidebarBookingSummary({ pricePerNight }: SidebarBookingS
   }
   
   const nights = calculateNights()
-  const numericPrice = Number(String(pricePerNight).replace(/[^0-9.]/g, ''))
-  const convertedPricePerNight = convert(numericPrice, 'RON', currency)
-  const subtotal = convertedPricePerNight * nights
-  const total = subtotal
+  const hasOverride = overrideTotalPrice !== undefined && overrideTotalPrice > 0
+  const numericBasePrice = Number(String(pricePerNight).replace(/[^0-9.]/g, ''))
+  const listingCurrency = baseCurrency || 'RON'
+  const sourceCurrency = hasOverride ? (overrideCurrency || 'RON') : listingCurrency
   
-  const nightText = Booking['/night'] || '/night'
   const nightLabel = nights === 1 
     ? (T.common.night || 'night')
-    : (T.common.night ? `${T.common.night}s` : 'nights')
+    : (T.common.nights || 'nopți')
+
+  // Calculăm prețul efectiv per noapte și totalul
+  const effectivePricePerNight = hasOverride && overridePricePerNight
+    ? convert(overridePricePerNight, sourceCurrency, currency)
+    : convert(numericBasePrice, listingCurrency as 'RON' | 'EUR', currency)
+  
+  const effectiveTotal = hasOverride && overrideTotalPrice
+    ? convert(overrideTotalPrice, sourceCurrency, currency)
+    : effectivePricePerNight * nights
 
   return (
     <DescriptionList>
       <DescriptionTerm>
-        {convertedPricePerNight.toFixed(2)} {currency} x {nights} {nightLabel}
+        {effectivePricePerNight.toFixed(2)} {currency} x {nights} {nightLabel}
       </DescriptionTerm>
       <DescriptionDetails className="sm:text-right">
-        {subtotal.toFixed(2)} {currency}
+        {effectiveTotal.toFixed(2)} {currency}
       </DescriptionDetails>
       <DescriptionTerm className="font-semibold text-neutral-900 dark:text-neutral-100">
         {Booking['Total'] || 'Total'}
       </DescriptionTerm>
       <DescriptionDetails className="font-semibold sm:text-right dark:text-neutral-100">
-        {total.toFixed(2)} {currency}
+        {effectiveTotal.toFixed(2)} {currency}
       </DescriptionDetails>
     </DescriptionList>
   )

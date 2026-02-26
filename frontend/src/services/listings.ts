@@ -19,6 +19,7 @@ export interface Listing {
   address: string
   city?: string // City from apartment
   price: string
+  sourceCurrency?: string // Moneda originală a prețului (RON, EUR, etc.)
   featuredImage: string
   galleryImgs: string[]
   description: string // Fallback description (ro by default)
@@ -37,6 +38,8 @@ export interface Listing {
   hotelId?: string // ID-ul hotelului (necesar pentru verificare disponibilitate)
   roomId?: number // ID-ul camerei din PynBooking (legacy)
   roomType?: string // nou: tipul camerei folosit pentru disponibilitate
+  overrideTotalPrice?: number // Prețul total calculat cu overrides (dacă există)
+  overrideCurrency?: string // Moneda prețului override
   map: {
     lat: number
     lng: number
@@ -103,7 +106,8 @@ export function mapApartmentToListing(apartment: Apartment, language?: 'en' | 'r
     handle: handle,
     address: apartment.address || '',
     city: apartment.city, 
-    price: `${apartment.price} RON`,
+    price: `${apartment.price} ${apartment.currency || 'RON'}`,
+    sourceCurrency: apartment.currency || 'RON',
     featuredImage: featuredImg,
     galleryImgs: galleryImgs,
     description: apartment.descriptionRo || apartment.descriptionEn || '', // Fallback pentru compatibilitate
@@ -392,6 +396,45 @@ export async function getListingsByCategory(
         }
       } catch (error) {
         // În caz de eroare, nu filtrează după dată (afișează toate apartamentele)
+      }
+
+      // După filtrarea disponibilității, actualizăm prețurile cu price overrides
+      try {
+        const { calculatePriceWithOverrides } = await import('./apartments')
+        
+        let checkInDate: string
+        let checkOutDate: string
+        
+        try {
+          const { formatDateToYYYYMMDD, parseYYYYMMDDToDate } = await import('@/utils/dateUtils')
+          const checkIn = parseYYYYMMDDToDate(filters.checkin)
+          const checkOut = parseYYYYMMDDToDate(filters.checkout)
+          checkInDate = formatDateToYYYYMMDD(checkIn)
+          checkOutDate = formatDateToYYYYMMDD(checkOut)
+        } catch {
+          checkInDate = filters.checkin
+          checkOutDate = filters.checkout
+        }
+
+        // Calculăm prețurile cu overrides pentru toate listings-urile în paralel
+        const priceResults = await Promise.allSettled(
+          listings.map(listing => calculatePriceWithOverrides(listing.id, checkInDate, checkOutDate))
+        )
+
+        // Actualizăm prețurile în listings cu totalPrice din overrides
+        listings = listings.map((listing, index) => {
+          const result = priceResults[index]
+          if (result.status === 'fulfilled' && result.value && result.value.hasOverrides) {
+            return {
+              ...listing,
+              overrideTotalPrice: result.value.totalPrice,
+              overrideCurrency: result.value.currency,
+            }
+          }
+          return listing
+        })
+      } catch (error) {
+        // În caz de eroare, păstrăm prețurile originale
       }
     }
   }

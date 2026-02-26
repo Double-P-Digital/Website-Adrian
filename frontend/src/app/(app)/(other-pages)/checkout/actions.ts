@@ -37,14 +37,44 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
     const nights = diffDays >= 1 ? diffDays : 1
     const pricePerNight = totalPrice / nights
-    const pricePerDay = Array(nights).fill(pricePerNight)
+
+    // Folosim prețurile per noapte din override-uri dacă există
+    const nightlyPricesRaw = formData.get('nightlyPrices') as string | null
+    let pricePerDay: number[]
+    if (nightlyPricesRaw) {
+      try {
+        const nightlyPrices: { date: string; price: number; currency: string }[] = JSON.parse(nightlyPricesRaw)
+        // Prețurile vin deja în moneda backend-ului (valuta apartamentului)
+        // Le convertim în RON dacă e necesar (totalPrice este deja în RON)
+        pricePerDay = nightlyPrices.map(n => n.price)
+        // Ajustăm dacă totalul per-night nu se potrivește cu totalPrice (din cauza rotunjirilor)
+        if (pricePerDay.length !== nights) {
+          pricePerDay = Array(nights).fill(pricePerNight)
+        }
+      } catch {
+        pricePerDay = Array(nights).fill(pricePerNight)
+      }
+    } else {
+      pricePerDay = Array(nights).fill(pricePerNight)
+    }
     const formattedCheckIn = formatDateToYYYYMMDD(checkIn)
     const formattedCheckOut = formatDateToYYYYMMDD(checkOut)
     const currencyLower = currency.toLowerCase()
 
     // Validare câmpuri obligatorii
-    if (!apartmentId || !firstName || !lastName || !email || !phoneNumber || !checkInDate || !checkOutDate || !guestAddress) {
-      return { success: false, error: 'Toate câmpurile obligatorii trebuie completate' }
+    const missingFields = {
+      apartmentId: !apartmentId,
+      firstName: !firstName,
+      lastName: !lastName,
+      email: !email,
+      phoneNumber: !phoneNumber,
+      checkInDate: !checkInDate,
+      checkOutDate: !checkOutDate,
+      guestAddress: !guestAddress,
+    }
+    const missing = Object.entries(missingFields).filter(([, v]) => v).map(([k]) => k)
+    if (missing.length > 0) {
+      return { success: false, error: `Câmpuri lipsă: ${missing.join(', ')}` }
     }
 
     // Validare apartmentId - verificăm dacă este MongoDB ObjectId valid
@@ -79,6 +109,26 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
         success: false, 
         error: availabilityCheck.message || 'Camera nu este disponibilă pentru datele selectate. Vă rugăm să selectați alte date.' 
       }
+    }
+
+    // Re-validare preț cu overrides actuale (protecție împotriva modificărilor de preț în timpul checkout)
+    try {
+      const { calculatePriceWithOverrides } = await import('@/services/apartments')
+      const priceCalc = await calculatePriceWithOverrides(apartmentId, formattedCheckIn, formattedCheckOut)
+      
+      if (priceCalc && priceCalc.totalPrice > 0) {
+        const priceDiff = Math.abs(priceCalc.totalPrice - totalPrice)
+        const tolerance = priceCalc.totalPrice * 0.01 // 1% toleranță pentru rotunjiri
+        
+        if (priceDiff > tolerance) {
+          return {
+            success: false,
+            error: `Prețul s-a modificat între timp. Prețul actual este ${priceCalc.totalPrice.toFixed(2)} ${priceCalc.currency}. Vă rugăm să reîncărcați pagina.`,
+          }
+        }
+      }
+    } catch {
+      // Dacă nu putem verifica prețul, continuăm cu prețul existent (nu blocăm checkout-ul)
     }
 
     // Pregătim datele pentru backend pentru payment intent
@@ -162,11 +212,9 @@ export async function handleCheckoutSubmit(formData: FormData): Promise<{ succes
 
       return { success: true, clientSecret }
     } catch (error: any) {
-      // Folosește mesaje user-friendly pentru erori
       return { success: false, error: getUserFriendlyError(error, 'Eroare la procesarea plății. Vă rugăm să încercați din nou.') }
     }
   } catch (error: any) {
-    // Catch-all pentru erori neașteptate - mesaj user-friendly
     return { success: false, error: getUserFriendlyError(error) }
   }
 }

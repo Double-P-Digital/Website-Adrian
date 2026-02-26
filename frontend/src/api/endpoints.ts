@@ -4,6 +4,10 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/api/apartment-service/${id}`,
     TOP_BOOKED: (limit?: number) => 
       limit ? `/api/apartment-service/top-booked?limit=${limit}` : '/api/apartment-service/top-booked',
+    CALCULATE_PRICE: (id: string, checkIn: string, checkOut: string) =>
+      `/api/apartment-service/${id}/calculate-price?checkInDate=${checkIn}&checkOutDate=${checkOut}`,
+    CHECK_BLOCKED: (id: string, checkIn: string, checkOut: string) =>
+      `/api/apartment-service/${id}/check-blocked?checkInDate=${checkIn}&checkOutDate=${checkOut}`,
   },
   
   PAYMENTS: {
